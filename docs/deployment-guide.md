@@ -2,12 +2,12 @@
 
 ## 1. Environment Configuration Contract
 
-| Environment | `VITE_APP_ENV` | `VITE_SUPABASE_URL` & `VITE_SUPABASE_PUBLISHABLE_KEY` | Runtime Behavior |
-| :--- | :--- | :--- | :--- |
-| **Local (offline shell)** | `local` (or unset) | Optional (unset) | Application shell starts cleanly with `supabase.status = 'unconfigured'`. Fake credentials are never substituted. |
-| **Local (connected)** | `local` | Valid dev project URL + publishable key | Typed Supabase client initializes against `wedding-platform-dev`. |
-| **Vercel Preview** | `preview` | Required (non-placeholder HTTPS URL + publishable key) | Fails fast with `EnvConfigurationError` if missing or invalid. |
-| **Vercel Production** | `production` | Required (non-placeholder HTTPS URL + publishable key) | Fails fast with `EnvConfigurationError` if missing or invalid. |
+| Environment               | `VITE_APP_ENV`     | `VITE_SUPABASE_URL` & `VITE_SUPABASE_PUBLISHABLE_KEY`  | Runtime Behavior                                                                                                  |
+| :------------------------ | :----------------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| **Local (offline shell)** | `local` (or unset) | Optional (unset)                                       | Application shell starts cleanly with `supabase.status = 'unconfigured'`. Fake credentials are never substituted. |
+| **Local (connected)**     | `local`            | Valid dev project URL + publishable key                | Typed Supabase client initializes against `wedding-platform-dev`.                                                 |
+| **Vercel Preview**        | `preview`          | Required (non-placeholder HTTPS URL + publishable key) | Fails fast with `EnvConfigurationError` if missing or invalid.                                                    |
+| **Vercel Production**     | `production`       | Required (non-placeholder HTTPS URL + publishable key) | Fails fast with `EnvConfigurationError` if missing or invalid.                                                    |
 
 ---
 
@@ -32,10 +32,12 @@ npm run db:types
 ## 3. Supabase Preview vs. Production Isolation Strategy
 
 ### Phase 0 Temporary State (Early Foundation)
+
 - Vercel `Preview` and `Production` environment-variable scopes are configured **independently** (`VITE_APP_ENV=preview` vs. `VITE_APP_ENV=production`), while both temporarily reference the single `wedding-platform-dev` Supabase project during empty foundation setup.
 - **Important limitation:** Separate Vercel environment scopes do **not** isolate database tables, Auth users, Storage buckets, or migrations while pointing to the same Supabase project.
 
 ### Mandatory Pre-Launch Gate (Before Real Data / Phase 10)
+
 - Provision a dedicated **Supabase Production Project** used **exclusively** by the Vercel `Production` (`main`) scope.
 - Keep `wedding-platform-dev` bound strictly to local development and Vercel `Preview` branches.
 

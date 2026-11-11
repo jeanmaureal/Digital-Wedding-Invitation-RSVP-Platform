@@ -7,7 +7,11 @@ import { ROUTES } from '@/lib/constants/routes';
 
 export function PublicHomePage(): JSX.Element {
   return (
-    <section data-testid="route-public-home" aria-labelledby="public-home-heading" className="space-y-8">
+    <section
+      data-testid="route-public-home"
+      aria-labelledby="public-home-heading"
+      className="space-y-8"
+    >
       <div className="space-y-3">
         <Badge variant="secondary">Public Portal</Badge>
         <h1 id="public-home-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">

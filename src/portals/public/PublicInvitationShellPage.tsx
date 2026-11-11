@@ -16,8 +16,10 @@ export function PublicInvitationShellPage(): JSX.Element {
           <div className="mb-2">
             <Badge variant="outline">Guest RSVP Access</Badge>
           </div>
-          <CardTitle id="invitation-shell-heading" className="text-2xl">
-            Invitation Verification Unavailable
+          <CardTitle asChild>
+            <h1 id="invitation-shell-heading" className="text-2xl">
+              Invitation Verification Unavailable
+            </h1>
           </CardTitle>
           <CardDescription>
             Guest-specific invitation verification and household RSVP forms are enabled once a

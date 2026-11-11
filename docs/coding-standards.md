@@ -32,10 +32,10 @@
 
 ## 4. Git Workflow & Branch Discipline
 
-| Branch | Purpose | Deployment Target | Merge Rule |
-| :--- | :--- | :--- | :--- |
-| `main` | Stable integration branch | Vercel Production | Protected after Phase 0 foundation push: PR required, passing CI checks required, no force-push |
-| `feature/*` | New phase / feature work | Vercel Preview | Opened as PR targeting `main` |
-| `fix/*` | Defect & security fixes | Vercel Preview | Opened as PR targeting `main` |
+| Branch      | Purpose                   | Deployment Target | Merge Rule                                                                                      |
+| :---------- | :------------------------ | :---------------- | :---------------------------------------------------------------------------------------------- |
+| `main`      | Stable integration branch | Vercel Production | Protected after Phase 0 foundation push: PR required, passing CI checks required, no force-push |
+| `feature/*` | New phase / feature work  | Vercel Preview    | Opened as PR targeting `main`                                                                   |
+| `fix/*`     | Defect & security fixes   | Vercel Preview    | Opened as PR targeting `main`                                                                   |
 
 Commit messages follow Conventional Commits (`feat(scope): ...`, `fix(scope): ...`, `chore(scope): ...`, `docs(scope): ...`, `test(scope): ...`).

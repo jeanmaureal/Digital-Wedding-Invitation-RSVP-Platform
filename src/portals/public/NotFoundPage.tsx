@@ -9,8 +9,10 @@ export function NotFoundPage(): JSX.Element {
     <section data-testid="route-not-found" aria-labelledby="not-found-heading">
       <Card className="mx-auto max-w-lg">
         <CardHeader>
-          <CardTitle id="not-found-heading" className="text-2xl">
-            Page Not Found
+          <CardTitle asChild>
+            <h1 id="not-found-heading" className="text-2xl">
+              Page Not Found
+            </h1>
           </CardTitle>
           <CardDescription>
             The page you requested does not exist or may have been moved.

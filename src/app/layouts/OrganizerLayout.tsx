@@ -10,7 +10,10 @@ export function OrganizerLayout(): JSX.Element {
   const env = getAppEnv();
 
   return (
-    <div data-testid="organizer-shell" className="bg-background text-foreground flex min-h-screen flex-col">
+    <div
+      data-testid="organizer-shell"
+      className="bg-background text-foreground flex min-h-screen flex-col"
+    >
       <header className="bg-card border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
           <div className="flex items-center gap-3">

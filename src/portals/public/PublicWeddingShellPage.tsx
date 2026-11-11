@@ -18,8 +18,10 @@ export function PublicWeddingShellPage(): JSX.Element {
           <div className="mb-2">
             <Badge variant="outline">Public Wedding Website</Badge>
           </div>
-          <CardTitle id="wedding-shell-heading" className="text-2xl">
-            {isValidSlugFormat ? 'Invitation Not Yet Available' : 'Invalid Wedding Link'}
+          <CardTitle asChild>
+            <h1 id="wedding-shell-heading" className="text-2xl">
+              {isValidSlugFormat ? 'Invitation Not Yet Available' : 'Invalid Wedding Link'}
+            </h1>
           </CardTitle>
           <CardDescription>
             {isValidSlugFormat

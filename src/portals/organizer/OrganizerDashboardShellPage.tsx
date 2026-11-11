@@ -7,7 +7,11 @@ export function OrganizerDashboardShellPage(): JSX.Element {
   const env = getAppEnv();
 
   return (
-    <section data-testid="route-organizer-root" aria-labelledby="organizer-heading" className="space-y-6">
+    <section
+      data-testid="route-organizer-root"
+      aria-labelledby="organizer-heading"
+      className="space-y-6"
+    >
       <div className="space-y-2">
         <Badge variant="secondary">Organizer Workspace</Badge>
         <h1 id="organizer-heading" className="text-3xl font-semibold tracking-tight">

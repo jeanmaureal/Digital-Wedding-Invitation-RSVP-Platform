@@ -10,10 +10,16 @@ export function PublicLayout(): JSX.Element {
   const env = getAppEnv();
 
   return (
-    <div data-testid="public-shell" className="bg-background text-foreground flex min-h-screen flex-col">
+    <div
+      data-testid="public-shell"
+      className="bg-background text-foreground flex min-h-screen flex-col"
+    >
       <header className="border-b">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-6">
-          <Link to={ROUTES.home} className="inline-flex items-center gap-2 font-semibold tracking-tight">
+          <Link
+            to={ROUTES.home}
+            className="inline-flex items-center gap-2 font-semibold tracking-tight"
+          >
             <Heart className="text-primary size-4" aria-hidden="true" />
             <span>Wedding Invitations</span>
           </Link>
