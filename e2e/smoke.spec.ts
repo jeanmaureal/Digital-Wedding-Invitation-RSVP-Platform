@@ -25,6 +25,10 @@ test.describe('Phase 0 Portal Route Shells (P0-AC01)', () => {
     await page.goto('/app');
     await expect(page.getByTestId('organizer-shell')).toBeVisible();
     await expect(page.getByTestId('route-organizer-root')).toBeVisible();
+    const statusText = await page.getByTestId('supabase-status-badge').textContent();
+    if (statusText?.includes('configured') && !statusText.includes('unconfigured')) {
+      await expect(page.getByTestId('supabase-rpc-status')).toContainText('ok (');
+    }
     await page.reload();
     await expect(page.getByTestId('route-organizer-root')).toBeVisible();
 

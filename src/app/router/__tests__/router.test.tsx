@@ -1,13 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { AppProviders } from '@/app/providers/AppProviders';
 import { appRoutes } from '@/app/router/router';
 
 function renderRoute(initialPath: string) {
   const router = createMemoryRouter(appRoutes, {
     initialEntries: [initialPath],
   });
-  return render(<RouterProvider router={router} />);
+  return render(
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  );
 }
 
 describe('appRoutes portal boundaries', () => {
@@ -18,10 +23,10 @@ describe('appRoutes portal boundaries', () => {
     expect(screen.queryByTestId('organizer-shell')).not.toBeInTheDocument();
   });
 
-  it('renders OrganizerDashboardShellPage inside OrganizerLayout on /app', () => {
+  it('renders OrganizerDashboardShellPage inside OrganizerLayout on /app', async () => {
     renderRoute('/app');
-    expect(screen.getByTestId('organizer-shell')).toBeInTheDocument();
-    expect(screen.getByTestId('route-organizer-root')).toBeInTheDocument();
+    expect(await screen.findByTestId('organizer-shell')).toBeInTheDocument();
+    expect(await screen.findByTestId('route-organizer-root')).toBeInTheDocument();
     expect(screen.queryByTestId('public-shell')).not.toBeInTheDocument();
   });
 

@@ -1,10 +1,19 @@
+import { useQuery } from '@tanstack/react-query';
 import type { JSX } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { checkDatabaseHealth } from '@/lib/supabase/client';
 import { getAppEnv } from '@/lib/validation/env';
 
 export function OrganizerDashboardShellPage(): JSX.Element {
   const env = getAppEnv();
+  const isConfigured = env.supabase.status === 'configured';
+
+  const healthQuery = useQuery({
+    queryKey: ['system', 'supabase-health'],
+    queryFn: () => checkDatabaseHealth(),
+    enabled: isConfigured,
+  });
 
   return (
     <section
@@ -38,13 +47,26 @@ export function OrganizerDashboardShellPage(): JSX.Element {
             Supabase client configuration:{' '}
             <strong className="text-foreground">{env.supabase.status}</strong>
           </p>
-          {env.supabase.status === 'unconfigured' ? (
+          {isConfigured ? (
+            <p data-testid="supabase-rpc-status">
+              Health RPC reachability:{' '}
+              <strong className="text-foreground">
+                {healthQuery.isPending
+                  ? 'checking...'
+                  : healthQuery.isError
+                    ? 'error'
+                    : healthQuery.data?.status === 'ok'
+                      ? `ok (${healthQuery.data.timestamp})`
+                      : 'unconfigured'}
+              </strong>
+            </p>
+          ) : (
             <p>
               Running in offline local shell mode. Configure <code>VITE_SUPABASE_URL</code> and{' '}
               <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> in <code>.env</code> to enable database
               connectivity.
             </p>
-          ) : null}
+          )}
         </CardContent>
       </Card>
     </section>

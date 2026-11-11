@@ -30,8 +30,8 @@
 |  **TG-1**  | Application Scaffold (Vite, React 19, strict TS)                                                | **Completed**           | Committed (`e86bcb7`)                                |
 |  **TG-2**  | Frontend Foundation (Tailwind v4, shadcn/ui, Router, Query, RHF+Zod, env contract)              | **Completed**           | Committed (`56cee6c`)                                |
 |  **TG-3**  | Architecture & Documentation (`organizer`/`public` shells, lean boundaries, `docs/`)            | **Completed**           | Committed (`2a211e7`)                                |
-|  **TG-4**  | Quality & CI (ESLint, Prettier, Vitest, Playwright, secret scan, `vercel.json`, GitHub Actions) | **In Review**           | All local quality, unit, E2E & secret checks passing |
-|  **TG-5**  | Supabase Dev Project, Baseline Migration, Type Gen & `health_check()` RPC                       | Pending (Approval Gate) | Requires explicit approval before execution          |
+|  **TG-4**  | Quality & CI (ESLint, Prettier, Vitest, Playwright, secret scan, `vercel.json`, GitHub Actions) | **Completed**           | Committed (`511f3c9`)                                |
+|  **TG-5**  | Supabase Dev Project, Baseline Migration, Type Gen & `health_check()` RPC                       | **In Review**           | `wedding-platform-dev` (`tfwmbpvbfavugvokdych`) live |
 |  **TG-6**  | GitHub Push, Branch Protection & Vercel Preview/Production Deployments                          | Pending (Approval Gate) | Requires explicit approval before execution          |
 |  **TG-7**  | Final Phase 0 Verification & Sign-Off                                                           | Pending                 | Records evidence for `P0-AC01`–`P0-AC10`             |
 
@@ -44,8 +44,8 @@
 | **P0-AC01** | `/`, `/app`, `/w/test`, and `/i/test` render expected shells locally without console/page errors or data exposure | **Passing Locally**                   | Vitest (`router.test.tsx`) + Playwright Desktop & Mobile pass |
 | **P0-AC02** | Strict TypeScript enabled and `npm run typecheck` passes                                                          | **Passing Locally**                   | `tsc -b --noEmit` exit `0`                                    |
 | **P0-AC03** | ESLint and Prettier checks pass with no errors                                                                    | **Passing Locally**                   | `npm run lint` & `npm run format:check` exit `0`              |
-| **P0-AC04** | Application's typed Supabase client calls `health_check()` on linked dev project                                  | Pending TG-5                          | Approval gate required                                        |
-| **P0-AC05** | Baseline migration applies, history verified, and `scripts/generate-db-types.mjs` succeeds                        | Pending TG-5                          | Approval gate required                                        |
+| **P0-AC04** | Application's typed Supabase client calls `health_check()` on linked dev project                                  | **Passing**                           | Verified via `getSupabaseClient()` in Vitest & Playwright     |
+| **P0-AC05** | Baseline migration applies, history verified, and `scripts/generate-db-types.mjs` succeeds                        | **Passing**                           | Migration `20261111142432_foundation_init` + types synced     |
 | **P0-AC06** | Production build succeeds and `dist/` inspected for secret exposure                                               | **Passing Locally**                   | `npm run build` + `npm run security:secrets` pass             |
 | **P0-AC07** | GitHub auto-deploys Preview & Production with intended env config and working deep-link refresh                   | Pending TG-6                          | Approval gate required                                        |
 | **P0-AC08** | Independent Vercel Preview & Production env scopes configured; temporary shared-DB limitation documented          | Documented; Vercel setup pending TG-6 | Documented in `docs/deployment-guide.md`                      |

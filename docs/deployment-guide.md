@@ -22,7 +22,7 @@ npm run dev
 Link Supabase CLI for migrations and type generation (Phase 0 Task Group 5+):
 
 ```bash
-npx supabase link --project-ref <dev-project-ref>
+npx supabase link <dev-project-ref>
 npx supabase db push
 npm run db:types
 ```

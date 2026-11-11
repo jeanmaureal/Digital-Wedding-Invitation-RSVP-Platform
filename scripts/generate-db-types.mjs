@@ -3,11 +3,20 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+/**
+ * Safely generates `src/types/database.types.ts` via Supabase CLI v3 (`--remote`).
+ * Supports passing `--remote=<project-ref>` via `SUPABASE_PROJECT_REF` when not yet linked locally.
+ * Writes output to a temporary file first and replaces `src/types/database.types.ts`
+ * only if the CLI exits with status 0 and emits valid TypeScript definitions.
+ */
 const targetPath = path.resolve(process.cwd(), 'src/types/database.types.ts');
 const tempPath = path.join(os.tmpdir(), `supabase-db-types-${process.pid}-${Date.now()}.ts`);
 
+const projectRef = process.env.SUPABASE_PROJECT_REF?.trim();
+const remoteFlag = projectRef ? `--remote=${projectRef}` : '--remote';
+
 const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-const result = spawnSync(npxCmd, ['supabase', 'gen', 'types', 'typescript', '--linked'], {
+const result = spawnSync(npxCmd, ['supabase', 'gen', 'types', '--lang=typescript', remoteFlag], {
   cwd: process.cwd(),
   encoding: 'utf8',
   maxBuffer: 10 * 1024 * 1024,
