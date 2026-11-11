@@ -8,10 +8,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-and-build:
     name: Typecheck, Lint, Format, Test, Build & E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -43,15 +48,16 @@ jobs:
       - name: Bundle & tracked-file secret scan
         run: npm run security:secrets
 
-      - name: Install Playwright Chromium browser
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium headless shell
+        run: npx playwright install chromium --only-shell
 
       - name: Browser smoke & route-shell tests (Playwright)
         run: npm run test:e2e
 
   secret-scan-history:
     name: Git History Secret Scan (Gitleaks)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Checkout full commit history
         uses: actions/checkout@v5
