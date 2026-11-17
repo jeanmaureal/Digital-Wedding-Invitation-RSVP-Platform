@@ -15,7 +15,8 @@
 3. **Always pair `TO authenticated` with ownership/membership predicates:** `TO authenticated` alone only checks login state. Every policy must verify workspace membership (`workspace_members`) using `(select auth.uid())`.
 4. **Update policies require both `USING` and `WITH CHECK`:** Prevents cross-workspace reassignment of `workspace_id` or `wedding_id`.
 5. **Never trust `user_metadata` for authorization:** `raw_user_meta_data` is user-editable.
-6. **Prefer `SECURITY INVOKER`:** Use `SECURITY DEFINER` only for narrowly scoped operations (such as token-verified RSVP submission), always set `search_path = ''`, schema-qualify all references, `REVOKE ALL ... FROM PUBLIC`, and grant `EXECUTE` only to required roles.
+6. **Prefer `SECURITY INVOKER`; harden every `SECURITY DEFINER` function:** Use `SECURITY DEFINER` only for narrowly scoped operations (such as `app_private` RLS membership helpers, atomic workspace RBAC RPCs, `auth.users` sync/guard triggers, and token-verified RSVP submission). Always set `OWNER TO postgres` and `SET search_path = ''`, schema-qualify all references, `REVOKE ALL ... FROM PUBLIC, anon, authenticated`, grant `EXECUTE` to `authenticated` only on callable helpers/RPCs, and leave trigger functions with zero API execution grants.
+7. **Profile & co-member email privacy (`Phase 1`):** `public.profiles` `SELECT` RLS is strictly self-only (`id = (SELECT auth.uid())`), and `authenticated` holds column-scoped `UPDATE (full_name)` only. Workspace member directories read via `public.list_workspace_members(p_workspace_id)`, which returns `full_name` and `role` to all members while returning co-member `email` values only to `owner` and `admin` (`NULL` for `editor` and `viewer`).
 
 ---
 

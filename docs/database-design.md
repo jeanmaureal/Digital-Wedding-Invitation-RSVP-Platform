@@ -32,6 +32,11 @@ Where child entities reference siblings within a wedding (e.g., `guests` -> `gue
 ## 3. Operational RPCs & Transactional Boundaries
 
 - **Connectivity check (`Phase 0`):** `public.health_check()` is a `VOLATILE`, `SECURITY INVOKER` SQL function with `SET search_path = ''` returning `{ status: 'ok', timestamp: clock_timestamp() }`. Execution is revoked from `PUBLIC` and granted explicitly to `anon` and `authenticated`. Note: a passing `health_check()` confirms RPC reachability only, not migration completeness.
+- **Workspace & RBAC mutations (`Phase 1`):**
+  - `public.create_workspace(p_name, p_slug)` atomically creates the workspace (retrying auto-generated slug collisions up to 8 attempts or raising `23505 WORKSPACE_SLUG_TAKEN` on explicit slug collisions) and inserts the caller's `'owner'` membership inside one transaction.
+  - `public.add_workspace_member_by_email(p_workspace_id, p_email, p_role)` adds **existing registered organizers** only (`P0002 ORGANIZER_NOT_REGISTERED`); tokenized pending workspace invitations (`workspace_invitations` + email delivery) are deferred to a future phase.
+  - `public.update_workspace_member_role` and `public.remove_workspace_member` serialize mutations per workspace by locking `public.workspaces` (`SELECT ... FOR UPDATE`) first, acquiring `FOR KEY SHARE` on target `auth.users` rows when adding/updating roles, and enforcing the `P0001 LAST_WORKSPACE_OWNER_REQUIRED` invariant.
+  - `app_private.prevent_sole_workspace_owner_user_delete()` (`BEFORE DELETE ON auth.users`) locks `auth.users(OLD.id)` (`FOR UPDATE`), locks owned `public.workspaces` in `ORDER BY id ASC FOR UPDATE`, and rechecks sole-owner status in a fresh `READ COMMITTED` snapshot (`P0001 SOLE_WORKSPACE_OWNER_DELETE_BLOCKED`).
 - **Guest RSVP submission (`Phase 7`):** Public guests do not hold `INSERT`/`UPDATE` table privileges on `guests` or `invitations`. RSVP submission runs through a single atomic PostgreSQL function that validates the token hash, active status, deadline, household membership, and `max_attendees` cap inside one transaction.
 
 ---
