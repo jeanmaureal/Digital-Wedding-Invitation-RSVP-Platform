@@ -43,6 +43,18 @@ export default tseslint.config(
               group: ['@/portals/organizer/*', '@/portals/organizer'],
               message: 'Public portal routes must never import Organizer portal modules.',
             },
+            {
+              group: [
+                '@/lib/supabase/organizerClient',
+                '@/lib/supabase/organizerClient/*',
+                '@/features/auth',
+                '@/features/auth/*',
+                '@/features/workspace',
+                '@/features/workspace/*',
+              ],
+              message:
+                'Public portal routes must remain isolated from organizer auth/session clients and workspace modules (P1-AC14).',
+            },
           ],
         },
       ],
@@ -58,6 +70,22 @@ export default tseslint.config(
             {
               group: ['@/portals/public/*', '@/portals/public'],
               message: 'Organizer portal routes must never import Public portal modules.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app/*', '@/portals/*'],
+              message: 'Feature modules must not import from app shell or portal route modules.',
             },
           ],
         },

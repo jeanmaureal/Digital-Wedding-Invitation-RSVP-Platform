@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Phase 0 Portal Route Shells (P0-AC01)', () => {
-  test('loads /, /app, /w/test, and /i/test with expected shells, deep-link reload, and zero errors', async ({
+test.describe('Phase 0 & Phase 1 Portal Route Shells & Auth Guards (P0-AC01, P1-AC06, P1-AC14)', () => {
+  test('verifies public routes remain auth-free while /app and /app/settings enforce login redirects cleanly', async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -21,18 +21,30 @@ test.describe('Phase 0 Portal Route Shells (P0-AC01)', () => {
     await expect(page.getByTestId('public-shell')).toBeVisible();
     await expect(page.getByTestId('route-public-home')).toBeVisible();
 
-    // 2. Organizer Portal (/app) + direct reload
+    // 2. Organizer Portal (/app) -> unauthenticated redirect to /app/login + reload
     await page.goto('/app');
     await expect(page.getByTestId('organizer-shell')).toBeVisible();
-    await expect(page.getByTestId('route-organizer-root')).toBeVisible();
-    const statusText = await page.getByTestId('supabase-status-badge').textContent();
-    if (statusText?.includes('configured') && !statusText.includes('unconfigured')) {
-      await expect(page.getByTestId('supabase-rpc-status')).toContainText('ok (');
-    }
+    await expect(page.getByTestId('route-organizer-login')).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/login$/);
     await page.reload();
-    await expect(page.getByTestId('route-organizer-root')).toBeVisible();
+    await expect(page.getByTestId('route-organizer-login')).toBeVisible();
 
-    // 3. Public Wedding Shell (/w/test) + malformed slug check
+    // 3. Protected Settings (/app/settings) -> preserves allowlisted redirectTo
+    await page.goto('/app/settings');
+    await expect(page.getByTestId('route-organizer-login')).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/login\?redirectTo=%2Fapp%2Fsettings$/);
+
+    // 4. Auth sub-routes (/app/signup, /app/forgot-password, /app/reset-password)
+    await page.goto('/app/signup');
+    await expect(page.getByTestId('route-organizer-signup')).toBeVisible();
+
+    await page.goto('/app/forgot-password');
+    await expect(page.getByTestId('route-organizer-forgot-password')).toBeVisible();
+
+    await page.goto('/app/reset-password');
+    await expect(page.getByTestId('route-organizer-reset-password')).toBeVisible();
+
+    // 5. Public Wedding Shell (/w/test) + malformed slug check (unaffected by organizer auth)
     await page.goto('/w/test');
     await expect(page.getByTestId('public-shell')).toBeVisible();
     await expect(page.getByTestId('route-public-wedding')).toBeVisible();
@@ -44,7 +56,7 @@ test.describe('Phase 0 Portal Route Shells (P0-AC01)', () => {
     await expect(page.getByRole('heading', { name: 'Invalid Wedding Link' })).toBeVisible();
     await expect(page.locator('body')).not.toContainText('INVALID_SLUG_VALUE');
 
-    // 4. Guest Invitation Shell (/i/:token) — verify token is never echoed
+    // 6. Guest Invitation Shell (/i/:token) — verify token is never echoed and no auth redirect occurs
     const probeToken = 'test-secret-guest-token-probe-7741';
     await page.goto(`/i/${probeToken}`);
     await expect(page.getByTestId('public-shell')).toBeVisible();

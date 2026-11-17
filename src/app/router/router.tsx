@@ -36,16 +36,74 @@ export const appRoutes: RouteObject[] = [
       </div>
     ),
     lazy: async () => {
-      const { OrganizerLayout } = await import('@/app/layouts/OrganizerLayout');
-      return { Component: OrganizerLayout };
+      const { OrganizerPortalRoot } = await import('@/portals/organizer/OrganizerPortalRoot');
+      return { Component: OrganizerPortalRoot };
     },
     children: [
       {
-        index: true,
         lazy: async () => {
-          const { OrganizerDashboardShellPage } =
-            await import('@/portals/organizer/OrganizerDashboardShellPage');
-          return { Component: OrganizerDashboardShellPage };
+          const { RequireOrganizerAuth } =
+            await import('@/features/auth/components/RequireOrganizerAuth');
+          return { Component: RequireOrganizerAuth };
+        },
+        children: [
+          {
+            index: true,
+            lazy: async () => {
+              const { OrganizerDashboardShellPage } =
+                await import('@/portals/organizer/OrganizerDashboardShellPage');
+              return { Component: OrganizerDashboardShellPage };
+            },
+          },
+          {
+            path: 'settings',
+            lazy: async () => {
+              const { OrganizerSettingsShellPage } =
+                await import('@/portals/organizer/OrganizerSettingsShellPage');
+              return { Component: OrganizerSettingsShellPage };
+            },
+          },
+        ],
+      },
+      {
+        lazy: async () => {
+          const { RedirectIfOrganizerAuthenticated } =
+            await import('@/features/auth/components/RedirectIfOrganizerAuthenticated');
+          return { Component: RedirectIfOrganizerAuthenticated };
+        },
+        children: [
+          {
+            path: 'login',
+            lazy: async () => {
+              const { OrganizerLoginPage } =
+                await import('@/portals/organizer/auth/OrganizerLoginPage');
+              return { Component: OrganizerLoginPage };
+            },
+          },
+          {
+            path: 'signup',
+            lazy: async () => {
+              const { OrganizerSignupPage } =
+                await import('@/portals/organizer/auth/OrganizerSignupPage');
+              return { Component: OrganizerSignupPage };
+            },
+          },
+          {
+            path: 'forgot-password',
+            lazy: async () => {
+              const { OrganizerForgotPasswordPage } =
+                await import('@/portals/organizer/auth/OrganizerForgotPasswordPage');
+              return { Component: OrganizerForgotPasswordPage };
+            },
+          },
+        ],
+      },
+      {
+        path: 'reset-password',
+        lazy: async () => {
+          const { OrganizerResetPasswordPage } =
+            await import('@/portals/organizer/auth/OrganizerResetPasswordPage');
+          return { Component: OrganizerResetPasswordPage };
         },
       },
     ],
