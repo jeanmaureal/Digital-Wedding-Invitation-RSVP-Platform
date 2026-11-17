@@ -28,6 +28,7 @@ interface InternalAuthState {
   readonly status: OrganizerAuthStatus;
   readonly session: Session | null;
   readonly isPasswordRecoverySession: boolean;
+  readonly isExplicitSignOut: boolean;
   readonly recoveryError: string | null;
 }
 
@@ -47,6 +48,7 @@ export function AuthProvider({ children, clientOverride }: AuthProviderProps): J
         status: 'unconfigured',
         session: null,
         isPasswordRecoverySession: false,
+        isExplicitSignOut: false,
         recoveryError: initialInspection.initialRecoveryError,
       };
     }
@@ -55,6 +57,7 @@ export function AuthProvider({ children, clientOverride }: AuthProviderProps): J
       status: 'loading',
       session: null,
       isPasswordRecoverySession: false,
+      isExplicitSignOut: false,
       recoveryError: initialInspection.initialRecoveryError,
     };
   });
@@ -119,6 +122,9 @@ export function AuthProvider({ children, clientOverride }: AuthProviderProps): J
         status: nextSession ? 'authenticated' : 'unauthenticated',
         session: nextSession,
         isPasswordRecoverySession: isRecovery,
+        isExplicitSignOut: nextSession
+          ? false
+          : Boolean(options.isSignOutEvent || prev.isExplicitSignOut),
         recoveryError:
           options.explicitRecoveryError !== undefined
             ? options.explicitRecoveryError
@@ -220,6 +226,7 @@ export function AuthProvider({ children, clientOverride }: AuthProviderProps): J
         status: 'unauthenticated',
         session: null,
         isPasswordRecoverySession: false,
+        isExplicitSignOut: true,
         recoveryError: null,
       });
     }
@@ -232,11 +239,13 @@ export function AuthProvider({ children, clientOverride }: AuthProviderProps): J
       session: authState.session,
       user: authState.session?.user ?? null,
       isPasswordRecoverySession: authState.isPasswordRecoverySession,
+      isExplicitSignOut: authState.isExplicitSignOut,
       recoveryError: authState.recoveryError,
       clearPasswordRecoveryState,
       signOut: handleSignOut,
     }),
     [
+      authState.isExplicitSignOut,
       authState.isPasswordRecoverySession,
       authState.recoveryError,
       authState.session,

@@ -9,6 +9,7 @@ export interface OrganizerAuthContextValue {
   readonly session: Session | null;
   readonly user: User | null;
   readonly isPasswordRecoverySession: boolean;
+  readonly isExplicitSignOut: boolean;
   readonly recoveryError: string | null;
   readonly clearPasswordRecoveryState: () => void;
   readonly signOut: () => Promise<void>;

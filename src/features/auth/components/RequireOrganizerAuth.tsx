@@ -5,7 +5,7 @@ import { buildLoginRedirectPath } from '@/features/auth/schemas/authSchemas';
 import { ROUTES } from '@/lib/constants/routes';
 
 export function RequireOrganizerAuth(): JSX.Element {
-  const { status, isPasswordRecoverySession } = useOrganizerAuth();
+  const { status, isPasswordRecoverySession, isExplicitSignOut } = useOrganizerAuth();
   const location = useLocation();
 
   if (status === 'loading') {
@@ -20,7 +20,9 @@ export function RequireOrganizerAuth(): JSX.Element {
   }
 
   if (status !== 'authenticated') {
-    const loginTarget = buildLoginRedirectPath(location.pathname, location.search);
+    const loginTarget = isExplicitSignOut
+      ? ROUTES.organizerLogin
+      : buildLoginRedirectPath(location.pathname, location.search);
     return <Navigate to={loginTarget} replace />;
   }
 
