@@ -4,6 +4,7 @@ import { Link, Outlet, useNavigate } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useOrganizerAuth } from '@/features/auth/context/organizerAuthContext';
+import { WorkspaceSwitcher } from '@/features/workspace/components/WorkspaceSwitcher';
 import { ROUTES } from '@/lib/constants/routes';
 import { getAppEnv } from '@/lib/validation/env';
 
@@ -40,21 +41,25 @@ export function OrganizerLayout(): JSX.Element {
               <LayoutDashboard className="text-primary size-5" aria-hidden="true" />
               <span>Organizer Portal</span>
             </Link>
-            <Badge variant="secondary">Workspace Shell</Badge>
 
             {showAuthenticatedNav ? (
-              <nav aria-label="Organizer navigation" className="flex items-center gap-1 sm:ml-2">
-                <Button asChild variant="ghost" size="sm">
-                  <Link to={ROUTES.organizerRoot}>Overview</Link>
-                </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to={ROUTES.organizerSettings}>
-                    <Settings className="size-4" aria-hidden="true" />
-                    Settings
-                  </Link>
-                </Button>
-              </nav>
-            ) : null}
+              <>
+                <WorkspaceSwitcher />
+                <nav aria-label="Organizer navigation" className="flex items-center gap-1 sm:ml-1">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to={ROUTES.organizerRoot}>Overview</Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to={ROUTES.organizerSettings}>
+                      <Settings className="size-4" aria-hidden="true" />
+                      Settings
+                    </Link>
+                  </Button>
+                </nav>
+              </>
+            ) : (
+              <Badge variant="secondary">Workspace Shell</Badge>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

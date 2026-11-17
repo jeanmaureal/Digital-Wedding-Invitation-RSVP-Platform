@@ -50,17 +50,17 @@ export const appRoutes: RouteObject[] = [
           {
             index: true,
             lazy: async () => {
-              const { OrganizerDashboardShellPage } =
-                await import('@/portals/organizer/OrganizerDashboardShellPage');
-              return { Component: OrganizerDashboardShellPage };
+              const { OrganizerWorkspacePage } =
+                await import('@/portals/organizer/OrganizerWorkspacePage');
+              return { Component: OrganizerWorkspacePage };
             },
           },
           {
             path: 'settings',
             lazy: async () => {
-              const { OrganizerSettingsShellPage } =
-                await import('@/portals/organizer/OrganizerSettingsShellPage');
-              return { Component: OrganizerSettingsShellPage };
+              const { OrganizerWorkspaceSettingsPage } =
+                await import('@/portals/organizer/OrganizerWorkspaceSettingsPage');
+              return { Component: OrganizerWorkspaceSettingsPage };
             },
           },
         ],

@@ -110,7 +110,18 @@ function createFakeAuthHarness(initialSession: Session | null = null): FakeAuthH
     return { data: { user: activeUser }, error: null };
   });
 
+  const buildEmptySelectBuilder = () => {
+    const builder = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      order: vi.fn(async () => ({ data: [], error: null })),
+      maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+    };
+    return builder;
+  };
+
   const fakeClient = {
+    from: vi.fn(() => buildEmptySelectBuilder()),
     rpc: vi.fn(async () => ({
       data: { status: 'ok', timestamp: '2026-11-12T00:00:00.000Z' },
       error: null,
