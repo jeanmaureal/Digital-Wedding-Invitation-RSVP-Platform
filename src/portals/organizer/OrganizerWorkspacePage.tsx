@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { Building2, Plus, RefreshCw, Settings } from 'lucide-react';
+import { Plus, RefreshCw, Settings } from 'lucide-react';
 import { type JSX, useState } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useOrganizerAuth } from '@/features/auth/context/organizerAuthContext';
+import { WorkspaceWeddingsSection } from '@/features/weddings/components/WorkspaceWeddingsSection';
 import { CreateWorkspaceCard } from '@/features/workspace/components/CreateWorkspaceCard';
 import { OrganizerProfileCard } from '@/features/workspace/components/OrganizerProfileCard';
 import { useActiveWorkspace } from '@/features/workspace/context/activeWorkspaceContext';
@@ -16,6 +18,7 @@ import { getAppEnv } from '@/lib/validation/env';
 export function OrganizerWorkspacePage(): JSX.Element {
   const env = getAppEnv();
   const isConfigured = env.supabase.status === 'configured';
+  const { user } = useOrganizerAuth();
   const {
     isLoadingMemberships,
     membershipsError,
@@ -116,8 +119,9 @@ export function OrganizerWorkspacePage(): JSX.Element {
                 {activeMembership.workspace.name}
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm">
-                Active multi-tenant workspace context (`P1-AC08`). Wedding projects, custom themes,
-                guest households, and RSVPs attach to this workspace starting in Phase 2.
+                Multi-tenant workspace context (`P1-AC08` / `P2-AC09`). All wedding projects,
+                settings, and upcoming invitation modules below are scoped strictly to this
+                workspace.
               </p>
             </div>
 
@@ -150,18 +154,13 @@ export function OrganizerWorkspacePage(): JSX.Element {
             />
           ) : null}
 
-          <Card data-testid="workspace-projects-placeholder-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="text-primary size-5" aria-hidden="true" />
-                <span>Wedding Projects in {activeMembership.workspace.name}</span>
-              </CardTitle>
-              <CardDescription>
-                Workspace isolation and RBAC (`{WORKSPACE_ROLE_LABELS[activeMembership.role]}`) are
-                active. Multi-wedding project creation and event scheduling arrive in Phase 2.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          {user ? (
+            <WorkspaceWeddingsSection
+              key={activeMembership.workspace.id}
+              userId={user.id}
+              activeMembership={activeMembership}
+            />
+          ) : null}
         </>
       )}
 

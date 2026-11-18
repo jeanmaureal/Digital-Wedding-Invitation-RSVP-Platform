@@ -51,9 +51,11 @@ export default tseslint.config(
                 '@/features/auth/*',
                 '@/features/workspace',
                 '@/features/workspace/*',
+                '@/features/weddings',
+                '@/features/weddings/*',
               ],
               message:
-                'Public portal routes must remain isolated from organizer auth/session clients and workspace modules (P1-AC14).',
+                'Public portal routes must remain isolated from organizer auth/session clients, workspace modules, and organizer wedding-draft modules (P1-AC14 / P2-AC11).',
             },
           ],
         },

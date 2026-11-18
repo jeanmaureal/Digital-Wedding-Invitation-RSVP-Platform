@@ -1,0 +1,14 @@
+# Phase 2 Database Security & Privilege Audit (`P2-AC08`)
+
+- **Overall Status:** `PASSED` _(verified live on `wedding-platform-dev` / `tfwmbpvbfavugvokdych` via `supabase/tests/phase2_database_verification.sql`)_
+- **Verification Script:** `supabase/tests/phase2_database_verification.sql` (Section 1)
+
+| Audit Check                                                                                                                                                                              | Expected Outcome                                                                |  Status  |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ | :------: |
+| RLS enabled (`relrowsecurity = true`) on `public.weddings` and `public.wedding_settings`                                                                                                 | Both `true`                                                                     | `PASSED` |
+| Zero `anon` privileges on `weddings`, `wedding_settings`, `create_wedding`, and `duplicate_wedding`                                                                                      | All table, column, and function privileges `false`                              | `PASSED` |
+| Column-scoped `UPDATE` on `public.weddings` (`id`, `workspace_id`, `archived_at`, `duplicated_from_wedding_id`, `created_by` immutable)                                                  | Immutable identity/provenance columns `UPDATE = false`; direct `INSERT = false` | `PASSED` |
+| Column-scoped `UPDATE` on `public.wedding_settings` (`wedding_id`, `workspace_id` immutable; direct `INSERT`/`DELETE` denied)                                                            | Identity columns `UPDATE = false`; `INSERT = false`, `DELETE = false`           | `PASSED` |
+| All 21 functions across `public` & `app_private` owned by `postgres` with `SET search_path = ''`                                                                                         | `proowner = postgres`, `'search_path=""' = ANY(proconfig)`                      | `PASSED` |
+| Zero `PUBLIC` (`=X`) execution grants on any function in `public` or `app_private`                                                                                                       | `0` functions with `PUBLIC` `EXECUTE`                                           | `PASSED` |
+| Phase 2 private helpers & triggers (`is_reserved_wedding_slug`, `assert_valid_iana_timezone`, `derive_wedding_base_slug`, `normalize_wedding*`) non-callable by `anon` & `authenticated` | `has_function_privilege(..., 'EXECUTE') = false`                                | `PASSED` |
