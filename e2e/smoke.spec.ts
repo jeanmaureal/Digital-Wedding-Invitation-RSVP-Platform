@@ -40,6 +40,12 @@ test.describe('Phase 0 & Phase 1 Portal Route Shells & Auth Guards (P0-AC01, P1-
       /\/app\/login\?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555$/,
     );
 
+    await page.goto('/app/weddings/11111111-2222-4333-8444-555555555555/guests');
+    await expect(page.getByTestId('route-organizer-login')).toBeVisible();
+    await expect(page).toHaveURL(
+      /\/app\/login\?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Fguests$/,
+    );
+
     // 4. Auth sub-routes (/app/signup, /app/forgot-password, /app/reset-password)
     await page.goto('/app/signup');
     await expect(page.getByTestId('route-organizer-signup')).toBeVisible();

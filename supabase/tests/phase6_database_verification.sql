@@ -182,9 +182,9 @@ DECLARE
   v_outsider constant uuid := '66666666-dddd-4ddd-8ddd-ddddddddddd4';
   v_ws_a uuid;
   v_ws_b uuid;
-  v_wedding_pub jsonb;
-  v_wedding_priv jsonb;
-  v_wedding_b jsonb;
+  v_wedding_pub public.weddings;
+  v_wedding_priv public.weddings;
+  v_wedding_b public.weddings;
 BEGIN
   INSERT INTO auth.users (id, email, raw_user_meta_data, created_at, updated_at)
   VALUES
@@ -201,48 +201,48 @@ BEGIN
   PERFORM public.add_workspace_member_by_email(v_ws_a, 'p6.viewer.a@example.com', 'viewer');
 
   v_wedding_pub := public.create_wedding(
-    v_ws_a,
-    'Public Celebration',
-    'Clara',
-    'Mateo',
-    'p6-public-celebration',
-    DATE '2027-06-12',
-    'Glass Conservatory',
-    'Manila',
-    'Asia/Manila',
-    'public'::public.wedding_access_mode
+    p_workspace_id => v_ws_a,
+    p_title => 'Public Celebration',
+    p_partner_one_name => 'Clara',
+    p_partner_two_name => 'Mateo',
+    p_slug => 'p6-public-celebration',
+    p_event_date => DATE '2027-06-12',
+    p_venue_name => 'Glass Conservatory',
+    p_venue_location => 'Manila',
+    p_timezone => 'Asia/Manila',
+    p_access_mode => 'public'::public.wedding_access_mode
   );
 
   v_wedding_priv := public.create_wedding(
-    v_ws_a,
-    'Invite Only Celebration',
-    'Noelle',
-    'Julian',
-    'p6-invite-only-celebration',
-    DATE '2027-09-18',
-    'Private Villa',
-    'Cebu',
-    'Asia/Manila',
-    'invite_only'::public.wedding_access_mode
+    p_workspace_id => v_ws_a,
+    p_title => 'Invite Only Celebration',
+    p_partner_one_name => 'Noelle',
+    p_partner_two_name => 'Julian',
+    p_slug => 'p6-invite-only-celebration',
+    p_event_date => DATE '2027-09-18',
+    p_venue_name => 'Private Villa',
+    p_venue_location => 'Cebu',
+    p_timezone => 'Asia/Manila',
+    p_access_mode => 'invite_only'::public.wedding_access_mode
   );
 
   PERFORM set_config('request.jwt.claim.sub', v_outsider::text, true);
   v_ws_b := (public.create_workspace('P6 Studio Beta', 'p6-studio-beta')).id;
   v_wedding_b := public.create_wedding(
-    v_ws_b,
-    'Beta Celebration',
-    'Sora',
-    'Kai',
-    'p6-beta-celebration'
+    p_workspace_id => v_ws_b,
+    p_title => 'Beta Celebration',
+    p_partner_one_name => 'Sora',
+    p_partner_two_name => 'Kai',
+    p_slug => 'p6-beta-celebration'
   );
 
   INSERT INTO tmp_p6_state (key, val)
   VALUES
     ('ws_a', v_ws_a::text),
     ('ws_b', v_ws_b::text),
-    ('wedding_pub', (v_wedding_pub -> 'wedding' ->> 'id')),
-    ('wedding_priv', (v_wedding_priv -> 'wedding' ->> 'id')),
-    ('wedding_b', (v_wedding_b -> 'wedding' ->> 'id'));
+    ('wedding_pub', v_wedding_pub.id::text),
+    ('wedding_priv', v_wedding_priv.id::text),
+    ('wedding_b', v_wedding_b.id::text);
 END;
 $$;
 
@@ -265,7 +265,7 @@ DECLARE
   v_group_priv uuid;
   v_guest_pub uuid;
   v_import_res jsonb;
-  v_dup_res jsonb;
+  v_dup_res public.weddings;
   v_dup_wedding_id uuid;
   v_issue_1 jsonb;
   v_issue_2 jsonb;
@@ -463,7 +463,7 @@ BEGIN
     'Duplicated Private Celebration',
     'p6-duplicated-private'
   );
-  v_dup_wedding_id := (v_dup_res -> 'wedding' ->> 'id')::uuid;
+  v_dup_wedding_id := v_dup_res.id;
 
   IF EXISTS (SELECT 1 FROM public.guest_groups WHERE wedding_id = v_dup_wedding_id)
      OR EXISTS (SELECT 1 FROM public.guests WHERE wedding_id = v_dup_wedding_id)

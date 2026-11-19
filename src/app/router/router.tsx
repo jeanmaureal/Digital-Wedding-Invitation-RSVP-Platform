@@ -3,7 +3,6 @@ import { PublicLayout } from '@/app/layouts/PublicLayout';
 import { ROUTES } from '@/lib/constants/routes';
 import { NotFoundPage } from '@/portals/public/NotFoundPage';
 import { PublicHomePage } from '@/portals/public/PublicHomePage';
-import { PublicInvitationShellPage } from '@/portals/public/PublicInvitationShellPage';
 
 export const appRoutes: RouteObject[] = [
   {
@@ -28,7 +27,11 @@ export const appRoutes: RouteObject[] = [
       },
       {
         path: ROUTES.publicInvitation,
-        element: <PublicInvitationShellPage />,
+        lazy: async () => {
+          const { PublicInvitationShellPage } =
+            await import('@/portals/public/PublicInvitationShellPage');
+          return { Component: PublicInvitationShellPage };
+        },
       },
       {
         path: '*',
@@ -85,6 +88,14 @@ export const appRoutes: RouteObject[] = [
               const { OrganizerWeddingBuilderPage } =
                 await import('@/portals/organizer/OrganizerWeddingBuilderPage');
               return { Component: OrganizerWeddingBuilderPage };
+            },
+          },
+          {
+            path: 'weddings/:weddingId/guests',
+            lazy: async () => {
+              const { OrganizerWeddingGuestsPage } =
+                await import('@/portals/organizer/OrganizerWeddingGuestsPage');
+              return { Component: OrganizerWeddingGuestsPage };
             },
           },
         ],

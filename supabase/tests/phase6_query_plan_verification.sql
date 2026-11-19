@@ -302,6 +302,29 @@ $$;
 
 RESET ROLE;
 
+-- 4. Verify `ON DELETE SET NULL` FK index scan on `guest_groups_created_by_idx` & `invitations_issued_by_idx` at scale
+DO $$
+DECLARE
+  v_plan_1 jsonb;
+  v_plan_2 jsonb;
+BEGIN
+  EXECUTE $q$
+    EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
+    SELECT id FROM public.guest_groups WHERE created_by = 'aaaaaaaa-6666-4aaa-8aaa-aaaaaaaaaaaa'::uuid
+  $q$ INTO v_plan_1;
+
+  EXECUTE $q$
+    EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)
+    SELECT id FROM public.invitations WHERE issued_by = 'aaaaaaaa-6666-4aaa-8aaa-aaaaaaaaaaaa'::uuid
+  $q$ INTO v_plan_2;
+
+  INSERT INTO tmp_phase6_plan_captures (scenario, plan_json)
+  VALUES
+    ('fk_guest_groups_created_by_idx', v_plan_1),
+    ('fk_invitations_issued_by_idx', v_plan_2);
+END;
+$$;
+
 SELECT scenario, plan_json
   FROM tmp_phase6_plan_captures;
 

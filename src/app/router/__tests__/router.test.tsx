@@ -80,6 +80,18 @@ describe('appRoutes portal boundaries & organizer isolation (P0-AC01, P1-AC06, P
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });
 
+  it('redirects unauthenticated /app/weddings/:weddingId/guests deep links to /app/login with encoded redirectTo (P6-AC07, P6-AC11)', async () => {
+    vi.spyOn(organizerClientModule, 'getOrganizerSupabaseClient').mockReturnValue(null);
+    const { router } = renderRoute('/app/weddings/11111111-2222-4333-8444-555555555555/guests');
+
+    expect(await screen.findByTestId('route-organizer-login')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/app/login');
+    expect(router.state.location.search).toBe(
+      '?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Fguests',
+    );
+    expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
+  });
+
   it('renders safe unavailable state on /w/test without initializing organizerClient', async () => {
     vi.spyOn(publicClientModule, 'getPublicSupabaseClient').mockReturnValue(null);
     renderRoute('/w/test');
@@ -101,11 +113,12 @@ describe('appRoutes portal boundaries & organizer isolation (P0-AC01, P1-AC06, P
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });
 
-  it('renders Guest RSVP Access shell on /i/:token without echoing the raw token or touching organizer auth', () => {
+  it('renders Guest RSVP Access shell on /i/:token without echoing the raw token or touching organizer auth (P6-AC10, P6-AC11)', async () => {
+    vi.spyOn(publicClientModule, 'getPublicSupabaseClient').mockReturnValue(null);
     const rawToken = 'guest-private-token-do-not-echo-8472';
     const { container } = renderRoute(`/i/${rawToken}`);
-    expect(screen.getByTestId('public-shell')).toBeInTheDocument();
-    expect(screen.getByTestId('route-public-invitation')).toBeInTheDocument();
+    expect(await screen.findByTestId('public-shell')).toBeInTheDocument();
+    expect(await screen.findByTestId('route-public-invitation')).toBeInTheDocument();
     expect(container.innerHTML).not.toContain(rawToken);
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });

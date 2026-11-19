@@ -21,7 +21,11 @@ import {
 import { formatCalendarDateDisplay } from '@/features/weddings/utils/weddingTimezone';
 import { useActiveWorkspace } from '@/features/workspace/context/activeWorkspaceContext';
 import { WORKSPACE_ROLE_LABELS } from '@/features/workspace/schemas/workspaceSchemas';
-import { buildOrganizerWeddingBuilderPath, ROUTES } from '@/lib/constants/routes';
+import {
+  buildOrganizerWeddingBuilderPath,
+  buildOrganizerWeddingGuestsPath,
+  ROUTES,
+} from '@/lib/constants/routes';
 
 export function OrganizerWeddingDetailPage(): JSX.Element {
   const { weddingId = '' } = useParams();
@@ -220,12 +224,22 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
 
         <Card className="bg-muted/30">
           <CardHeader className="py-4">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Users className="text-primary size-4" aria-hidden="true" />
-              <span>Households &amp; RSVPs</span>
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex items-center gap-2">
+                <Users className="text-primary size-4" aria-hidden="true" />
+                <span>Households &amp; Invitations</span>
+              </span>
+              <Link
+                to={buildOrganizerWeddingGuestsPath(wedding.id)}
+                data-testid="summary-open-guests-link"
+                className="text-primary text-xs font-medium underline-offset-4 hover:underline"
+              >
+                Open Guest Directory
+              </Link>
             </CardTitle>
             <CardDescription className="text-xs">
-              Guest groups, hashed /i/:token links, and transactional RSVPs arrive in Phases 6–7.
+              Manage household groups, import CSV guest lists, and issue SHA-256 hashed /i/… links
+              &amp; QR codes. Transactional RSVP forms arrive in Phase 7.
             </CardDescription>
           </CardHeader>
         </Card>

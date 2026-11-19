@@ -39,6 +39,165 @@ export type Database = {
   }
   public: {
     Tables: {
+      guest_groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          display_name: string
+          id: string
+          max_attendees: number
+          notes: string
+          sort_order: number
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          display_name: string
+          id?: string
+          max_attendees?: number
+          notes?: string
+          sort_order?: number
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          display_name?: string
+          id?: string
+          max_attendees?: number
+          notes?: string
+          sort_order?: number
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_groups_workspace_wedding_fkey"
+            columns: ["workspace_id", "wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      guests: {
+        Row: {
+          created_at: string
+          dietary_notes: string
+          email: string
+          first_name: string
+          group_id: string
+          id: string
+          is_child: boolean
+          last_name: string
+          phone: string
+          side: Database["public"]["Enums"]["guest_side"]
+          sort_order: number
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          dietary_notes?: string
+          email?: string
+          first_name: string
+          group_id: string
+          id?: string
+          is_child?: boolean
+          last_name?: string
+          phone?: string
+          side?: Database["public"]["Enums"]["guest_side"]
+          sort_order?: number
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          dietary_notes?: string
+          email?: string
+          first_name?: string
+          group_id?: string
+          id?: string
+          is_child?: boolean
+          last_name?: string
+          phone?: string
+          side?: Database["public"]["Enums"]["guest_side"]
+          sort_order?: number
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guests_workspace_wedding_group_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "guest_groups"
+            referencedColumns: ["workspace_id", "wedding_id", "id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          delivery_status: Database["public"]["Enums"]["invitation_delivery_status"]
+          expires_at: string | null
+          group_id: string
+          id: string
+          issued_by: string | null
+          revoked_at: string | null
+          status: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_status?: Database["public"]["Enums"]["invitation_delivery_status"]
+          expires_at?: string | null
+          group_id: string
+          id?: string
+          issued_by?: string | null
+          revoked_at?: string | null
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash: string
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_status?: Database["public"]["Enums"]["invitation_delivery_status"]
+          expires_at?: string | null
+          group_id?: string
+          id?: string
+          issued_by?: string | null
+          revoked_at?: string | null
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token_hash?: string
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_workspace_wedding_group_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "guest_groups"
+            referencedColumns: ["workspace_id", "wedding_id", "id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -527,6 +686,23 @@ export type Database = {
       }
       get_public_wedding_by_slug: { Args: { p_slug: string }; Returns: Json }
       health_check: { Args: never; Returns: Json }
+      import_wedding_guests: {
+        Args: {
+          p_households: Json
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
+      issue_household_invitation: {
+        Args: {
+          p_expires_at?: string
+          p_group_id: string
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
       list_workspace_members: {
         Args: { p_workspace_id: string }
         Returns: {
@@ -589,6 +765,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      resolve_invitation_by_token: { Args: { p_token: string }; Returns: Json }
+      revoke_household_invitation: {
+        Args: {
+          p_invitation_id: string
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
       unpublish_wedding: {
         Args: { p_wedding_id: string; p_workspace_id: string }
         Returns: {
@@ -615,6 +800,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_household_invitation: {
+        Args: {
+          p_delivery_status: Database["public"]["Enums"]["invitation_delivery_status"]
+          p_expires_at?: string
+          p_invitation_id: string
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
       update_workspace_member_role: {
         Args: {
           p_member_user_id: string
@@ -639,6 +834,9 @@ export type Database = {
       }
     }
     Enums: {
+      guest_side: "partner_one" | "partner_two" | "mutual" | "other"
+      invitation_delivery_status: "not_shared" | "shared"
+      invitation_status: "active" | "revoked"
       wedding_access_mode: "public" | "invite_only"
       wedding_section_type:
         | "hero"
@@ -785,6 +983,9 @@ export const Constants = {
   },
   public: {
     Enums: {
+      guest_side: ["partner_one", "partner_two", "mutual", "other"],
+      invitation_delivery_status: ["not_shared", "shared"],
+      invitation_status: ["active", "revoked"],
       wedding_access_mode: ["public", "invite_only"],
       wedding_section_type: [
         "hero",
