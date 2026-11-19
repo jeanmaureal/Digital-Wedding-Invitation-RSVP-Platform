@@ -4,11 +4,15 @@ import { ROUTES } from '@/lib/constants/routes';
 import { NotFoundPage } from '@/portals/public/NotFoundPage';
 import { PublicHomePage } from '@/portals/public/PublicHomePage';
 import { PublicInvitationShellPage } from '@/portals/public/PublicInvitationShellPage';
-import { PublicWeddingShellPage } from '@/portals/public/PublicWeddingShellPage';
 
 export const appRoutes: RouteObject[] = [
   {
     element: <PublicLayout />,
+    HydrateFallback: () => (
+      <div className="text-muted-foreground flex min-h-screen items-center justify-center text-sm">
+        Loading wedding website…
+      </div>
+    ),
     children: [
       {
         path: ROUTES.home,
@@ -16,7 +20,11 @@ export const appRoutes: RouteObject[] = [
       },
       {
         path: ROUTES.publicWedding,
-        element: <PublicWeddingShellPage />,
+        lazy: async () => {
+          const { PublicWeddingShellPage } =
+            await import('@/portals/public/PublicWeddingShellPage');
+          return { Component: PublicWeddingShellPage };
+        },
       },
       {
         path: ROUTES.publicInvitation,

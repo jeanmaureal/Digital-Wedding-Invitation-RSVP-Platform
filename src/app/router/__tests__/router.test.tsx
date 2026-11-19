@@ -4,10 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppProviders } from '@/app/providers/AppProviders';
 import { appRoutes } from '@/app/router/router';
 import * as organizerClientModule from '@/lib/supabase/organizerClient';
+import * as publicClientModule from '@/lib/supabase/publicClient';
 
 afterEach(() => {
   vi.restoreAllMocks();
   organizerClientModule.resetOrganizerSupabaseClientForTests();
+  publicClientModule.resetPublicSupabaseClientForTests();
   window.localStorage.clear();
   window.sessionStorage.clear();
 });
@@ -78,20 +80,23 @@ describe('appRoutes portal boundaries & organizer isolation (P0-AC01, P1-AC06, P
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });
 
-  it('renders safe unavailable state on /w/test without initializing organizerClient', () => {
+  it('renders safe unavailable state on /w/test without initializing organizerClient', async () => {
+    vi.spyOn(publicClientModule, 'getPublicSupabaseClient').mockReturnValue(null);
     renderRoute('/w/test');
-    expect(screen.getByTestId('public-shell')).toBeInTheDocument();
-    expect(screen.getByTestId('route-public-wedding')).toBeInTheDocument();
+    expect(await screen.findByTestId('public-shell')).toBeInTheDocument();
+    expect(await screen.findByTestId('route-public-wedding')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: /invitation not yet available/i }),
     ).toBeInTheDocument();
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });
 
-  it('renders invalid link notice for malformed slugs without echoing unsanitized input', () => {
+  it('renders invalid link notice for malformed slugs without echoing unsanitized input', async () => {
     const malformedSlug = 'INVALID_SLUG_999';
     renderRoute(`/w/${malformedSlug}`);
-    expect(screen.getByRole('heading', { name: /invalid wedding link/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /invalid wedding link/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByText(new RegExp(malformedSlug))).not.toBeInTheDocument();
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });

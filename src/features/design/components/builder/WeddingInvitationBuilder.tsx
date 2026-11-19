@@ -8,6 +8,7 @@ import {
   Monitor,
   Palette,
   Save,
+  Send,
   Smartphone,
 } from 'lucide-react';
 import { type JSX, useCallback, useState } from 'react';
@@ -51,6 +52,7 @@ export interface WeddingInvitationBuilderProps {
   readonly initialDocument: InvitationDocument;
   readonly debounceMs?: number | undefined;
   readonly client?: TypedSupabaseClient | null | undefined;
+  readonly onPublishSnapshot?: (() => Promise<{ readonly versionNumber: number }>) | undefined;
 }
 
 function renderStatusSummary(
@@ -83,9 +85,13 @@ export function WeddingInvitationBuilder({
   initialDocument,
   debounceMs,
   client,
+  onPublishSnapshot,
 }: WeddingInvitationBuilderProps): JSX.Element {
   const navigate = useNavigate();
   const canEdit = canCreateOrEditWedding(callerRole);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishNotice, setPublishNotice] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   const {
     draftDocument,
@@ -194,6 +200,27 @@ export function WeddingInvitationBuilder({
     void navigate(targetPath);
   };
 
+  const handlePublishClick = async () => {
+    if (!canEdit || !onPublishSnapshot || isPublishing || wedding.status === 'archived') {
+      return;
+    }
+    if (Object.keys(validationIssues).length > 0) {
+      return;
+    }
+    setPublishError(null);
+    setPublishNotice(null);
+    setIsPublishing(true);
+    try {
+      await flushPendingSaves();
+      const result = await onPublishSnapshot();
+      setPublishNotice(`Published live snapshot v${result.versionNumber} to /w/${wedding.slug}.`);
+    } catch (err: unknown) {
+      setPublishError(err instanceof Error ? err.message : 'Unable to publish website.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const statusMeta = renderStatusSummary(saveStatus, canEdit);
   const firstValidationMessage = Object.values(validationIssues)[0] ?? null;
 
@@ -262,6 +289,22 @@ export function WeddingInvitationBuilder({
             </Button>
           ) : null}
 
+          {canEdit && onPublishSnapshot && wedding.status !== 'archived' ? (
+            <Button
+              type="button"
+              size="sm"
+              className="h-8 text-xs"
+              disabled={
+                isPublishing || saveStatus === 'saving' || Object.keys(validationIssues).length > 0
+              }
+              data-testid="builder-publish-button"
+              onClick={() => void handlePublishClick()}
+            >
+              <Send className="size-3.5" aria-hidden="true" />
+              {isPublishing ? 'Publishing…' : 'Publish snapshot'}
+            </Button>
+          ) : null}
+
           <div
             className="inline-flex rounded-md border p-0.5"
             role="group"
@@ -293,7 +336,27 @@ export function WeddingInvitationBuilder({
         </div>
       </div>
 
-      {/* Save Error or Validation Summary Banner */}
+      {/* Save Error, Publish Feedback or Validation Summary Banner */}
+      {publishError ? (
+        <div
+          role="alert"
+          data-testid="builder-publish-error-banner"
+          className="border-destructive/40 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm"
+        >
+          {publishError}
+        </div>
+      ) : null}
+
+      {publishNotice ? (
+        <div
+          role="status"
+          data-testid="builder-publish-success-banner"
+          className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2.5 text-xs font-medium text-emerald-900 dark:text-emerald-200"
+        >
+          {publishNotice}
+        </div>
+      ) : null}
+
       {lastSaveError ? (
         <div
           role="alert"

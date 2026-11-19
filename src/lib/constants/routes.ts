@@ -19,3 +19,7 @@ export function buildOrganizerWeddingPath(weddingId: string): string {
 export function buildOrganizerWeddingBuilderPath(weddingId: string): string {
   return `/app/weddings/${encodeURIComponent(weddingId)}/builder`;
 }
+
+export function buildPublicWeddingPath(slug: string): string {
+  return `/w/${encodeURIComponent(slug)}`;
+}

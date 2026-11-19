@@ -63,6 +63,53 @@ export type Database = {
         }
         Relationships: []
       }
+      published_versions: {
+        Row: {
+          access_mode: Database["public"]["Enums"]["wedding_access_mode"]
+          content_snapshot: Json
+          id: string
+          is_active: boolean
+          published_at: string
+          published_by: string | null
+          schema_version: number
+          version_number: number
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          access_mode?: Database["public"]["Enums"]["wedding_access_mode"]
+          content_snapshot: Json
+          id?: string
+          is_active?: boolean
+          published_at?: string
+          published_by?: string | null
+          schema_version?: number
+          version_number: number
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          access_mode?: Database["public"]["Enums"]["wedding_access_mode"]
+          content_snapshot?: Json
+          id?: string
+          is_active?: boolean
+          published_at?: string
+          published_by?: string | null
+          schema_version?: number
+          version_number?: number
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_versions_workspace_wedding_fkey"
+            columns: ["workspace_id", "wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
       wedding_sections: {
         Row: {
           content: Json
@@ -478,6 +525,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_public_wedding_by_slug: { Args: { p_slug: string }; Returns: Json }
       health_check: { Args: never; Returns: Json }
       list_workspace_members: {
         Args: { p_workspace_id: string }
@@ -490,6 +538,27 @@ export type Database = {
           user_id: string
           workspace_id: string
         }[]
+      }
+      publish_wedding: {
+        Args: { p_wedding_id: string; p_workspace_id: string }
+        Returns: {
+          access_mode: Database["public"]["Enums"]["wedding_access_mode"]
+          content_snapshot: Json
+          id: string
+          is_active: boolean
+          published_at: string
+          published_by: string | null
+          schema_version: number
+          version_number: number
+          wedding_id: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "published_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       remove_workspace_member: {
         Args: { p_member_user_id: string; p_workspace_id: string }
@@ -518,6 +587,32 @@ export type Database = {
           to: "wedding_sections"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      unpublish_wedding: {
+        Args: { p_wedding_id: string; p_workspace_id: string }
+        Returns: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          duplicated_from_wedding_id: string | null
+          event_date: string | null
+          id: string
+          partner_one_name: string
+          partner_two_name: string
+          slug: string
+          status: Database["public"]["Enums"]["wedding_status"]
+          title: string
+          updated_at: string
+          venue_location: string
+          venue_name: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "weddings"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       update_workspace_member_role: {

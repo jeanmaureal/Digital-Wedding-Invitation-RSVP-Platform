@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import type { JSX } from 'react';
 import { Link, useParams } from 'react-router';
@@ -10,6 +10,8 @@ import { translateDesignError } from '@/features/design/api/designErrors';
 import { WeddingInvitationBuilder } from '@/features/design/components/builder/WeddingInvitationBuilder';
 import { designQueryKeys } from '@/features/design/queryKeys';
 import type { InvitationWeddingMetadata } from '@/features/design/schemas/designSchemas';
+import { publishOrganizerWedding } from '@/features/publishing/api/organizerPublishingApi';
+import { publishingQueryKeys } from '@/features/publishing/queryKeys';
 import { fetchWorkspaceWeddingById } from '@/features/weddings/api/weddingApi';
 import { translateWeddingError } from '@/features/weddings/api/weddingErrors';
 import { weddingQueryKeys } from '@/features/weddings/queryKeys';
@@ -17,6 +19,7 @@ import { useActiveWorkspace } from '@/features/workspace/context/activeWorkspace
 import { buildOrganizerWeddingPath, ROUTES } from '@/lib/constants/routes';
 
 export function OrganizerWeddingBuilderPage(): JSX.Element {
+  const queryClient = useQueryClient();
   const { weddingId = '' } = useParams();
   const { user } = useOrganizerAuth();
   const { isLoadingMemberships, membershipsError, activeMembership, refreshMemberships } =
@@ -224,6 +227,28 @@ export function OrganizerWeddingBuilderPage(): JSX.Element {
         initialDocument={{
           ...designQuery.data,
           wedding: weddingMetadata!,
+        }}
+        onPublishSnapshot={async () => {
+          const published = await publishOrganizerWedding({
+            workspaceId,
+            weddingId: weddingData.wedding.id,
+          });
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: weddingQueryKeys.allInWorkspace(userId, workspaceId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: publishingQueryKeys.organizerSummary(
+                userId,
+                workspaceId,
+                weddingData.wedding.id,
+              ),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: publishingQueryKeys.publicBySlug(weddingData.wedding.slug),
+            }),
+          ]);
+          return { versionNumber: published.version_number };
         }}
       />
     </section>

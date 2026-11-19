@@ -107,6 +107,7 @@ export function HeroSection({
         <div className="pt-4">
           <button
             type="button"
+            data-testid="invitation-hero-cta"
             onClick={onPrimaryAction}
             className="inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
             style={{

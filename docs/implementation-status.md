@@ -1,25 +1,25 @@
 # Implementation Status Tracker
 
-**Current Phase:** Phase 4 — Invitation Builder & Live Preview (**Completed — `P4-AC01`–`P4-AC12` Verified; Mandatory Quality Gate 3 Green; Ready for Phase 5**)  
+**Current Phase:** Phase 5 — Public Wedding Website (**Locally Verified `P5-AC01`–`P5-AC12` / Gate 4 Green; Awaiting Signed Push & Vercel Production Verification `P5-AC13`**)  
 **Last Updated:** 2026-11-19
 
 ---
 
 ## 1. Phase Overview
 
-| Phase  | Name                                        | Status        | Exit Gate Status                                         |
-| :----: | :------------------------------------------ | :------------ | :------------------------------------------------------- |
-| **0**  | Project Foundation & Engineering Standards  | **Completed** | **Passed (`P0-AC01`–`P0-AC10` verified)**                |
-| **1**  | Authentication & Workspace Management       | **Completed** | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)** |
-| **2**  | Wedding Project Management                  | **Completed** | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)** |
-| **3**  | Invitation Design System & Rendering Engine | **Completed** | **Passed (`P3-AC01`–`P3-AC12` verified)**                |
-| **4**  | Invitation Builder & Live Preview           | **Completed** | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)** |
-| **5**  | Public Wedding Website                      | Not Started   | Ready for Phase 5 (Gate 4: Public Website)               |
-| **6**  | Guest & Invitation Management               | Not Started   | Blocked on Phase 5                                       |
-| **7**  | RSVP Management System                      | Not Started   | Blocked on Phase 6                                       |
-| **8**  | Publishing, Versioning & Analytics          | Not Started   | Blocked on Phase 7                                       |
-| **9**  | Testing, Security & Reliability             | Not Started   | Blocked on Phase 8                                       |
-| **10** | Production Deployment & Launch              | Not Started   | Blocked on Phase 9 & dedicated Prod Supabase DB          |
+| Phase  | Name                                        | Status               | Exit Gate Status                                                      |
+| :----: | :------------------------------------------ | :------------------- | :-------------------------------------------------------------------- |
+| **0**  | Project Foundation & Engineering Standards  | **Completed**        | **Passed (`P0-AC01`–`P0-AC10` verified)**                             |
+| **1**  | Authentication & Workspace Management       | **Completed**        | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**              |
+| **2**  | Wedding Project Management                  | **Completed**        | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**              |
+| **3**  | Invitation Design System & Rendering Engine | **Completed**        | **Passed (`P3-AC01`–`P3-AC12` verified)**                             |
+| **4**  | Invitation Builder & Live Preview           | **Completed**        | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)**              |
+| **5**  | Public Wedding Website                      | **Pending Prod Ver** | **`P5-AC01`–`P5-AC12` Passed Locally; `P5-AC13` Pending Signed Push** |
+| **6**  | Guest & Invitation Management               | Not Started          | Unlocks after Phase 5 `P5-AC13`                                       |
+| **7**  | RSVP Management System                      | Not Started          | Blocked on Phase 6                                                    |
+| **8**  | Publishing, Versioning & Analytics          | Not Started          | Blocked on Phase 7                                                    |
+| **9**  | Testing, Security & Reliability             | Not Started          | Blocked on Phase 8                                                    |
+| **10** | Production Deployment & Launch              | Not Started          | Blocked on Phase 9 & dedicated Prod Supabase DB                       |
 
 ---
 
@@ -28,40 +28,41 @@
 | Surface                     | Identifier / URL                                                                                      | Notes                                                                                                  |
 | :-------------------------- | :---------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
 | **GitHub Repository**       | `https://github.com/jeanmaureal/Digital-Wedding-Invitation-RSVP-Platform`                             | Default branch: `main`; CI workflow: `.github/workflows/ci.yml`                                        |
-| **Supabase Dev Project**    | `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`)                                     | Phase 0–4 migrations applied (`20261111142432`..`20261119134557`); `0` advisor errors & `0` perf lints |
+| **Supabase Dev Project**    | `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`)                                     | Phase 0–5 migrations applied (`20261111142432`..`20261119145142`); `0` advisor errors & `0` perf lints |
 | **Vercel Project**          | `jeanmaureals-projects/digital-wedding-invitation-rsvp-platform` (`prj_9xzQtBiDrsaoszBe0jdfv5KFVoWC`) | Connected to GitHub for automatic Production & Preview deployments                                     |
 | **Vercel Production URL**   | `https://digital-wedding-invitation-rsvp-pla.vercel.app`                                              | Auto-deployed from `main`; `VITE_APP_ENV=production`                                                   |
 | **Vercel Preview Verified** | `https://digital-wedding-invitation-rsv-git-2341de-jeanmaureals-projects.vercel.app`                  | Auto-deployed from `feature/*`; `VITE_APP_ENV=preview`                                                 |
 
 ---
 
-## 3. Phase 4 Task Group Progress
+## 3. Phase 5 Task Group Progress
 
-| Task Group | Scope                                                                                                  | Status        | Notes                                                                                          |
-| :--------: | :----------------------------------------------------------------------------------------------------- | :------------ | :--------------------------------------------------------------------------------------------- |
-|  **TG1**   | `SECURITY INVOKER` `public.reorder_wedding_sections` RPC, Live SQL Suite, Advisors & `db:types`        | **Completed** | Migration `20261119134557` applied & verified (`0` advisor errors, `0` performance lints)      |
-|  **TG2**   | Extended Draft API (`updateWeddingSectionDraft`, `reorderWeddingSectionsDraft`), Autosave & ESLint     | **Completed** | Focus-safe `700 ms` debounced autosave + pre-write Zod v4 gate + strict ESLint boundaries      |
-|  **TG3**   | Lazy `/app/weddings/:weddingId/builder`, 7 Section Editors, Theme Token Controls & Responsive Split UI | **Completed** | `58.82 kB` lazy builder chunk (`0.00 kB` builder UI in public bundle)                          |
-|  **TG4**   | Gate 3 Vitest Suite (`54/54`), Live Desktop + Mobile E2E (`2/2`), GitHub CI & Vercel Production        | **Completed** | Committed (`623c3a8`); GitHub CI run `44545808859` & live Vercel Production verified (`0` err) |
+| Task Group | Scope                                                                                                        | Status             | Notes                                                                                             |
+| :--------: | :----------------------------------------------------------------------------------------------------------- | :----------------- | :------------------------------------------------------------------------------------------------ |
+|  **TG1**   | `published_versions` Schema, Immutability Trigger, `publish_wedding` / `unpublish_wedding` / Public Slug RPC | **Completed**      | Migration `20261119145142` applied (`0.061 ms` `Index Scan` lookup, `0` advisor errors/perf lint) |
+|  **TG2**   | `publicWeddingApi` (`publicClient`), `organizerPublishingApi`, Typed Errors & ESLint Purity                  | **Completed**      | Strict public/organizer bundle isolation (`0` ESLint errors/warnings)                             |
+|  **TG3**   | Lazy Public `/w/:slug` Website, `WeddingPublishingCard` & Builder Snapshot Publish Button                    | **Completed**      | `7.36 kB` lazy `/w/:slug` chunk, dirty-draft badge, `invite_only` & `unavailable` states          |
+|  **TG4**   | Gate 4 Vitest (`60/60`), Two-Context Live Desktop + Mobile E2E (`2/2`), Signed Git Push & Vercel Prod        | **In Final Check** | Local CI & live E2E green; awaiting signed Git push for GitHub CI & Vercel (`P5-AC13`)            |
 
 ---
 
-## 4. Phase 4 Acceptance Criteria Matrix (`P4-AC01` – `P4-AC12`)
+## 4. Phase 5 Acceptance Criteria Matrix (`P5-AC01` – `P5-AC13`)
 
-| ID          | Criterion                                                                                                                           | Status     | Auditable Evidence                                                                                                                                 |
-| :---------- | :---------------------------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P4-AC01** | `reorder_wedding_sections` migration pushed cleanly, `database.types.ts` synced, `0` unresolved security/performance findings       | **PASSED** | `20261119134557_invitation_builder_section_reorder.sql` + `docs/implementation/phase-4/rls-and-rbac-results.md` (`0` errors, `0` perf lints).      |
-| **P4-AC02** | Atomic `SECURITY INVOKER` `reorder_wedding_sections` swaps/reverses `sort_order` collision-free; rejects bad IDs/viewer/anon        | **PASSED** | `supabase/tests/phase4_database_verification.sql` (`ALL_PHASE4_DATABASE_VERIFICATIONS_PASSED`).                                                    |
-| **P4-AC03** | Lazy `/app/weddings/:weddingId/builder` supports all 7 registered section editors with React Hook Form + Zod v4                     | **PASSED** | `src/features/design/components/editors/*` + `invitationBuilder.test.tsx`.                                                                         |
-| **P4-AC04** | Theme Preset & `ThemeTokenOverrides` controls (`primaryAccentHex`, typography, tint, corners, spacing, ornaments) persist live      | **PASSED** | `ThemeControlsPanel.tsx` + `invitationBuilder.test.tsx` + live Desktop/Mobile E2E.                                                                 |
-| **P4-AC05** | Section visibility toggles (`>= 1` visible guard) and `Move Up` / `Move Down` reordering update live preview & persist              | **PASSED** | `SectionStackSidebar.tsx` + `invitationBuilder.test.tsx` + live Desktop/Mobile reload E2E.                                                         |
-| **P4-AC06** | Debounced draft autosave preserves input focus and blocks invalid schemas (`http://`, `<script>`, bad hex) before DB write          | **PASSED** | `useDebouncedDesignAutosave.ts` + `invitationBuilder.test.tsx` + live E2E `http://` block proof.                                                   |
-| **P4-AC07** | **Gate 3 Proof:** Two materially distinct builder-customized wedding configurations render cleanly through `<InvitationRenderer />` | **PASSED** | `e2e/phase4-invitation-builder.spec.ts` (`terracotta_atelier` + `#8C3B2B` vs `celestial_midnight` dark surface).                                   |
-| **P4-AC08** | Workspace RBAC & tenancy isolation: `viewer` strictly read-only; live workspace switch renders mismatch card with zero bleed        | **PASSED** | `OrganizerWeddingBuilderPage.tsx` + `invitationBuilder.test.tsx` + live Desktop/Mobile E2E.                                                        |
-| **P4-AC09** | ESLint forbids public portal & pure renderer modules from importing builder/draft APIs; builder chunk lazy-split from `/`           | **PASSED** | `eslint.config.js` (`0` errors/warnings), `router.test.tsx`, and `OrganizerWeddingBuilderPage` lazy chunk (`58.82 kB`).                            |
-| **P4-AC10** | Live Desktop + Mobile Playwright E2E (`npm run test:e2e:phase4:live`) passes with `0` console/page errors & `0` leftover rows       | **PASSED** | `docs/implementation/phase-4/e2e-verification-results.md` (`chromium-desktop` `19.4s`, `chromium-mobile` `17.0s`, `remaining_ephemeral_users: 0`). |
-| **P4-AC11** | All offline quality gates (`format:check`, `lint`, `typecheck`, `test`, `build`, `security:secrets`, `test:e2e`) & GitHub CI pass   | **PASSED** | `11/11` Vitest suites (`54/54` tests) + GitHub Actions CI run `44545808859` (`conclusion: success`) on `623c3a8`.                                  |
-| **P4-AC12** | Live Vercel Production host-verified across `/`, `/app/weddings/:weddingId/builder`, `/w/:slug`, and `/i/:token`                    | **PASSED** | Host-verified on `https://digital-wedding-invitation-rsvp-pla.vercel.app` (`env: production`, `supabase: configured`, `0` console/page errors).    |
+| ID          | Criterion                                                                                                                        | Status      | Auditable Evidence                                                                                                                                 |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P5-AC01** | `published_versions` migration applied cleanly, `database.types.ts` synced, `0` unresolved security/performance findings         | **PASSED**  | `20261119145142_public_wedding_publishing.sql` + `query-plan-and-advisors.md` (`0` errors, `0` perf lints).                                        |
+| **P5-AC02** | Sequential `version_number`, `<= 1` `is_active` row, snapshot immutability (`IMMUTABLE_PUBLISHED_SNAPSHOT`), & status sync       | **PASSED**  | `supabase/tests/phase5_database_verification.sql` (`ALL_PHASE5_DATABASE_VERIFICATIONS_PASSED`).                                                    |
+| **P5-AC03** | `publish_wedding` & `unpublish_wedding` enforce `editor`+ RBAC and block archived or 0-visible-section projects                  | **PASSED**  | `phase5_database_verification.sql` (Sections 2 & 3).                                                                                               |
+| **P5-AC04** | **Gate 4 DB Proof:** `anon` holds `0` table privileges; `get_public_wedding_by_slug` isolates post-publish draft edits           | **PASSED**  | `phase5_database_verification.sql` (Sections 1 & 3) + `rls-and-rbac-results.md`.                                                                   |
+| **P5-AC05** | `invite_only`, `draft`, `archived`, and unknown slugs never leak `content_snapshot` (`invite_only` vs `unavailable`)             | **PASSED**  | `phase5_database_verification.sql` + `publicWeddingPage.test.tsx` + live E2E.                                                                      |
+| **P5-AC06** | Representative query plans (`321` weddings, `963` snapshots) execute via pure `Index Scan` (`0.061 ms` & `0.460 ms`, `0` `Sort`) | **PASSED**  | `supabase/tests/phase5_query_plan_verification.sql` + `docs/implementation/phase-5/query-plan-and-advisors.md`.                                    |
+| **P5-AC07** | Public `/w/:slug` renders active published snapshots through `<InvitationRenderer />` with safe `invite_only`/`invalid` states   | **PASSED**  | `PublicWeddingShellPage.tsx` + `publicWeddingPage.test.tsx` + live E2E.                                                                            |
+| **P5-AC08** | `/w/:slug` uses `publicClient` exclusively (`persistSession: false`) and never initializes `organizerClient`                     | **PASSED**  | `publicWeddingPage.test.tsx` + `router.test.tsx` (`hasInitializedOrganizerSupabaseClient() === false`).                                            |
+| **P5-AC09** | `WeddingPublishingCard` & Builder publish action support `v1`, dirty-draft badge, `v2` republish, unpublish & `viewer` readonly  | **PASSED**  | `WeddingPublishingCard.tsx` + `publishingWorkflow.test.tsx` + live E2E.                                                                            |
+| **P5-AC10** | ESLint forbids `src/portals/public/**` & pure renderer modules from importing organizer publishing modules                       | **PASSED**  | `eslint.config.js` (`0` errors, `0` warnings) + lazy `7.36 kB` `PublicWeddingShellPage` chunk.                                                     |
+| **P5-AC11** | **Gate 4 Live E2E Proof:** Two-context (`organizer` + `publicVisitor`) Desktop + Mobile Playwright E2E passes (`2/2`)            | **PASSED**  | `docs/implementation/phase-5/e2e-verification-results.md` (`chromium-desktop` `16.4s`, `chromium-mobile` `17.1s`, `remaining_ephemeral_users: 0`). |
+| **P5-AC12** | All offline quality gates (`format:check`, `lint`, `typecheck`, `test`, `build`, `security:secrets`, `test:e2e`) pass            | **PASSED**  | `13/13` Vitest suites (`60/60` tests) + offline Playwright smoke (`2/2`) + secret scan (`0` findings); GitHub Actions CI pending push.             |
+| **P5-AC13** | Live Vercel Production host-verified across `/`, `/w/:slug`, `/i/:token`, and `/app` with `0` console/page errors                | **NOT RUN** | Pending user's interactive GPG-signed commit & push to `origin/main` so Vercel deploys Phase 5.                                                    |
 
 ---
 
@@ -71,6 +72,7 @@
 - **Phase 1 / Gate 1 (`1948b5e`..`96e44cd`):** `P1-AC01`–`P1-AC15` **PASSED**.
 - **Phase 2 / Gate 2 (`4b2cb38`..`4d7fad4`):** `P2-AC01`–`P2-AC14` **PASSED**.
 - **Phase 3 (`f7bb360`..`c66f93c`):** `P3-AC01`–`P3-AC12` **PASSED**.
+- **Phase 4 / Gate 3 (`623c3a8`..`b91389b`):** `P4-AC01`–`P4-AC12` **PASSED**.
 
 ---
 
@@ -78,8 +80,8 @@
 
 1. **Temporary Shared Development Database (`Open — Mandatory Pre-Launch Gate`):** Vercel `Preview` and `Production` scopes temporarily reference `wedding-platform-dev` (`tfwmbpvbfavugvokdych`). Provision a dedicated Production Supabase project before storing real customer wedding data or launching publicly.
 2. **Deferred Pending Workspace Invitations (`Tracked — Post-Phase 1 Enhancement`):** `add_workspace_member_by_email` adds existing registered organizers (`ORGANIZER_NOT_REGISTERED`). Tokenized invitations + email delivery (`workspace_invitations`) are deferred.
-3. **Phase 2–4 `'published'` Lifecycle Guard (`Active — Unlocks in Phase 5/8`):** `normalize_wedding_fields()` blocks transitions to `status = 'published'` (`PUBLISHING_REQUIRES_SNAPSHOT`) until immutable `published_versions` snapshots are introduced in Phase 5/8.
+3. **Version Rollback UI (`Tracked — Phase 8`):** Sequential `published_versions` rows are preserved immutably in PostgreSQL; historical version list browsing, rollback to a prior `version_number`, and RSVP analytics arrive in Phase 8.
 4. **GitHub Branch Protection Rules (`Recommended — Repository Governance`):** Configure branch protection on `main` requiring PRs and passing CI status checks.
-5. **Deferred Full CSP (`Open — Pre-Phase 5/9`):** Baseline security headers are active in `vercel.json`; full `Content-Security-Policy` is deferred until media origins are finalized.
+5. **Deferred Full CSP (`Open — Pre-Phase 9`):** Baseline security headers are active in `vercel.json`; full `Content-Security-Policy` will be finalized in Phase 9.
 6. **Deferred Media Storage Bucket (`Open — Media Phase`):** Private draft uploads vs. public published assets will be provisioned in the Media phase.
 7. **Vercel Hobby Plan Scope (`Tracked — Pre-Commercial Launch`):** Upgrade to Vercel Pro before commercial operation.

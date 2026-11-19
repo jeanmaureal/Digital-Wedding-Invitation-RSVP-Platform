@@ -366,12 +366,17 @@ function createFakeMultiWeddingSupabase(): {
         return builder;
       }
 
-      if (table === 'wedding_themes' || table === 'wedding_sections') {
+      if (
+        table === 'wedding_themes' ||
+        table === 'wedding_sections' ||
+        table === 'published_versions'
+      ) {
         const builder = {
           select: vi.fn(() => builder),
           update: vi.fn(() => builder),
           eq: vi.fn(() => builder),
           order: vi.fn(() => builder),
+          limit: vi.fn(() => builder),
           maybeSingle: vi.fn(async () => ({ data: null, error: null })),
           then: (
             onFulfilled?: ((val: { data: unknown[]; error: null }) => unknown) | null,

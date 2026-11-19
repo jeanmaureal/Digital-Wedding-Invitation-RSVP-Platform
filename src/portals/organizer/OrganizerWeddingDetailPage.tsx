@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrganizerAuth } from '@/features/auth/context/organizerAuthContext';
 import { WeddingDesignPreviewCard } from '@/features/design/components/WeddingDesignPreviewCard';
+import { WeddingPublishingCard } from '@/features/publishing/components/WeddingPublishingCard';
 import { fetchWorkspaceWeddingById } from '@/features/weddings/api/weddingApi';
 import { translateWeddingError } from '@/features/weddings/api/weddingErrors';
 import { WeddingDetailsCard } from '@/features/weddings/components/WeddingDetailsCard';
@@ -233,14 +234,24 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
           <CardHeader className="py-4">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Send className="text-primary size-4" aria-hidden="true" />
-              <span>Versioned Publishing</span>
+              <span>Public Snapshot Publishing</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Immutable public /w/{wedding.slug} snapshots and analytics arrive in Phases 5 &amp; 8.
+              Publish immutable /w/{wedding.slug} snapshots now; rollback history &amp; RSVP
+              analytics arrive in Phase 8.
             </CardDescription>
           </CardHeader>
         </Card>
       </div>
+
+      <WeddingPublishingCard
+        key={`publishing:${workspaceId}:${wedding.id}`}
+        userId={userId}
+        workspaceId={workspaceId}
+        callerRole={callerRole}
+        wedding={wedding}
+        settings={settings}
+      />
 
       <WeddingDesignPreviewCard
         key={`design:${workspaceId}:${wedding.id}`}
