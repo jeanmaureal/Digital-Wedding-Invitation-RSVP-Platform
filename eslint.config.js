@@ -53,9 +53,46 @@ export default tseslint.config(
                 '@/features/workspace/*',
                 '@/features/weddings',
                 '@/features/weddings/*',
+                '@/features/design/api',
+                '@/features/design/api/*',
+                '@/features/design/components/WeddingDesignPreviewCard',
               ],
               message:
-                'Public portal routes must remain isolated from organizer auth/session clients, workspace modules, and organizer wedding-draft modules (P1-AC14 / P2-AC11).',
+                'Public portal routes must remain isolated from organizer auth/session clients, workspace modules, and organizer draft APIs (P1-AC14 / P2-AC11 / P3-AC09).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      'src/features/design/{schemas,themes,registry}/**/*.{ts,tsx}',
+      'src/features/design/components/InvitationRenderer.tsx',
+      'src/features/design/components/sections/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/app/*',
+                '@/portals/*',
+                '@/lib/supabase/organizerClient',
+                '@/lib/supabase/organizerClient/*',
+                '@/features/auth',
+                '@/features/auth/*',
+                '@/features/workspace',
+                '@/features/workspace/*',
+                '@/features/weddings',
+                '@/features/weddings/*',
+                '@/features/design/api',
+                '@/features/design/api/*',
+              ],
+              message:
+                'Invitation design schemas, themes, registry, and <InvitationRenderer /> must remain pure and runtime-isolated from organizer session clients so both Organizer Previews and Public /w/:slug Snapshots can share them safely (P3-AC09).',
             },
           ],
         },

@@ -63,6 +63,53 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_sections: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          schema_version: number
+          section_type: Database["public"]["Enums"]["wedding_section_type"]
+          sort_order: number
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          schema_version?: number
+          section_type: Database["public"]["Enums"]["wedding_section_type"]
+          sort_order: number
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          schema_version?: number
+          section_type?: Database["public"]["Enums"]["wedding_section_type"]
+          sort_order?: number
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_sections_workspace_wedding_fkey"
+            columns: ["workspace_id", "wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
       wedding_settings: {
         Row: {
           access_mode: Database["public"]["Enums"]["wedding_access_mode"]
@@ -115,6 +162,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "wedding_settings_workspace_wedding_fkey"
+            columns: ["workspace_id", "wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      wedding_themes: {
+        Row: {
+          created_at: string
+          preset_id: Database["public"]["Enums"]["wedding_theme_preset"]
+          schema_version: number
+          token_overrides: Json
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          preset_id?: Database["public"]["Enums"]["wedding_theme_preset"]
+          schema_version?: number
+          token_overrides?: Json
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          preset_id?: Database["public"]["Enums"]["wedding_theme_preset"]
+          schema_version?: number
+          token_overrides?: Json
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wedding_themes_workspace_wedding_fkey"
             columns: ["workspace_id", "wedding_id"]
             isOneToOne: false
             referencedRelation: "weddings"
@@ -435,7 +520,20 @@ export type Database = {
     }
     Enums: {
       wedding_access_mode: "public" | "invite_only"
+      wedding_section_type:
+        | "hero"
+        | "our_story"
+        | "event_schedule"
+        | "venue_travel"
+        | "dress_code"
+        | "faq_notes"
+        | "rsvp_banner"
       wedding_status: "draft" | "published" | "archived"
+      wedding_theme_preset:
+        | "editorial_ivory"
+        | "garden_sage"
+        | "celestial_midnight"
+        | "terracotta_atelier"
       workspace_role: "owner" | "admin" | "editor" | "viewer"
     }
     CompositeTypes: {
@@ -568,7 +666,22 @@ export const Constants = {
   public: {
     Enums: {
       wedding_access_mode: ["public", "invite_only"],
+      wedding_section_type: [
+        "hero",
+        "our_story",
+        "event_schedule",
+        "venue_travel",
+        "dress_code",
+        "faq_notes",
+        "rsvp_banner",
+      ],
       wedding_status: ["draft", "published", "archived"],
+      wedding_theme_preset: [
+        "editorial_ivory",
+        "garden_sage",
+        "celestial_midnight",
+        "terracotta_atelier",
+      ],
       workspace_role: ["owner", "admin", "editor", "viewer"],
     },
   },

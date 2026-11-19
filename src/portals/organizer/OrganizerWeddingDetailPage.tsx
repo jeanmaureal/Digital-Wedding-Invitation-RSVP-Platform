@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrganizerAuth } from '@/features/auth/context/organizerAuthContext';
+import { WeddingDesignPreviewCard } from '@/features/design/components/WeddingDesignPreviewCard';
 import { fetchWorkspaceWeddingById } from '@/features/weddings/api/weddingApi';
 import { translateWeddingError } from '@/features/weddings/api/weddingErrors';
 import { WeddingDetailsCard } from '@/features/weddings/components/WeddingDetailsCard';
@@ -198,10 +199,10 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
           <CardHeader className="py-4">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Palette className="text-primary size-4" aria-hidden="true" />
-              <span>Design &amp; Builder</span>
+              <span>Section Builder</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Theme tokens, section schemas, and live preview arrive in Phases 3–4.
+              Per-section content editors, reordering, and debounced autosave arrive in Phase 4.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -230,6 +231,15 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
           </CardHeader>
         </Card>
       </div>
+
+      <WeddingDesignPreviewCard
+        key={`design:${workspaceId}:${wedding.id}`}
+        userId={userId}
+        workspaceId={workspaceId}
+        callerRole={callerRole}
+        wedding={wedding}
+        settings={settings}
+      />
 
       <WeddingDetailsCard
         key={`details:${workspaceId}:${wedding.id}`}

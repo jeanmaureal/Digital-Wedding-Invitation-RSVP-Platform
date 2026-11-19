@@ -1,0 +1,367 @@
+import { z } from 'zod';
+
+/**
+ * Versioned Invitation Design System Schemas (`P3-AC06`).
+ *
+ * Security & Purity Invariants (`docs/security-baseline.md` §3, `P3-AC09`):
+ *   1. Zero imports from `organizerClient` or organizer-only modules — 100% safe for
+ *      both Organizer Previews (Phases 3–4) and Public Snapshots (Phase 5).
+ *   2. All object schemas use `z.strictObject(...)` so unknown/unexpected properties
+ *      are deterministically rejected.
+ *   3. All external links require `https://` (`javascript:`, `data:`, `vbscript:`, and
+ *      `http://` are rejected), all color tokens require `/^#[0-9A-Fa-f]{6}$/`, and
+ *      dangerous script tags/schemes are rejected at validation time.
+ */
+
+export const DESIGN_SCHEMA_VERSION = 1 as const;
+
+export const WEDDING_THEME_PRESET_VALUES = [
+  'editorial_ivory',
+  'garden_sage',
+  'celestial_midnight',
+  'terracotta_atelier',
+] as const;
+
+export type WeddingThemePresetId = (typeof WEDDING_THEME_PRESET_VALUES)[number];
+
+export const WEDDING_SECTION_TYPE_VALUES = [
+  'hero',
+  'our_story',
+  'event_schedule',
+  'venue_travel',
+  'dress_code',
+  'faq_notes',
+  'rsvp_banner',
+] as const;
+
+export type WeddingSectionType = (typeof WEDDING_SECTION_TYPE_VALUES)[number];
+
+export const weddingThemePresetSchema = z.enum(WEDDING_THEME_PRESET_VALUES);
+export const weddingSectionTypeSchema = z.enum(WEDDING_SECTION_TYPE_VALUES);
+
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
+
+function containsForbiddenPayloadPattern(value: string): boolean {
+  const lower = value.toLowerCase();
+  return (
+    lower.includes('<script') ||
+    lower.includes('javascript:') ||
+    lower.includes('vbscript:') ||
+    lower.includes('data:text/html')
+  );
+}
+
+function hasDisallowedControlChars(value: string, allowNewlines: boolean): boolean {
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    if (allowNewlines && (code === 0x09 || code === 0x0a || code === 0x0d)) {
+      continue;
+    }
+    if (code <= 0x1f || code === 0x7f) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function safeLineString(minLength: number, maxLength: number, fieldLabel: string) {
+  return z
+    .string()
+    .trim()
+    .min(minLength, `${fieldLabel} must be at least ${minLength} characters.`)
+    .max(maxLength, `${fieldLabel} must be ${maxLength} characters or fewer.`)
+    .refine(
+      (val) => !hasDisallowedControlChars(val, false) && !containsForbiddenPayloadPattern(val),
+      `${fieldLabel} contains unsupported control characters or unsafe markup.`,
+    );
+}
+
+function safeOptionalLineString(maxLength: number, fieldLabel: string) {
+  return z
+    .string()
+    .trim()
+    .max(maxLength, `${fieldLabel} must be ${maxLength} characters or fewer.`)
+    .refine(
+      (val) => !hasDisallowedControlChars(val, false) && !containsForbiddenPayloadPattern(val),
+      `${fieldLabel} contains unsupported control characters or unsafe markup.`,
+    );
+}
+
+function safeMultilineString(minLength: number, maxLength: number, fieldLabel: string) {
+  return z
+    .string()
+    .trim()
+    .min(minLength, `${fieldLabel} must be at least ${minLength} characters.`)
+    .max(maxLength, `${fieldLabel} must be ${maxLength} characters or fewer.`)
+    .refine(
+      (val) => !hasDisallowedControlChars(val, true) && !containsForbiddenPayloadPattern(val),
+      `${fieldLabel} contains unsupported control characters or unsafe markup.`,
+    );
+}
+
+export const hexColorSchema = z
+  .string()
+  .trim()
+  .regex(HEX_COLOR_PATTERN, 'Color must be a 6-digit hex code such as #9A7B4F.')
+  .transform((val) => val.toUpperCase());
+
+export const nullableHttpsUrlSchema = z
+  .union([z.string(), z.null()])
+  .transform((val) => {
+    if (val === null) {
+      return null;
+    }
+    const trimmed = val.trim();
+    return trimmed.length === 0 ? null : trimmed;
+  })
+  .superRefine((val, ctx) => {
+    if (val === null) {
+      return;
+    }
+    if (
+      val.length > 500 ||
+      hasDisallowedControlChars(val, false) ||
+      containsForbiddenPayloadPattern(val)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'URL is invalid or exceeds 500 characters.',
+      });
+      return;
+    }
+    try {
+      const parsed = new URL(val);
+      if (parsed.protocol !== 'https:') {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'External links must use https://.',
+        });
+      }
+    } catch {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Enter a valid https:// URL.',
+      });
+    }
+  });
+
+export const themeTokenOverridesSchema = z.strictObject({
+  primaryAccentHex: hexColorSchema.optional(),
+  surfaceTint: z.enum(['default', 'warm', 'cool', 'high_contrast']).optional(),
+  headingFontPair: z
+    .enum(['editorial_serif', 'classic_serif', 'modern_sans', 'romantic_serif'])
+    .optional(),
+  cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
+  sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),
+  ornamentStyle: z
+    .enum(['minimal_line', 'botanical_flourish', 'monogram_crest', 'none'])
+    .optional(),
+});
+
+export type ThemeTokenOverrides = z.output<typeof themeTokenOverridesSchema>;
+
+export const weddingThemeConfigSchema = z.strictObject({
+  schemaVersion: z.literal(DESIGN_SCHEMA_VERSION),
+  presetId: weddingThemePresetSchema,
+  tokenOverrides: themeTokenOverridesSchema,
+});
+
+export type WeddingThemeConfig = z.output<typeof weddingThemeConfigSchema>;
+
+// ---------------------------------------------------------------------------
+// 7 Registered Section Content Schemas (`z.strictObject`)
+// ---------------------------------------------------------------------------
+
+export const heroSectionContentSchema = z.strictObject({
+  eyebrow: safeOptionalLineString(80, 'Hero eyebrow'),
+  coupleHeadline: safeLineString(1, 120, 'Couple headline'),
+  celebrationSubtitle: safeOptionalLineString(160, 'Celebration subtitle'),
+  displayDateLabel: safeOptionalLineString(80, 'Display date label'),
+  locationSummary: safeOptionalLineString(120, 'Location summary'),
+  primaryCtaLabel: safeLineString(1, 40, 'Primary button label'),
+  showCountdownBadge: z.boolean(),
+  alignment: z.enum(['center', 'split']),
+});
+export type HeroSectionContent = z.output<typeof heroSectionContentSchema>;
+
+export const storyMilestoneSchema = z.strictObject({
+  periodLabel: safeLineString(1, 40, 'Milestone label'),
+  title: safeLineString(1, 80, 'Milestone title'),
+  description: safeMultilineString(1, 300, 'Milestone description'),
+});
+
+export const ourStorySectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'Story heading'),
+  leadQuote: safeOptionalLineString(240, 'Lead quote'),
+  narrative: safeMultilineString(1, 1500, 'Story narrative'),
+  milestones: z.array(storyMilestoneSchema).max(6),
+});
+export type OurStorySectionContent = z.output<typeof ourStorySectionContentSchema>;
+
+export const scheduleEventItemSchema = z.strictObject({
+  timeLabel: safeLineString(1, 40, 'Event time'),
+  title: safeLineString(1, 80, 'Event title'),
+  venueName: safeOptionalLineString(120, 'Event venue'),
+  address: safeOptionalLineString(160, 'Event address'),
+  notes: safeOptionalLineString(240, 'Event notes'),
+});
+
+export const eventScheduleSectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'Schedule heading'),
+  timezoneNote: safeOptionalLineString(120, 'Timezone note'),
+  items: z.array(scheduleEventItemSchema).min(1).max(8),
+});
+export type EventScheduleSectionContent = z.output<typeof eventScheduleSectionContentSchema>;
+
+export const accommodationItemSchema = z.strictObject({
+  name: safeLineString(1, 80, 'Accommodation name'),
+  note: safeOptionalLineString(200, 'Accommodation note'),
+  bookingUrl: nullableHttpsUrlSchema,
+});
+
+export const venueTravelSectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'Venue heading'),
+  ceremonyVenueName: safeOptionalLineString(120, 'Ceremony venue'),
+  ceremonyAddress: safeOptionalLineString(160, 'Ceremony address'),
+  receptionVenueName: safeOptionalLineString(120, 'Reception venue'),
+  receptionAddress: safeOptionalLineString(160, 'Reception address'),
+  directionsNote: safeMultilineString(0, 600, 'Directions note'),
+  mapUrl: nullableHttpsUrlSchema,
+  accommodations: z.array(accommodationItemSchema).max(4),
+});
+export type VenueTravelSectionContent = z.output<typeof venueTravelSectionContentSchema>;
+
+export const dressCodeSectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'Dress code heading'),
+  dressCodeTitle: safeLineString(1, 80, 'Dress code title'),
+  guidance: safeMultilineString(0, 500, 'Dress code guidance'),
+  swatchHexes: z.array(hexColorSchema).max(5),
+});
+export type DressCodeSectionContent = z.output<typeof dressCodeSectionContentSchema>;
+
+export const faqItemSchema = z.strictObject({
+  question: safeLineString(1, 140, 'FAQ question'),
+  answer: safeMultilineString(1, 500, 'FAQ answer'),
+});
+
+export const faqNotesSectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'FAQ heading'),
+  items: z.array(faqItemSchema).min(1).max(10),
+});
+export type FaqNotesSectionContent = z.output<typeof faqNotesSectionContentSchema>;
+
+export const rsvpBannerSectionContentSchema = z.strictObject({
+  heading: safeLineString(1, 80, 'RSVP heading'),
+  message: safeMultilineString(1, 400, 'RSVP message'),
+  buttonLabel: safeLineString(1, 40, 'RSVP button label'),
+  showDeadline: z.boolean(),
+});
+export type RsvpBannerSectionContent = z.output<typeof rsvpBannerSectionContentSchema>;
+
+// ---------------------------------------------------------------------------
+// Discriminated Union of Registered Section Records & Full Document Schema
+// ---------------------------------------------------------------------------
+
+const baseSectionFields = {
+  id: z.string().min(1),
+  sortOrder: z.number().int().min(0).max(50),
+  isVisible: z.boolean(),
+  schemaVersion: z.literal(DESIGN_SCHEMA_VERSION),
+};
+
+export const invitationSectionSchema = z.discriminatedUnion('sectionType', [
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('hero'),
+    content: heroSectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('our_story'),
+    content: ourStorySectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('event_schedule'),
+    content: eventScheduleSectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('venue_travel'),
+    content: venueTravelSectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('dress_code'),
+    content: dressCodeSectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('faq_notes'),
+    content: faqNotesSectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
+    sectionType: z.literal('rsvp_banner'),
+    content: rsvpBannerSectionContentSchema,
+  }),
+]);
+
+export type InvitationSection = z.output<typeof invitationSectionSchema>;
+
+export type SectionContentByType = {
+  readonly hero: HeroSectionContent;
+  readonly our_story: OurStorySectionContent;
+  readonly event_schedule: EventScheduleSectionContent;
+  readonly venue_travel: VenueTravelSectionContent;
+  readonly dress_code: DressCodeSectionContent;
+  readonly faq_notes: FaqNotesSectionContent;
+  readonly rsvp_banner: RsvpBannerSectionContent;
+};
+
+export const invitationWeddingMetadataSchema = z.strictObject({
+  title: safeLineString(2, 120, 'Wedding title'),
+  partnerOneName: safeLineString(1, 80, 'Partner 1 name'),
+  partnerTwoName: safeLineString(1, 80, 'Partner 2 name'),
+  slug: safeLineString(3, 80, 'Wedding slug'),
+  eventDate: z.string().nullable(),
+  venueName: safeOptionalLineString(120, 'Venue name'),
+  venueLocation: safeOptionalLineString(160, 'Venue location'),
+  timezone: safeLineString(3, 80, 'Timezone'),
+  rsvpDeadline: z.string().nullable(),
+  isRsvpOpen: z.boolean(),
+});
+
+export type InvitationWeddingMetadata = z.output<typeof invitationWeddingMetadataSchema>;
+
+export const invitationDocumentSchema = z.strictObject({
+  schemaVersion: z.literal(DESIGN_SCHEMA_VERSION),
+  wedding: invitationWeddingMetadataSchema,
+  theme: weddingThemeConfigSchema,
+  sections: z.array(invitationSectionSchema).min(1).max(12),
+});
+
+export type InvitationDocument = z.output<typeof invitationDocumentSchema>;
+
+export interface SchemaValidationIssue {
+  readonly path: string;
+  readonly message: string;
+}
+
+export type SchemaValidationResult<T> =
+  | { readonly ok: true; readonly data: T }
+  | { readonly ok: false; readonly issues: readonly SchemaValidationIssue[] };
+
+export function parseInvitationDocument(raw: unknown): SchemaValidationResult<InvitationDocument> {
+  const result = invitationDocumentSchema.safeParse(raw);
+  if (result.success) {
+    return { ok: true, data: result.data };
+  }
+  return {
+    ok: false,
+    issues: result.error.issues.map((issue) => ({
+      path: issue.path.join('.') || 'document',
+      message: issue.message,
+    })),
+  };
+}

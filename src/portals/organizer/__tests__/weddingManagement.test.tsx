@@ -366,6 +366,21 @@ function createFakeMultiWeddingSupabase(): {
         return builder;
       }
 
+      if (table === 'wedding_themes' || table === 'wedding_sections') {
+        const builder = {
+          select: vi.fn(() => builder),
+          update: vi.fn(() => builder),
+          eq: vi.fn(() => builder),
+          order: vi.fn(() => builder),
+          maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+          then: (
+            onFulfilled?: ((val: { data: unknown[]; error: null }) => unknown) | null,
+            onRejected?: ((reason: unknown) => unknown) | null,
+          ) => Promise.resolve({ data: [], error: null }).then(onFulfilled, onRejected),
+        };
+        return builder;
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     }),
     rpc: vi.fn(async (fnName: string, args?: Record<string, unknown>) => {

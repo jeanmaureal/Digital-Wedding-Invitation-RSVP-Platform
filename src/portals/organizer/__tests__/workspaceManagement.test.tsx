@@ -210,7 +210,12 @@ function createFakeWorkspaceSupabase(options: {
         return builder;
       }
 
-      if (table === 'weddings' || table === 'wedding_settings') {
+      if (
+        table === 'weddings' ||
+        table === 'wedding_settings' ||
+        table === 'wedding_themes' ||
+        table === 'wedding_sections'
+      ) {
         const builder = {
           select: vi.fn(() => builder),
           eq: vi.fn(() => builder),
