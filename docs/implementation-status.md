@@ -1,25 +1,25 @@
 # Implementation Status Tracker
 
-**Current Phase:** Phase 3 — Invitation Design System & Rendering Engine (**Implemented & Live-DB/E2E Verified; Awaiting Signed Commit & Push for Final `P3-AC12` Vercel/CI Sign-Off**)  
+**Current Phase:** Phase 3 — Invitation Design System & Rendering Engine (**Completed — `P3-AC01`–`P3-AC12` Verified; Ready for Phase 4**)  
 **Last Updated:** 2026-11-19
 
 ---
 
 ## 1. Phase Overview
 
-| Phase  | Name                                        | Status                                       | Exit Gate Status                                                        |
-| :----: | :------------------------------------------ | :------------------------------------------- | :---------------------------------------------------------------------- |
-| **0**  | Project Foundation & Engineering Standards  | **Completed**                                | **Passed (`P0-AC01`–`P0-AC10` verified)**                               |
-| **1**  | Authentication & Workspace Management       | **Completed**                                | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**                |
-| **2**  | Wedding Project Management                  | **Completed**                                | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**                |
-| **3**  | Invitation Design System & Rendering Engine | **In Review (Pending Push & Vercel Verify)** | `P3-AC01`–`P3-AC11` **PASSED**; `P3-AC12` pending push to `origin/main` |
-| **4**  | Invitation Builder & Live Preview           | Not Started                                  | Ready upon Phase 3 sign-off (completes Gate 3)                          |
-| **5**  | Public Wedding Website                      | Not Started                                  | Blocked on Phase 4                                                      |
-| **6**  | Guest & Invitation Management               | Not Started                                  | Blocked on Phase 5                                                      |
-| **7**  | RSVP Management System                      | Not Started                                  | Blocked on Phase 6                                                      |
-| **8**  | Publishing, Versioning & Analytics          | Not Started                                  | Blocked on Phase 7                                                      |
-| **9**  | Testing, Security & Reliability             | Not Started                                  | Blocked on Phase 8                                                      |
-| **10** | Production Deployment & Launch              | Not Started                                  | Blocked on Phase 9 & dedicated Prod Supabase DB                         |
+| Phase  | Name                                        | Status        | Exit Gate Status                                         |
+| :----: | :------------------------------------------ | :------------ | :------------------------------------------------------- |
+| **0**  | Project Foundation & Engineering Standards  | **Completed** | **Passed (`P0-AC01`–`P0-AC10` verified)**                |
+| **1**  | Authentication & Workspace Management       | **Completed** | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)** |
+| **2**  | Wedding Project Management                  | **Completed** | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)** |
+| **3**  | Invitation Design System & Rendering Engine | **Completed** | **Passed (`P3-AC01`–`P3-AC12` verified)**                |
+| **4**  | Invitation Builder & Live Preview           | Not Started   | Ready for Phase 4 (completes Gate 3)                     |
+| **5**  | Public Wedding Website                      | Not Started   | Blocked on Phase 4                                       |
+| **6**  | Guest & Invitation Management               | Not Started   | Blocked on Phase 5                                       |
+| **7**  | RSVP Management System                      | Not Started   | Blocked on Phase 6                                       |
+| **8**  | Publishing, Versioning & Analytics          | Not Started   | Blocked on Phase 7                                       |
+| **9**  | Testing, Security & Reliability             | Not Started   | Blocked on Phase 8                                       |
+| **10** | Production Deployment & Launch              | Not Started   | Blocked on Phase 9 & dedicated Prod Supabase DB          |
 
 ---
 
@@ -37,31 +37,31 @@
 
 ## 3. Phase 3 Task Group Progress
 
-| Task Group | Scope                                                                                                          | Status        | Notes                                                                                         |
-| :--------: | :------------------------------------------------------------------------------------------------------------- | :------------ | :-------------------------------------------------------------------------------------------- |
-|  **TG1**   | `wedding_themes` & `wedding_sections`, Composite FKs, Starter Seeding, Duplication Cloning, RLS & Advisors     | **Completed** | Migration `20261119124511` applied & live-verified on `tfwmbpvbfavugvokdych` (`0` lints)      |
-|  **TG2**   | Pure Zod v4 Schemas (`z.strictObject`), 4 Theme Presets, Section Registry, Organizer Draft API & ESLint Purity | **Completed** | Runtime-isolated renderer/schemas + strict TypeScript + ESLint boundaries green               |
-|  **TG3**   | `<InvitationRenderer />`, 7 Section Components, `WeddingDesignPreviewCard` & Multi-Config Vitest Suite         | **Completed** | `48/48` Vitest tests + `0.00 kB` public bundle overhead (`289.55 kB` / `90.37 kB` gzip) green |
-|  **TG4**   | Live Desktop + Mobile Design Engine E2E (`test:e2e:phase3:live`), GitHub CI & Live Vercel Verification         | **In Review** | Live Desktop (`11.6s`) + Mobile (`11.8s`) E2E green (`0` leftover rows); awaiting push        |
+| Task Group | Scope                                                                                                          | Status        | Notes                                                                                             |
+| :--------: | :------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------ |
+|  **TG1**   | `wedding_themes` & `wedding_sections`, Composite FKs, Starter Seeding, Duplication Cloning, RLS & Advisors     | **Completed** | Migration `20261119124511` applied & live-verified on `tfwmbpvbfavugvokdych` (`0` lints)          |
+|  **TG2**   | Pure Zod v4 Schemas (`z.strictObject`), 4 Theme Presets, Section Registry, Organizer Draft API & ESLint Purity | **Completed** | Runtime-isolated renderer/schemas + strict TypeScript + ESLint boundaries green                   |
+|  **TG3**   | `<InvitationRenderer />`, 7 Section Components, `WeddingDesignPreviewCard` & Multi-Config Vitest Suite         | **Completed** | `48/48` Vitest tests + `0.00 kB` public bundle overhead (`289.55 kB` / `90.37 kB` gzip) green     |
+|  **TG4**   | Live Desktop + Mobile Design Engine E2E (`test:e2e:phase3:live`), GitHub CI & Live Vercel Verification         | **Completed** | Committed (`f7bb360`); GitHub CI run `44532666587` & live Vercel Production verified (`0` errors) |
 
 ---
 
 ## 4. Phase 3 Acceptance Criteria Matrix (`P3-AC01` – `P3-AC12`)
 
-| ID          | Criterion                                                                                                                       | Status      | Auditable Evidence                                                                                                                                 |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------ | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P3-AC01** | Migration applied cleanly, backfill & `database.types.ts` synced, `0` unresolved Supabase security/performance advisor findings | **PASSED**  | `20261119124511_invitation_design_system.sql` + `query-plan-and-advisors.md` (`0` errors, `0` performance lints).                                  |
-| **P3-AC02** | Composite FKs `(workspace_id, wedding_id)` enforce 1:1 `wedding_themes` + 7-section `wedding_sections` parity                   | **PASSED**  | `phase3_database_verification.sql` (Sections 1 & 2) & `rls-and-rbac-results.md`.                                                                   |
-| **P3-AC03** | `create_wedding` (18-arg signature preserved) seeds starter design; `duplicate_wedding` clones theme + 7 sections               | **PASSED**  | `phase3_database_verification.sql` (Section 2) + live E2E (`garden_sage` cloned & `coupleHeadline` updated).                                       |
-| **P3-AC04** | Multi-tenant RLS & RBAC: `0` access for `anon`/outsiders, read-only for `viewer`, write access for `owner`/`admin`/`editor`     | **PASSED**  | `phase3_database_verification.sql` (Section 3) + live E2E `viewer` read-only verification.                                                         |
-| **P3-AC05** | `24`-function catalog audit (`OWNER TO postgres`, `search_path = ''`, self-contained triggers) + `Index Scan` query plans       | **PASSED**  | `rls-and-rbac-results.md` + `query-plan-and-advisors.md` (`0.231 ms` & `0.568 ms` `Index Scan` plans across 2,807 sections).                       |
-| **P3-AC06** | Zod v4 `designSchemas.ts` validates 4 themes & 7 `z.strictObject` sections, rejecting unknown keys, XSS, and non-`https://`     | **PASSED**  | `designEngineAndRenderer.test.tsx` (`unknown` keys, `javascript:`, `http:`, `<script>`, and invalid hex overrides all rejected).                   |
-| **P3-AC07** | Single `<InvitationRenderer />` renders two materially distinct wedding configs across Desktop & Mobile with zero raw HTML      | **PASSED**  | `designEngineAndRenderer.test.tsx` + live Desktop/Mobile E2E (`garden_sage` light vs `celestial_midnight` dark).                                   |
-| **P3-AC08** | `WeddingDesignPreviewCard` on `/app/weddings/:weddingId` supports 4-theme switching & Desktop/Mobile preview (`viewer` guarded) | **PASSED**  | `WeddingDesignPreviewCard.tsx` + live Desktop/Mobile reload persistence & `viewer` disabled-radio E2E.                                             |
-| **P3-AC09** | ESLint forbids pure `design/{schemas,themes,registry,components}` from importing `organizerClient`; public bundle unaffected    | **PASSED**  | `eslint.config.js` (`0` errors/warnings), `router.test.tsx`, and `289.55 kB` public entry bundle.                                                  |
-| **P3-AC10** | Live Desktop + Mobile Playwright E2E (`test:e2e:phase3:live`) green with complete teardown (`0` leftover rows)                  | **PASSED**  | `docs/implementation/phase-3/e2e-verification-results.md` (`chromium-desktop` `11.6s`, `chromium-mobile` `11.8s`, `remaining_ephemeral_users: 0`). |
-| **P3-AC11** | Offline CI checks (`format:check`, `lint`, `typecheck`, `test`, `build`, `security:secrets`, `test:e2e`) green                  | **PASSED**  | `10/10` Vitest suites (`48/48` tests) + all local CI checks exit `0`; GitHub Actions CI run confirmed on push.                                     |
-| **P3-AC12** | Live Vercel Production verification confirms zero regressions across `/`, `/app/weddings/:weddingId`, `/w/:slug`, `/i/:token`   | **NOT RUN** | Runs immediately after interactive GPG-signed commit & push to `origin/main`.                                                                      |
+| ID          | Criterion                                                                                                                       | Status     | Auditable Evidence                                                                                                                                 |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P3-AC01** | Migration applied cleanly, backfill & `database.types.ts` synced, `0` unresolved Supabase security/performance advisor findings | **PASSED** | `20261119124511_invitation_design_system.sql` + `query-plan-and-advisors.md` (`0` errors, `0` performance lints).                                  |
+| **P3-AC02** | Composite FKs `(workspace_id, wedding_id)` enforce 1:1 `wedding_themes` + 7-section `wedding_sections` parity                   | **PASSED** | `phase3_database_verification.sql` (Sections 1 & 2) & `rls-and-rbac-results.md`.                                                                   |
+| **P3-AC03** | `create_wedding` (18-arg signature preserved) seeds starter design; `duplicate_wedding` clones theme + 7 sections               | **PASSED** | `phase3_database_verification.sql` (Section 2) + live E2E (`garden_sage` cloned & `coupleHeadline` updated).                                       |
+| **P3-AC04** | Multi-tenant RLS & RBAC: `0` access for `anon`/outsiders, read-only for `viewer`, write access for `owner`/`admin`/`editor`     | **PASSED** | `phase3_database_verification.sql` (Section 3) + live E2E `viewer` read-only verification.                                                         |
+| **P3-AC05** | `24`-function catalog audit (`OWNER TO postgres`, `search_path = ''`, self-contained triggers) + `Index Scan` query plans       | **PASSED** | `rls-and-rbac-results.md` + `query-plan-and-advisors.md` (`0.231 ms` & `0.568 ms` `Index Scan` plans across 2,807 sections).                       |
+| **P3-AC06** | Zod v4 `designSchemas.ts` validates 4 themes & 7 `z.strictObject` sections, rejecting unknown keys, XSS, and non-`https://`     | **PASSED** | `designEngineAndRenderer.test.tsx` (`unknown` keys, `javascript:`, `http:`, `<script>`, and invalid hex overrides all rejected).                   |
+| **P3-AC07** | Single `<InvitationRenderer />` renders two materially distinct wedding configs across Desktop & Mobile with zero raw HTML      | **PASSED** | `designEngineAndRenderer.test.tsx` + live Desktop/Mobile E2E (`garden_sage` light vs `celestial_midnight` dark).                                   |
+| **P3-AC08** | `WeddingDesignPreviewCard` on `/app/weddings/:weddingId` supports 4-theme switching & Desktop/Mobile preview (`viewer` guarded) | **PASSED** | `WeddingDesignPreviewCard.tsx` + live Desktop/Mobile reload persistence & `viewer` disabled-radio E2E.                                             |
+| **P3-AC09** | ESLint forbids pure `design/{schemas,themes,registry,components}` from importing `organizerClient`; public bundle unaffected    | **PASSED** | `eslint.config.js` (`0` errors/warnings), `router.test.tsx`, and `289.55 kB` public entry bundle.                                                  |
+| **P3-AC10** | Live Desktop + Mobile Playwright E2E (`test:e2e:phase3:live`) green with complete teardown (`0` leftover rows)                  | **PASSED** | `docs/implementation/phase-3/e2e-verification-results.md` (`chromium-desktop` `11.6s`, `chromium-mobile` `11.8s`, `remaining_ephemeral_users: 0`). |
+| **P3-AC11** | Offline CI checks (`format:check`, `lint`, `typecheck`, `test`, `build`, `security:secrets`, `test:e2e`) green                  | **PASSED** | `10/10` Vitest suites (`48/48` tests) + GitHub Actions CI run `44532666587` (`conclusion: success`) on `f7bb360`.                                  |
+| **P3-AC12** | Live Vercel Production verification confirms zero regressions across `/`, `/app/weddings/:weddingId`, `/w/:slug`, `/i/:token`   | **PASSED** | Host-verified on `https://digital-wedding-invitation-rsvp-pla.vercel.app` (`env: production`, `supabase: configured`, `0` console/page errors).    |
 
 ---
 
