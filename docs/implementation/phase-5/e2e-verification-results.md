@@ -1,7 +1,7 @@
-# Phase 5 — Public Wedding Website & Snapshot Publishing Verification Results (`TG4` — Gate 4)
+# Phase 5 — Public Wedding Website & Snapshot Publishing Verification Results (`TG4` — Gate 4 Complete)
 
 **Date:** 2026-11-19  
-**Target Environment:** `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`)
+**Target Environment:** `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`) & Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`)
 
 ---
 
@@ -26,3 +26,15 @@
   4. **Republish `v2`:** Organizer returned to Wedding Detail, observed `Unpublished draft changes`, clicked `Republish website (v2)`, and unauthenticated visitor reloaded `/w/:slug` to see `"Elena & Mateo — Draft v2 Unreleased"` (`data-published-version="2"`).
   5. **`invite_only` & Unpublish Enforcement:** Switching `access_mode` to `invite_only` immediately replaced `/w/:slug` with `Private Wedding Celebration` (zero venue/headline leakage); switching back to `public` and clicking `Unpublish to Draft` returned `/w/:slug` to `Invitation Not Yet Available` while preserving `v1`–`v2` history (`Republish website (v3)`).
   6. **`viewer` Read-Only & Clean Teardown:** `viewer` co-member saw `Read-only (Viewer)` with `publish-wedding-button` disabled (`0` console/page errors across both browser contexts; `remaining_ephemeral_users: 0`).
+
+---
+
+## 3. GitHub Actions CI & Live Vercel Production (`P5-AC12`, `P5-AC13`)
+
+- **Signed Git Commit:** `9e35e80` (`9e35e8099c01a189436060178e49103bf2972611`) on `main`.
+- **GitHub Actions CI Run:** `44552247272` (`CI Quality & Security Gate`) -> **`conclusion: success`**.
+- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** Host-verified (`BROWSER_HOST_FACTS` subagent `db0369e7-a5b1-4a67-8026-33920f4ed0ac`):
+  - `/`: HTTP `200`, `env: production`, `0` console/page errors.
+  - `/w/p5-prod-verify-live`: HTTP `200`, rendered active published snapshot `v1` (`Aria & Ezra`, `garden_sage`, `Saturday, October 16, 2027`, `Tagaytay Highlands`, `Villa Botanica Conservatory`) via `<InvitationRenderer />` and verified `Responding for Your Household` RSVP guidance; ephemeral seed torn down immediately afterward (`remaining_ephemeral_users: 0`).
+  - `/w/elena-and-mateo` & `/w/INVALID_SLUG_CHECK`: HTTP `200`, safe `Invitation Not Yet Available` and non-echoing `Invalid Wedding Link` states.
+  - `/i/private-household-token-p5-no-echo` & `/app`: HTTP `200`, verified raw `:token` non-echo and clean `/app/login` redirect (`env: production`, `supabase: configured`, `0` console/page errors).
