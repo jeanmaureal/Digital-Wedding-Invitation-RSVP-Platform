@@ -3,7 +3,8 @@
 - **Local Offline E2E (`npm run test:e2e`):** `PASSED` (`2/2` smoke projects across `chromium-desktop` & `chromium-mobile`)
 - **Live Multi-Tenant Gate 2 E2E (`npm run test:e2e:phase2:live`):** `PASSED` (`2/2` projects — `chromium-mobile` `14.6s`, `chromium-desktop` `17.2s`, `0` console/page errors, `0` leftover ephemeral users/workspaces/weddings)
 - **Public Bundle Isolation (`npm run build`):** `PASSED` (`dist/assets/index-*.js = 289.55 kB` / `90.36 kB` gzip; `OrganizerWeddingDetailPage`, `OrganizerWorkspacePage`, `DuplicateWeddingCard`, and `organizerClient` isolated in lazy chunks)
-- **GitHub Actions CI & Live Vercel Production Deep-Link (`P2-AC14`):** `NOT RUN` _(executes immediately after interactive GPG-signed commit & push to `origin/main`)_
+- **Live Vercel Production Deep-Link & Draft Non-Leakage (`P2-AC14`):** `PASSED` (`https://digital-wedding-invitation-rsvp-pla.vercel.app` host-verified on `4b2cb38`: HTTP `200`, `env: production`, `supabase: configured`, cold deep-link + reload on `/app/weddings/11111111-2222-4333-8444-555555555555` -> `/app/login?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555`, `/w/draft-probe-slug-2027` unavailable shell with zero auth redirect or leakage, `/i/probe-guest-token-9921` zero raw token echo, `0` console/page errors)
+- **GitHub Actions CI & Gitleaks History Scan (`P2-AC13`):** `PASSED` (`Typecheck, Lint, Format, Test, Build & E2E` job `134563583066` green on `4b2cb38`; `gitleaks v8.24.2` verified `13` commits / `0` leaks locally and `.github/workflows/ci.yml` hardened with `--retry 5 --retry-all-errors` + SHA-256 checksum verification against transient GitHub Releases CDN drops)
 
 ---
 
