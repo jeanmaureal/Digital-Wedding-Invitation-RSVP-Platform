@@ -71,6 +71,14 @@ export const appRoutes: RouteObject[] = [
               return { Component: OrganizerWeddingDetailPage };
             },
           },
+          {
+            path: 'weddings/:weddingId/builder',
+            lazy: async () => {
+              const { OrganizerWeddingBuilderPage } =
+                await import('@/portals/organizer/OrganizerWeddingBuilderPage');
+              return { Component: OrganizerWeddingBuilderPage };
+            },
+          },
         ],
       },
       {

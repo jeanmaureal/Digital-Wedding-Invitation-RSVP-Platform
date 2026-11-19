@@ -20,7 +20,7 @@ import {
 import { formatCalendarDateDisplay } from '@/features/weddings/utils/weddingTimezone';
 import { useActiveWorkspace } from '@/features/workspace/context/activeWorkspaceContext';
 import { WORKSPACE_ROLE_LABELS } from '@/features/workspace/schemas/workspaceSchemas';
-import { ROUTES } from '@/lib/constants/routes';
+import { buildOrganizerWeddingBuilderPath, ROUTES } from '@/lib/constants/routes';
 
 export function OrganizerWeddingDetailPage(): JSX.Element {
   const { weddingId = '' } = useParams();
@@ -197,12 +197,22 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="bg-muted/30">
           <CardHeader className="py-4">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Palette className="text-primary size-4" aria-hidden="true" />
-              <span>Section Builder</span>
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex items-center gap-2">
+                <Palette className="text-primary size-4" aria-hidden="true" />
+                <span>Section Builder</span>
+              </span>
+              <Link
+                to={buildOrganizerWeddingBuilderPath(wedding.id)}
+                data-testid="summary-open-builder-link"
+                className="text-primary text-xs font-medium underline-offset-4 hover:underline"
+              >
+                Open Builder
+              </Link>
             </CardTitle>
             <CardDescription className="text-xs">
-              Per-section content editors, reordering, and debounced autosave arrive in Phase 4.
+              Edit all 7 sections, reorder the stack, customize theme tokens, and preview live with
+              debounced draft autosave.
             </CardDescription>
           </CardHeader>
         </Card>

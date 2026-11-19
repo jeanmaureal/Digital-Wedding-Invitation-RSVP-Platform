@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Monitor, Palette, RefreshCw, Smartphone } from 'lucide-react';
+import { Check, Monitor, Palette, PencilRuler, RefreshCw, Smartphone } from 'lucide-react';
 import { type JSX, useState } from 'react';
+import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ import {
   WORKSPACE_ROLE_LABELS,
   type WorkspaceRole,
 } from '@/features/workspace/schemas/workspaceSchemas';
+import { buildOrganizerWeddingBuilderPath } from '@/lib/constants/routes';
 
 export interface WeddingDesignPreviewCardProps {
   readonly userId: string;
@@ -111,9 +113,9 @@ export function WeddingDesignPreviewCard({
             <span>Invitation Design System &amp; Live Preview</span>
           </CardTitle>
           <CardDescription>
-            Choose one of the 4 curated wedding themes and inspect your schema-validated draft
-            invitation in Desktop or Mobile view (`P3-AC07`, `P3-AC08`). Per-section copy and order
-            editors arrive in Phase 4.
+            Choose one of the 4 curated wedding themes, inspect your schema-validated draft
+            invitation in Desktop or Mobile view, or open the full Invitation Builder to customize
+            section copy, order, visibility, and theme tokens.
           </CardDescription>
         </div>
 
@@ -123,6 +125,16 @@ export function WeddingDesignPreviewCard({
               Read-only ({WORKSPACE_ROLE_LABELS[callerRole]})
             </Badge>
           ) : null}
+
+          <Button asChild size="sm" className="h-8 text-xs">
+            <Link
+              to={buildOrganizerWeddingBuilderPath(wedding.id)}
+              data-testid="open-invitation-builder-link"
+            >
+              <PencilRuler className="size-3.5" aria-hidden="true" />
+              {canEdit ? 'Open Invitation Builder' : 'Inspect in Builder'}
+            </Link>
+          </Button>
 
           <div
             className="inline-flex rounded-md border p-0.5"

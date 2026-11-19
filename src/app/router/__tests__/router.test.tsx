@@ -66,6 +66,18 @@ describe('appRoutes portal boundaries & organizer isolation (P0-AC01, P1-AC06, P
     );
   });
 
+  it('redirects unauthenticated /app/weddings/:weddingId/builder deep links to /app/login with encoded redirectTo (P4-AC08, P4-AC09)', async () => {
+    vi.spyOn(organizerClientModule, 'getOrganizerSupabaseClient').mockReturnValue(null);
+    const { router } = renderRoute('/app/weddings/11111111-2222-4333-8444-555555555555/builder');
+
+    expect(await screen.findByTestId('route-organizer-login')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/app/login');
+    expect(router.state.location.search).toBe(
+      '?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Fbuilder',
+    );
+    expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
+  });
+
   it('renders safe unavailable state on /w/test without initializing organizerClient', () => {
     renderRoute('/w/test');
     expect(screen.getByTestId('public-shell')).toBeInTheDocument();

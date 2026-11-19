@@ -1,6 +1,8 @@
 export type DesignErrorCode =
   | 'UNCONFIGURED'
   | 'INSUFFICIENT_WORKSPACE_ROLE'
+  | 'WEDDING_NOT_FOUND'
+  | 'SECTION_REORDER_MISMATCH'
   | 'UNSAFE_DESIGN_PAYLOAD'
   | 'SCHEMA_VALIDATION_FAILED'
   | 'DESIGN_NOT_FOUND'
@@ -36,6 +38,21 @@ export function translateDesignError(rawError: unknown): DesignDomainError {
     return new DesignDomainError(
       'UNSAFE_DESIGN_PAYLOAD',
       clean || 'Unsafe script or URL detected in invitation design.',
+    );
+  }
+
+  if (rawMessage.includes('SECTION_REORDER_MISMATCH:')) {
+    const clean = rawMessage.slice(rawMessage.indexOf('SECTION_REORDER_MISMATCH:') + 25).trim();
+    return new DesignDomainError(
+      'SECTION_REORDER_MISMATCH',
+      clean || 'Ordered section list must include every section of this wedding exactly once.',
+    );
+  }
+
+  if (sqlState === 'P0002' || rawMessage.includes('WEDDING_NOT_FOUND:')) {
+    return new DesignDomainError(
+      'WEDDING_NOT_FOUND',
+      'Wedding project was not found in the active workspace.',
     );
   }
 

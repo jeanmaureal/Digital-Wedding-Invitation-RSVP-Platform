@@ -2,6 +2,8 @@ import { DesignDomainError, translateDesignError } from '@/features/design/api/d
 import {
   DESIGN_SCHEMA_VERSION,
   type InvitationDocument,
+  type InvitationSection,
+  invitationSectionSchema,
   type InvitationWeddingMetadata,
   parseInvitationDocument,
   type ThemeTokenOverrides,
@@ -140,4 +142,85 @@ export async function updateWeddingThemeDraft(
   }
 
   return data;
+}
+
+export async function updateWeddingSectionDraft(
+  params: {
+    readonly workspaceId: string;
+    readonly weddingId: string;
+    readonly section: InvitationSection;
+  },
+  client: TypedSupabaseClient | null = getOrganizerSupabaseClient(),
+): Promise<WeddingSectionRecord> {
+  const supabase = requireDesignClient(client);
+
+  const parsedSection = invitationSectionSchema.safeParse(params.section);
+  if (!parsedSection.success) {
+    throw new DesignDomainError(
+      'SCHEMA_VALIDATION_FAILED',
+      parsedSection.error.issues[0]?.message ?? 'Invalid invitation section configuration.',
+    );
+  }
+
+  const { data, error } = await supabase
+    .from('wedding_sections')
+    .update({
+      is_visible: parsedSection.data.isVisible,
+      schema_version: parsedSection.data.schemaVersion,
+      content: parsedSection.data.content as unknown as Json,
+    })
+    .eq('workspace_id', params.workspaceId)
+    .eq('wedding_id', params.weddingId)
+    .eq('id', parsedSection.data.id)
+    .select('*')
+    .maybeSingle();
+
+  if (error) {
+    throw translateDesignError(error);
+  }
+
+  if (!data) {
+    throw new DesignDomainError(
+      'INSUFFICIENT_WORKSPACE_ROLE',
+      'Only workspace owners, admins, and editors can edit invitation sections.',
+    );
+  }
+
+  return data;
+}
+
+export async function reorderWeddingSectionsDraft(
+  params: {
+    readonly workspaceId: string;
+    readonly weddingId: string;
+    readonly orderedSectionIds: readonly string[];
+  },
+  client: TypedSupabaseClient | null = getOrganizerSupabaseClient(),
+): Promise<readonly WeddingSectionRecord[]> {
+  const supabase = requireDesignClient(client);
+
+  const normalizedIds = params.orderedSectionIds.map((id) => id.trim()).filter(Boolean);
+  if (
+    normalizedIds.length === 0 ||
+    normalizedIds.length !== params.orderedSectionIds.length ||
+    normalizedIds.length > 51 ||
+    new Set(normalizedIds).size !== normalizedIds.length
+  ) {
+    throw new DesignDomainError(
+      'SECTION_REORDER_MISMATCH',
+      'Ordered section list must include every section of this wedding exactly once.',
+    );
+  }
+
+  const { data, error } = await supabase.rpc('reorder_wedding_sections', {
+    p_workspace_id: params.workspaceId,
+    p_wedding_id: params.weddingId,
+    p_ordered_section_ids: normalizedIds,
+  });
+
+  if (error) {
+    throw translateDesignError(error);
+  }
+
+  return [...(data ?? [])].sort((a, b) => a.sort_order - b.sort_order);
 }

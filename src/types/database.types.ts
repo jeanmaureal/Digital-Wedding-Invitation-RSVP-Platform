@@ -495,6 +495,31 @@ export type Database = {
         Args: { p_member_user_id: string; p_workspace_id: string }
         Returns: undefined
       }
+      reorder_wedding_sections: {
+        Args: {
+          p_ordered_section_ids: string[]
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: {
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          schema_version: number
+          section_type: Database["public"]["Enums"]["wedding_section_type"]
+          sort_order: number
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "wedding_sections"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       update_workspace_member_role: {
         Args: {
           p_member_user_id: string

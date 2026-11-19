@@ -3,6 +3,7 @@ export const ROUTES = {
   organizerRoot: '/app',
   organizerSettings: '/app/settings',
   organizerWeddingDetail: '/app/weddings/:weddingId',
+  organizerWeddingBuilder: '/app/weddings/:weddingId/builder',
   organizerLogin: '/app/login',
   organizerSignup: '/app/signup',
   organizerForgotPassword: '/app/forgot-password',
@@ -13,4 +14,8 @@ export const ROUTES = {
 
 export function buildOrganizerWeddingPath(weddingId: string): string {
   return `/app/weddings/${encodeURIComponent(weddingId)}`;
+}
+
+export function buildOrganizerWeddingBuilderPath(weddingId: string): string {
+  return `/app/weddings/${encodeURIComponent(weddingId)}/builder`;
 }
