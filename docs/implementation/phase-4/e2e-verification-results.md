@@ -1,7 +1,7 @@
 # Phase 4 — Invitation Builder & Live Preview Verification Results (`TG4` — Gate 3 Complete)
 
 **Date:** 2026-11-19  
-**Target Environment:** `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`)
+**Target Environment:** `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, `ap-southeast-1`) & Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`)
 
 ---
 
@@ -30,3 +30,15 @@
   2. **Wedding B (`Clara & Julian`):** Independently customized with `Celestial Midnight` (`data-dark-surface="true"`), `modern_sans` headings, and custom RSVP banner copy—proving **Mandatory Quality Gate 3** across two materially distinct builder-authored weddings through `<InvitationRenderer />`.
   3. **Tenancy & RBAC Isolation:** Live workspace switch inside `/app/weddings/:weddingId/builder` rendered `wedding-builder-workspace-mismatch-card` with zero cross-workspace bleed; `viewer` co-member opened `/app/weddings/:weddingId/builder` in strict disabled read-only mode (`0` console/page errors).
   4. **Ephemeral Teardown:** `"remaining_ephemeral_users": 0`.
+
+---
+
+## 3. GitHub Actions CI & Live Vercel Production (`P4-AC11`, `P4-AC12`)
+
+- **Signed Git Commit:** `623c3a8` (`623c3a8465bd794d3826c1884af223534a60c7cf`) on `main`.
+- **GitHub Actions CI Run:** `44545808859` (`CI Quality & Security Gate`) -> **`conclusion: success`**.
+- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** Host-verified (`BROWSER_HOST_FACTS` subagent `e93d910f-cfaa-46ca-a6cc-3d583fbd2efa`):
+  - `/`: HTTP `200`, `env: production`, `0` console/page errors.
+  - `/app/weddings/11111111-2222-4333-8444-555555555555/builder`: SPA rewrite HTTP `200`, redirected cleanly to `/app/login?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Fbuilder` (`env: production`, `supabase: configured`).
+  - `/w/elena-and-mateo`: HTTP `200`, safe `Invitation Not Yet Available` shell.
+  - `/i/private-household-token-verify-no-echo`: HTTP `200`, safe `Guest RSVP Access` shell with verified non-echo of the raw `:token` parameter (`0` console errors, `0` uncaught page errors).
