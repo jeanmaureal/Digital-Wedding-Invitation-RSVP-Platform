@@ -26,4 +26,18 @@
   4. Organizer publishes Snapshot `v1`; unauthenticated `guestContext` confirms `/w/:slug` remains locked (`Private Wedding Celebration`), while `/i/:token` **unlocks** `"Welcome, The Santos Household"` (`Reserved for up to 3 guests`) + `<InvitationRenderer />` with **zero** raw token, organizer notes, or private guest email leaked in HTML.
   5. Organizer rotates link (`#1 -> #2`): old token `#1` immediately returns `Invitation Link Unavailable`, new token `#2` resolves active, and explicit **Revoke** immediately invalidates token `#2`.
   6. Workspace `viewer` signs in and verifies strict read-only banner with zero create/CSV/token mutation controls (`0` console errors, `0` page errors).
-- **Deterministic Teardown:** `remaining_ephemeral_users: 0`.
+- **Deterministic Teardown:** `remaining_ephemeral_users: 0` (`0` `@example.com` test users in `auth.users`).
+
+---
+
+## 3. GitHub Actions CI & Live Vercel Production Verification (`P6-AC14`)
+
+- **Pushed Commit:** `17a9d12` (`main`)
+- **GitHub Actions CI:** `PASSED`
+  - `135707966324` (`Git History Secret Scan (Gitleaks)`): `completed / success`
+  - `135707965699` (`Typecheck, Lint, Format, Test, Build & E2E`): `completed / success`
+- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** `PASSED` (host-verified via browser subagent `aebb02db-c2c3-441a-8650-d5312b0f2f16`, screenshot `final_step_10.png`, `0` console/page errors)
+  1. `/w/p6-prod-verify-live`: Rendered `Private Wedding Celebration` (`Invite-Only Celebration`) with zero venue/schedule leakage.
+  2. `/app/weddings/11111111-2222-4333-8444-555555555555/guests`: Redirected unauthenticated visitors cleanly to `/app/login?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Fguests` (`env: production`, `supabase: configured`).
+  3. `/i/<unknownToken>`: Rendered `Invitation Link Unavailable` without echoing `:token`.
+  4. `/i/<activeHouseholdToken>`: Unlocked `Welcome, The Rivera Family` (`Reserved for up to 3 guests`, `Elena Rivera`) + `celestial_midnight` `<InvitationRenderer />` (`Noelle & Julian`) with zero raw token, organizer note, or private email leakage, followed by immediate teardown (`ephemeral_example_users: 0`).

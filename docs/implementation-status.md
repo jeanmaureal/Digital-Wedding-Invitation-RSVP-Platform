@@ -1,25 +1,25 @@
 # Implementation Status Tracker
 
-**Current Phase:** Phase 6 — Guest & Invitation Management (**Implementation & Local/Supabase Gates Completed — `P6-AC01`–`P6-AC13` Passed; Pending Signed Push, CI & Vercel Production Verification for `P6-AC14`**)  
+**Current Phase:** Phase 6 — Guest & Invitation Management (**Completed — `P6-AC01`–`P6-AC14` Verified; Gate 5 Part 1 Green; Ready for Phase 7**)  
 **Last Updated:** 2026-11-20
 
 ---
 
 ## 1. Phase Overview
 
-| Phase  | Name                                        | Status                             | Exit Gate Status                                                   |
-| :----: | :------------------------------------------ | :--------------------------------- | :----------------------------------------------------------------- |
-| **0**  | Project Foundation & Engineering Standards  | **Completed**                      | **Passed (`P0-AC01`–`P0-AC10` verified)**                          |
-| **1**  | Authentication & Workspace Management       | **Completed**                      | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**           |
-| **2**  | Wedding Project Management                  | **Completed**                      | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**           |
-| **3**  | Invitation Design System & Rendering Engine | **Completed**                      | **Passed (`P3-AC01`–`P3-AC12` verified)**                          |
-| **4**  | Invitation Builder & Live Preview           | **Completed**                      | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)**           |
-| **5**  | Public Wedding Website                      | **Completed**                      | **Passed (`P5-AC01`–`P5-AC13` verified — Gate 4 Green)**           |
-| **6**  | Guest & Invitation Management               | **In Progress (Awaiting CI/Prod)** | `P6-AC01`–`P6-AC13` **PASSED**; `P6-AC14` pending push + CI + Prod |
-| **7**  | RSVP Management System                      | Not Started                        | Next after Phase 6 (**Completes Mandatory Quality Gate 5**)        |
-| **8**  | Publishing, Versioning & Analytics          | Not Started                        | Blocked on Phase 7                                                 |
-| **9**  | Testing, Security & Reliability             | Not Started                        | Blocked on Phase 8                                                 |
-| **10** | Production Deployment & Launch              | Not Started                        | Blocked on Phase 9 & dedicated Prod Supabase DB                    |
+| Phase  | Name                                        | Status        | Exit Gate Status                                           |
+| :----: | :------------------------------------------ | :------------ | :--------------------------------------------------------- |
+| **0**  | Project Foundation & Engineering Standards  | **Completed** | **Passed (`P0-AC01`–`P0-AC10` verified)**                  |
+| **1**  | Authentication & Workspace Management       | **Completed** | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**   |
+| **2**  | Wedding Project Management                  | **Completed** | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**   |
+| **3**  | Invitation Design System & Rendering Engine | **Completed** | **Passed (`P3-AC01`–`P3-AC12` verified)**                  |
+| **4**  | Invitation Builder & Live Preview           | **Completed** | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)**   |
+| **5**  | Public Wedding Website                      | **Completed** | **Passed (`P5-AC01`–`P5-AC13` verified — Gate 4 Green)**   |
+| **6**  | Guest & Invitation Management               | **Completed** | **Passed (`P6-AC01`–`P6-AC14` verified — Gate 5 Part 1)**  |
+| **7**  | RSVP Management System                      | Not Started   | Ready for Phase 7 (**Completes Mandatory Quality Gate 5**) |
+| **8**  | Publishing, Versioning & Analytics          | Not Started   | Blocked on Phase 7                                         |
+| **9**  | Testing, Security & Reliability             | Not Started   | Blocked on Phase 8                                         |
+| **10** | Production Deployment & Launch              | Not Started   | Blocked on Phase 9 & dedicated Prod Supabase DB            |
 
 ---
 
@@ -37,33 +37,33 @@
 
 ## 3. Phase 6 Task Group Progress
 
-| Task Group | Scope                                                                                                          | Status                     | Notes                                                                                                   |
-| :--------: | :------------------------------------------------------------------------------------------------------------- | :------------------------- | :------------------------------------------------------------------------------------------------------ |
-|  **TG1**   | `guest_groups`, `guests`, `invitations` Schema, RLS, Atomic CSV Import & SHA-256 Token Issuance/Resolution RPC | **Completed**              | Migration `20261119153501` applied (`0.038 ms` `Index Scan` token lookup, `0` advisor errors/perf lint) |
-|  **TG2**   | `qrcode.react@4.2.0`, RFC-4180 CSV Parser, Organizer & Public Invitation APIs, ESLint Isolation                | **Completed**              | Strict public/organizer bundle isolation (`0` ESLint errors/warnings, `0` npm vulnerabilities)          |
-|  **TG3**   | Lazy `/app/weddings/:weddingId/guests` Directory + QR Manager & Lazy Public `/i/:token` Verification           | **Completed**              | `8.41 kB` lazy `/i/:token` chunk, `73.42 kB` lazy `/guests` chunk, `0` Vite chunk warnings              |
-|  **TG4**   | Vitest (`70/70`), Two-Context Live Desktop + Mobile E2E (`2/2`), GitHub CI & Vercel Production                 | **Awaiting Push & Verify** | Local + Supabase E2E green (`15.7s` Desktop, `15.7s` Mobile); awaiting signed push + CI + Vercel check  |
+| Task Group | Scope                                                                                                          | Status        | Notes                                                                                                   |
+| :--------: | :------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------------------------------------------------------ |
+|  **TG1**   | `guest_groups`, `guests`, `invitations` Schema, RLS, Atomic CSV Import & SHA-256 Token Issuance/Resolution RPC | **Completed** | Migration `20261119153501` applied (`0.038 ms` `Index Scan` token lookup, `0` advisor errors/perf lint) |
+|  **TG2**   | `qrcode.react@4.2.0`, RFC-4180 CSV Parser, Organizer & Public Invitation APIs, ESLint Isolation                | **Completed** | Strict public/organizer bundle isolation (`0` ESLint errors/warnings, `0` npm vulnerabilities)          |
+|  **TG3**   | Lazy `/app/weddings/:weddingId/guests` Directory + QR Manager & Lazy Public `/i/:token` Verification           | **Completed** | `8.41 kB` lazy `/i/:token` chunk, `73.42 kB` lazy `/guests` chunk, `0` Vite chunk warnings              |
+|  **TG4**   | Vitest (`70/70`), Two-Context Live Desktop + Mobile E2E (`2/2`), GitHub CI & Vercel Production                 | **Completed** | Commit `17a9d12`; CI checks `135707966324` & `135707965699` green; Vercel Prod verified (`0` err)       |
 
 ---
 
 ## 4. Phase 6 Acceptance Criteria Matrix (`P6-AC01` – `P6-AC14`)
 
-| ID          | Criterion                                                                                                                       | Status      | Auditable Evidence                                                                                                                                 |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------ | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P6-AC01** | `guest_groups`, `guests`, and `invitations` enforce composite FKs, `max_attendees >= 1`, triggers, and `0` `anon` table grants  | **PASSED**  | `20261119153501_guests_and_invitations.sql` + `phase6_database_verification.sql` (`ALL_PHASE6_DATABASE_VERIFICATIONS_PASSED`).                     |
-| **P6-AC02** | Workspace RBAC (`editor`+ write, `viewer` read-only excluding `token_hash`) and cross-tenant isolation hold in PostgreSQL       | **PASSED**  | `phase6_database_verification.sql` + `docs/implementation/phase-6/rls-and-rbac-results.md`.                                                        |
-| **P6-AC03** | `issue_household_invitation` issues `256-bit` tokens, stores SHA-256 hex only, revokes prior active tokens, hides `token_hash`  | **PASSED**  | `phase6_database_verification.sql` (Sections 1, 3, 4).                                                                                             |
-| **P6-AC04** | `resolve_invitation_by_token` (`STABLE`) unlocks active tokens on `public` & `invite_only` weddings and rejects revoked/expired | **PASSED**  | `phase6_database_verification.sql` (Sections 5 & 6) + `publicInvitationPage.test.tsx` + live E2E.                                                  |
-| **P6-AC05** | `import_wedding_guests` commits/rolls back atomically in one transaction; `duplicate_wedding` never clones guests or tokens     | **PASSED**  | `phase6_database_verification.sql` (Section 3.5–3.7).                                                                                              |
-| **P6-AC06** | `EXPLAIN (ANALYZE, BUFFERS)` confirms `Index Scan` plans (`0.038 ms` token lookup, `0` `Sort`) & `0` advisor perf/security err  | **PASSED**  | `supabase/tests/phase6_query_plan_verification.sql` + `docs/implementation/phase-6/query-plan-and-advisors.md` (`lints: []`).                      |
-| **P6-AC07** | `/app/weddings/:weddingId/guests` supports household (`max_attendees >= 1`) & guest CRUD with `viewer` read-only UX             | **PASSED**  | `WeddingGuestDirectoryManager.tsx` + `organizerGuestsWorkflow.test.tsx` + live E2E.                                                                |
-| **P6-AC08** | CSV import workflow parses RFC-4180 files, previews row validation errors, provides sample CSV, and imports atomically          | **PASSED**  | `guestCsvParser.ts` + `guestCsvParser.test.ts` + live E2E.                                                                                         |
-| **P6-AC09** | Organizer issues/rotates/revokes `/i/:token` links with one-time copyable URL + downloadable `<QRCodeSVG />`                    | **PASSED**  | `IssuedInvitationQrCard.tsx` + `organizerGuestsWorkflow.test.tsx` + live E2E.                                                                      |
-| **P6-AC10** | Lazy `/i/:token` renders personalized household greeting + `<InvitationRenderer />` via `publicClient` and never echoes token   | **PASSED**  | `PublicInvitationShellPage.tsx` + `publicInvitationPage.test.tsx` + live E2E.                                                                      |
-| **P6-AC11** | `eslint.config.js` enforces public/organizer isolation, `organizerClient` stays uninitialized on `/i/:token`, `0` chunk warn    | **PASSED**  | `eslint.config.js` (`0` errors/warnings) + `npm run build` (`8.41 kB` lazy `/i/:token` chunk).                                                     |
-| **P6-AC12** | Unit & component suites pass (`16/16` files, `70/70` tests)                                                                     | **PASSED**  | `npm run test` (`70/70` green).                                                                                                                    |
-| **P6-AC13** | Two-context (`organizer` + `guest`) Desktop + Mobile Playwright E2E passes against live Supabase (`0` leftover ephemeral users) | **PASSED**  | `docs/implementation/phase-6/e2e-verification-results.md` (`chromium-desktop` `15.7s`, `chromium-mobile` `15.7s`, `remaining_ephemeral_users: 0`). |
-| **P6-AC14** | All static checks, secret scan, GitHub Actions CI, and live Vercel Production check pass                                        | **NOT RUN** | Local static checks & secret scan passed; awaiting signed Git push -> GitHub Actions CI -> Vercel Production verification.                         |
+| ID          | Criterion                                                                                                                       | Status     | Auditable Evidence                                                                                                                                 |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P6-AC01** | `guest_groups`, `guests`, and `invitations` enforce composite FKs, `max_attendees >= 1`, triggers, and `0` `anon` table grants  | **PASSED** | `20261119153501_guests_and_invitations.sql` + `phase6_database_verification.sql` (`ALL_PHASE6_DATABASE_VERIFICATIONS_PASSED`).                     |
+| **P6-AC02** | Workspace RBAC (`editor`+ write, `viewer` read-only excluding `token_hash`) and cross-tenant isolation hold in PostgreSQL       | **PASSED** | `phase6_database_verification.sql` + `docs/implementation/phase-6/rls-and-rbac-results.md`.                                                        |
+| **P6-AC03** | `issue_household_invitation` issues `256-bit` tokens, stores SHA-256 hex only, revokes prior active tokens, hides `token_hash`  | **PASSED** | `phase6_database_verification.sql` (Sections 1, 3, 4).                                                                                             |
+| **P6-AC04** | `resolve_invitation_by_token` (`STABLE`) unlocks active tokens on `public` & `invite_only` weddings and rejects revoked/expired | **PASSED** | `phase6_database_verification.sql` (Sections 5 & 6) + `publicInvitationPage.test.tsx` + live E2E.                                                  |
+| **P6-AC05** | `import_wedding_guests` commits/rolls back atomically in one transaction; `duplicate_wedding` never clones guests or tokens     | **PASSED** | `phase6_database_verification.sql` (Section 3.5–3.7).                                                                                              |
+| **P6-AC06** | `EXPLAIN (ANALYZE, BUFFERS)` confirms `Index Scan` plans (`0.038 ms` token lookup, `0` `Sort`) & `0` advisor perf/security err  | **PASSED** | `supabase/tests/phase6_query_plan_verification.sql` + `docs/implementation/phase-6/query-plan-and-advisors.md` (`lints: []`).                      |
+| **P6-AC07** | `/app/weddings/:weddingId/guests` supports household (`max_attendees >= 1`) & guest CRUD with `viewer` read-only UX             | **PASSED** | `WeddingGuestDirectoryManager.tsx` + `organizerGuestsWorkflow.test.tsx` + live E2E.                                                                |
+| **P6-AC08** | CSV import workflow parses RFC-4180 files, previews row validation errors, provides sample CSV, and imports atomically          | **PASSED** | `guestCsvParser.ts` + `guestCsvParser.test.ts` + live E2E.                                                                                         |
+| **P6-AC09** | Organizer issues/rotates/revokes `/i/:token` links with one-time copyable URL + downloadable `<QRCodeSVG />`                    | **PASSED** | `IssuedInvitationQrCard.tsx` + `organizerGuestsWorkflow.test.tsx` + live E2E.                                                                      |
+| **P6-AC10** | Lazy `/i/:token` renders personalized household greeting + `<InvitationRenderer />` via `publicClient` and never echoes token   | **PASSED** | `PublicInvitationShellPage.tsx` + `publicInvitationPage.test.tsx` + live E2E.                                                                      |
+| **P6-AC11** | `eslint.config.js` enforces public/organizer isolation, `organizerClient` stays uninitialized on `/i/:token`, `0` chunk warn    | **PASSED** | `eslint.config.js` (`0` errors/warnings) + `npm run build` (`8.41 kB` lazy `/i/:token` chunk).                                                     |
+| **P6-AC12** | Unit & component suites pass (`16/16` files, `70/70` tests)                                                                     | **PASSED** | `npm run test` (`70/70` green).                                                                                                                    |
+| **P6-AC13** | Two-context (`organizer` + `guest`) Desktop + Mobile Playwright E2E passes against live Supabase (`0` leftover ephemeral users) | **PASSED** | `docs/implementation/phase-6/e2e-verification-results.md` (`chromium-desktop` `15.7s`, `chromium-mobile` `15.7s`, `remaining_ephemeral_users: 0`). |
+| **P6-AC14** | All static checks, secret scan, GitHub Actions CI, and live Vercel Production check pass                                        | **PASSED** | Commit `17a9d12` -> GitHub Actions CI (`135707966324` & `135707965699` success) + live Vercel Prod host-verified (`final_step_10.png`).            |
 
 ---
 
