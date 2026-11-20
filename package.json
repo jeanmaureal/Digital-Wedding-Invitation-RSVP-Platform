@@ -27,6 +27,9 @@
     "test:db:phase2:concurrency": "node scripts/verify-phase2-concurrency.mjs",
     "test:db:phase7:concurrency": "node scripts/verify-phase7-concurrency.mjs",
     "test:db:phase9:concurrency": "node scripts/verify-phase9-concurrency.mjs",
+    "test:ops:phase10:backup": "node scripts/verify-phase10-backup-and-exports.mjs",
+    "db:backup": "node scripts/export-remote-backup.mjs",
+    "db:backup:prod": "node scripts/export-remote-backup.mjs --remote=ftmwcmsrfcgzmrowjudb --label=production",
     "db:types": "node scripts/generate-db-types.mjs",
     "security:secrets": "node scripts/scan-secrets.mjs"
   },

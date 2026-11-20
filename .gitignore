@@ -23,6 +23,9 @@ playwright/.cache/
 .supabase/
 supabase/.temp/
 
+# Logical database & operational backups (never commit exported customer PII)
+backups/
+
 # Editor & OS files
 .vscode/*
 !.vscode/extensions.json

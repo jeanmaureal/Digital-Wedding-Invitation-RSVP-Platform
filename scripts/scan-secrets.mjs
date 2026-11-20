@@ -58,6 +58,7 @@ const SECRET_RULES = [
 ];
 
 const FORBIDDEN_TRACKED_ENV_FILES = /^\.env(?:\.(?!example$).+)?$/;
+const FORBIDDEN_TRACKED_BACKUP_FILES = /^backups\//;
 
 function getTrackedFiles() {
   const stdout = execFileSync(
@@ -110,6 +111,13 @@ for (const relPath of trackedFiles) {
       file: relPath,
       rule: 'tracked-env-file',
       detail: 'Environment file other than .env.example is tracked by Git.',
+    });
+  }
+  if (FORBIDDEN_TRACKED_BACKUP_FILES.test(relPath)) {
+    findings.push({
+      file: relPath,
+      rule: 'tracked-backup-file',
+      detail: 'Database or operational backup artifact under backups/ is tracked by Git.',
     });
   }
 }
