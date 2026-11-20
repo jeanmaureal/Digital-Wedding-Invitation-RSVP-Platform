@@ -99,7 +99,7 @@ $$;
 -- 2. Seed Ephemeral Organizers, Workspaces, Wedding, Guests & RSVP (`P8-AC04`)
 -- ----------------------------------------------------------------------------
 CREATE TEMP TABLE tmp_p8_state (
-  key text PRIMARY KEY,
+  entry_name text PRIMARY KEY,
   val text NOT NULL
 ) ON COMMIT DROP;
 
@@ -156,7 +156,7 @@ BEGIN
     p_slug => 'p8-beta-project'
   );
 
-  INSERT INTO tmp_p8_state (key, val)
+  INSERT INTO tmp_p8_state (entry_name, val)
   VALUES
     ('ws_a', v_ws_a::text),
     ('ws_b', v_ws_b::text),
@@ -176,8 +176,8 @@ DECLARE
   v_editor_a constant uuid := '88888888-bbbb-4bbb-8bbb-bbbbbbbbbbb2';
   v_viewer_a constant uuid := '88888888-cccc-4ccc-8ccc-ccccccccccc3';
   v_outsider constant uuid := '88888888-dddd-4ddd-8ddd-ddddddddddd4';
-  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'ws_a');
-  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'wedding_a');
+  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'ws_a');
+  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'wedding_a');
   v_v1 public.published_versions;
   v_v2 public.published_versions;
   v_group_id uuid;
@@ -321,7 +321,7 @@ BEGIN
     RAISE EXCEPTION 'ASSERTION_FAILED [P8-AC02]: Cross-workspace outsider must be blocked from rolling back versions.';
   END IF;
 
-  INSERT INTO tmp_p8_state (key, val)
+  INSERT INTO tmp_p8_state (entry_name, val)
   VALUES
     ('raw_token', v_raw_token),
     ('v1_snapshot', v_v1.content_snapshot::text),
@@ -336,12 +336,12 @@ $$;
 DO $$
 DECLARE
   v_editor_a constant uuid := '88888888-bbbb-4bbb-8bbb-bbbbbbbbbbb2';
-  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'ws_a');
-  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'wedding_a');
-  v_raw_token text := (SELECT val FROM tmp_p8_state WHERE key = 'raw_token');
-  v_orig_v1_snapshot text := (SELECT val FROM tmp_p8_state WHERE key = 'v1_snapshot');
-  v_orig_v1_published_at text := (SELECT val FROM tmp_p8_state WHERE key = 'v1_published_at');
-  v_orig_v2_snapshot text := (SELECT val FROM tmp_p8_state WHERE key = 'v2_snapshot');
+  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'ws_a');
+  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'wedding_a');
+  v_raw_token text := (SELECT val FROM tmp_p8_state WHERE entry_name = 'raw_token');
+  v_orig_v1_snapshot text := (SELECT val FROM tmp_p8_state WHERE entry_name = 'v1_snapshot');
+  v_orig_v1_published_at text := (SELECT val FROM tmp_p8_state WHERE entry_name = 'v1_published_at');
+  v_orig_v2_snapshot text := (SELECT val FROM tmp_p8_state WHERE entry_name = 'v2_snapshot');
   v_rolled_back public.published_versions;
   v_v2_after public.published_versions;
   v_v3 public.published_versions;
@@ -505,8 +505,8 @@ SET LOCAL ROLE anon;
 
 DO $$
 DECLARE
-  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'ws_a');
-  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE key = 'wedding_a');
+  v_ws_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'ws_a');
+  v_wedding_a uuid := (SELECT val::uuid FROM tmp_p8_state WHERE entry_name = 'wedding_a');
   v_blocked boolean;
 BEGIN
   PERFORM set_config('request.jwt.claim.sub', '', true);

@@ -36,5 +36,12 @@
 
 ## 3. GitHub Actions CI & Live Vercel Production Verification (`P8-AC14`)
 
-- **GitHub Actions CI (`main`):** `NOT RUN` — awaiting GPG-signed commit & push.
-- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** `NOT RUN` — awaiting Vercel Production deployment of Phase 8 commit.
+- **Feature Commit (`main`):** `45915cc` (`https://digital-wedding-invitation-rsvp-platform-kv5404t86.vercel.app` -> `https://digital-wedding-invitation-rsvp-pla.vercel.app`)
+- **GitHub Actions CI:**
+  - `136043654524` (`Typecheck, Lint, Format, Test, Build & E2E`): `completed / success`
+  - `136043654774` (`Git History Secret Scan (Gitleaks)`): flagged false-positive SQL lookup literal `WHERE key = 'v1_published_at'` in `supabase/tests/phase8_database_verification.sql`; remediated via renamed temp-table column (`entry_name`) + surgical `^v1_published_at$` allowlist in `.gitleaks.toml` (verified locally with Gitleaks v8.24.2: `0` leaks across full commit history; awaiting push of fix commit for remote green check).
+- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** `PASSED` (host-verified via browser subagent `6c5518e7-fc06-494f-8fd1-8bb3a912132b`, screenshot `final_step_28.png`, `0` console/page errors)
+  1. `/w/p8-prod-aurelia-julian` initially rendered Snapshot `v2` (`"Aurelia & Julian — Midnight V2"`).
+  2. Organizer signed in on Production, opened `PublicationVersionHistoryCard`, previewed Snapshot `v1` (`"Aurelia & Julian — Garden V1"`), and confirmed **Roll Back to v1** (`Published · v1`, `Rolled back · Latest v2`).
+  3. `/w/p8-prod-aurelia-julian` immediately served rolled-back Snapshot `v1` (`"Aurelia & Julian — Garden V1"`).
+  4. `/app/weddings/d1fbfd67-8592-455b-b987-c146c190e48e/rsvps` rendered `100% Responded`, `2 / 3 Seats` (`1` Adult, `1` Child, `1` Dietary Alert `Gluten-free`, `Truffle Risotto` `1 (100%)`), exported `p8-prod-aurelia-julian-rsvp-attendance.csv` cleanly, and tore down the ephemeral seed immediately (`ephemeral_example_users: 0`).

@@ -4,8 +4,9 @@ title = "Digital Wedding Invitation & RSVP Platform — Gitleaks Configuration"
 useDefault = true
 
 [allowlist]
-description = "Allow synthetic sb_publishable_ unit-test fixtures and documented .env.example placeholders"
+description = "Allow synthetic sb_publishable_ unit-test fixtures, documented .env.example placeholders, and SQL temp-table lookup literal v1_published_at"
 regexTarget = "secret"
 regexes = [
   '''^sb_publishable_(?:replace_me|your_key_here|test_[a-z0-9_]+|unit_test_[a-z0-9_]+|local_dev_[a-z0-9_]+)$''',
+  '''^v1_published_at$''',
 ]
