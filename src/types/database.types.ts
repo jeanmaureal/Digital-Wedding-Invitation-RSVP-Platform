@@ -918,6 +918,10 @@ export type Database = {
         }
         Returns: Json
       }
+      list_wedding_published_versions: {
+        Args: { p_wedding_id: string; p_workspace_id: string }
+        Returns: Json
+      }
       list_workspace_members: {
         Args: { p_workspace_id: string }
         Returns: {
@@ -988,6 +992,31 @@ export type Database = {
           p_workspace_id: string
         }
         Returns: Json
+      }
+      rollback_wedding_published_version: {
+        Args: {
+          p_target_version_number: number
+          p_wedding_id: string
+          p_workspace_id: string
+        }
+        Returns: {
+          access_mode: Database["public"]["Enums"]["wedding_access_mode"]
+          content_snapshot: Json
+          id: string
+          is_active: boolean
+          published_at: string
+          published_by: string | null
+          schema_version: number
+          version_number: number
+          wedding_id: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "published_versions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       submit_household_rsvp: {
         Args: { p_payload: Json; p_token: string }

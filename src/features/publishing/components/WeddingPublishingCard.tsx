@@ -68,6 +68,8 @@ export function WeddingPublishingCard({
   const latestVersionNumber = summaryQuery.data?.latestVersionNumber ?? 0;
   const isPublished = wedding.status === 'published' && activeVersion !== null;
 
+  const isRolledBackVersion = isPublished && activeVersion.version_number < latestVersionNumber;
+
   const hasUnpublishedDraftChanges =
     isPublished &&
     summaryQuery.data !== undefined &&
@@ -82,6 +84,9 @@ export function WeddingPublishingCard({
       }),
       queryClient.invalidateQueries({
         queryKey: publishingQueryKeys.organizerSummary(userId, workspaceId, wedding.id),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: publishingQueryKeys.versionHistory(userId, workspaceId, wedding.id),
       }),
       queryClient.invalidateQueries({
         queryKey: publishingQueryKeys.publicBySlug(wedding.slug),
@@ -182,6 +187,12 @@ export function WeddingPublishingCard({
               {isArchived ? 'Archived · Offline' : 'Draft · Not Published'}
             </Badge>
           )}
+
+          {isRolledBackVersion ? (
+            <Badge variant="outline" data-testid="publishing-rolled-back-badge">
+              Rolled back · Latest v{latestVersionNumber}
+            </Badge>
+          ) : null}
 
           {hasUnpublishedDraftChanges ? (
             <Badge variant="outline" data-testid="unpublished-draft-changes-badge">

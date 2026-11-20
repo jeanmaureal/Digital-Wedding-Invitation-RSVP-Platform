@@ -4,6 +4,7 @@ import {
   translateOrganizerRsvpError,
 } from '@/features/rsvp/api/rsvpErrors';
 import {
+  type HouseholdInvitationLinkState,
   type OrganizerHouseholdAnswerView,
   type OrganizerHouseholdAttendeeStatus,
   type OrganizerHouseholdRsvpEntry,
@@ -11,6 +12,7 @@ import {
   parseQuestionOptionsText,
   type RsvpAnswerRow,
   type RsvpAttendeeRow,
+  type RsvpInvitationDeliveryStatus,
   type RsvpQuestionFormValues,
   rsvpQuestionFormSchema,
   type RsvpQuestionRow,
@@ -53,64 +55,79 @@ export async function fetchWeddingRsvpOverview(params: {
   readonly client?: TypedSupabaseClient | null;
 }): Promise<WeddingRsvpOverview> {
   const client = requireClient(params.client);
+  const referenceNowMs = Date.now();
 
-  const [groupsRes, guestsRes, questionsRes, submissionsRes, attendeesRes, answersRes] =
-    await Promise.all([
-      client
-        .from('guest_groups')
-        .select('id, display_name, max_attendees, sort_order, created_at')
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('guests')
-        .select(
-          'id, group_id, first_name, last_name, is_child, dietary_notes, sort_order, created_at',
-        )
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('rsvp_questions')
-        .select(
-          'id, wedding_id, workspace_id, label, help_text, question_type, options, is_required, sort_order, created_at, updated_at',
-        )
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('rsvp_submissions')
-        .select(
-          'id, group_id, wedding_id, workspace_id, invitation_id, overall_status, attending_count, additional_guests_count, household_note, response_version, submitted_at, updated_at',
-        )
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('updated_at', { ascending: false }),
-      client
-        .from('rsvp_attendees')
-        .select(
-          'id, submission_id, group_id, guest_id, wedding_id, workspace_id, attendance_status, dietary_notes, created_at, updated_at',
-        )
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('group_id', { ascending: true })
-        .order('submission_id', { ascending: true }),
-      client
-        .from('rsvp_answers')
-        .select(
-          'id, submission_id, group_id, question_id, wedding_id, workspace_id, answer_text, created_at, updated_at',
-        )
-        .eq('workspace_id', params.workspaceId)
-        .eq('wedding_id', params.weddingId)
-        .order('group_id', { ascending: true })
-        .order('submission_id', { ascending: true }),
-    ]);
+  const [
+    groupsRes,
+    guestsRes,
+    invitationsRes,
+    questionsRes,
+    submissionsRes,
+    attendeesRes,
+    answersRes,
+  ] = await Promise.all([
+    client
+      .from('guest_groups')
+      .select('id, display_name, max_attendees, notes, sort_order, created_at')
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    client
+      .from('guests')
+      .select(
+        'id, group_id, first_name, last_name, email, phone, side, is_child, dietary_notes, sort_order, created_at',
+      )
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    client
+      .from('invitations')
+      .select('id, group_id, status, delivery_status, expires_at, created_at')
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('created_at', { ascending: false }),
+    client
+      .from('rsvp_questions')
+      .select(
+        'id, wedding_id, workspace_id, label, help_text, question_type, options, is_required, sort_order, created_at, updated_at',
+      )
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    client
+      .from('rsvp_submissions')
+      .select(
+        'id, group_id, wedding_id, workspace_id, invitation_id, overall_status, attending_count, additional_guests_count, household_note, response_version, submitted_at, updated_at',
+      )
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('updated_at', { ascending: false }),
+    client
+      .from('rsvp_attendees')
+      .select(
+        'id, submission_id, group_id, guest_id, wedding_id, workspace_id, attendance_status, dietary_notes, created_at, updated_at',
+      )
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('group_id', { ascending: true })
+      .order('submission_id', { ascending: true }),
+    client
+      .from('rsvp_answers')
+      .select(
+        'id, submission_id, group_id, question_id, wedding_id, workspace_id, answer_text, created_at, updated_at',
+      )
+      .eq('workspace_id', params.workspaceId)
+      .eq('wedding_id', params.weddingId)
+      .order('group_id', { ascending: true })
+      .order('submission_id', { ascending: true }),
+  ]);
 
   if (groupsRes.error) throw translateOrganizerRsvpError(groupsRes.error);
   if (guestsRes.error) throw translateOrganizerRsvpError(guestsRes.error);
+  if (invitationsRes.error) throw translateOrganizerRsvpError(invitationsRes.error);
   if (questionsRes.error) throw translateOrganizerRsvpError(questionsRes.error);
   if (submissionsRes.error) throw translateOrganizerRsvpError(submissionsRes.error);
   if (attendeesRes.error) throw translateOrganizerRsvpError(attendeesRes.error);
@@ -124,7 +141,15 @@ export async function fetchWeddingRsvpOverview(params: {
 
   type PartialGuestRow = Pick<
     Tables<'guests'>,
-    'id' | 'group_id' | 'first_name' | 'last_name' | 'is_child' | 'dietary_notes'
+    | 'id'
+    | 'group_id'
+    | 'first_name'
+    | 'last_name'
+    | 'email'
+    | 'phone'
+    | 'side'
+    | 'is_child'
+    | 'dietary_notes'
   >;
   const guestsByGroupId = new Map<string, PartialGuestRow[]>();
   for (const guest of guestsRes.data ?? []) {
@@ -133,6 +158,20 @@ export async function fetchWeddingRsvpOverview(params: {
       bucket.push(guest);
     } else {
       guestsByGroupId.set(guest.group_id, [guest]);
+    }
+  }
+
+  type PartialInvitationRow = Pick<
+    Tables<'invitations'>,
+    'id' | 'group_id' | 'status' | 'delivery_status' | 'expires_at'
+  >;
+  const activeInvitationByGroupId = new Map<string, PartialInvitationRow>();
+  const hasRevokedByGroupId = new Set<string>();
+  for (const inv of invitationsRes.data ?? []) {
+    if (inv.status === 'active' && !activeInvitationByGroupId.has(inv.group_id)) {
+      activeInvitationByGroupId.set(inv.group_id, inv);
+    } else if (inv.status === 'revoked') {
+      hasRevokedByGroupId.add(inv.group_id);
     }
   }
 
@@ -164,6 +203,21 @@ export async function fetchWeddingRsvpOverview(params: {
   const households: OrganizerHouseholdRsvpEntry[] = (groupsRes.data ?? []).map((group) => {
     const submission = submissionByGroupId.get(group.id) ?? null;
     const groupGuests = guestsByGroupId.get(group.id) ?? [];
+    const activeInv = activeInvitationByGroupId.get(group.id) ?? null;
+
+    let invitationLinkStatus: HouseholdInvitationLinkState = 'none';
+    let deliveryStatus: RsvpInvitationDeliveryStatus | null = null;
+    let invitationExpiresAt: string | null = null;
+
+    if (activeInv) {
+      const isExpired =
+        activeInv.expires_at !== null && Date.parse(activeInv.expires_at) <= referenceNowMs;
+      invitationLinkStatus = isExpired ? 'expired' : 'active';
+      deliveryStatus = activeInv.delivery_status;
+      invitationExpiresAt = activeInv.expires_at;
+    } else if (hasRevokedByGroupId.has(group.id)) {
+      invitationLinkStatus = 'revoked';
+    }
 
     let responseState: 'attending' | 'declined' | 'pending' = 'pending';
     if (submission) {
@@ -186,6 +240,9 @@ export async function fetchWeddingRsvpOverview(params: {
         isChild: guest.is_child,
         attendanceStatus: recorded ? recorded.attendance_status : 'pending',
         dietaryNotes: recorded ? recorded.dietary_notes : guest.dietary_notes,
+        side: guest.side,
+        email: guest.email,
+        phone: guest.phone,
       };
     });
 
@@ -204,6 +261,10 @@ export async function fetchWeddingRsvpOverview(params: {
       submission,
       attendees,
       answers,
+      notes: group.notes,
+      invitationLinkStatus,
+      deliveryStatus,
+      invitationExpiresAt,
     };
   });
 

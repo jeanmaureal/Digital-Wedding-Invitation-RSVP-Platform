@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2,
+  Download,
   FileSpreadsheet,
   KeyRound,
   Pencil,
@@ -46,8 +47,10 @@ import {
   type ImportedHouseholdPayload,
   INVITATION_DELIVERY_LABELS,
 } from '@/features/guests/schemas/guestSchemas';
+import { buildGuestDirectoryCsv } from '@/features/guests/utils/guestDirectoryCsvExport';
 import type { WorkspaceRole } from '@/features/workspace/schemas/workspaceSchemas';
 import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
+import { buildSafeCsvFilename, downloadCsvFile } from '@/lib/utilities/csvExport';
 import type { Tables } from '@/types/database.types';
 
 export interface WeddingGuestDirectoryManagerProps {
@@ -388,6 +391,14 @@ export function WeddingGuestDirectoryManager({
   const directory = directoryQuery.data;
   const referenceTimestampMs = directoryQuery.dataUpdatedAt;
 
+  const handleExportDirectoryCsv = (): void => {
+    const csv = buildGuestDirectoryCsv(directory, referenceTimestampMs);
+    const filename = buildSafeCsvFilename(wedding.slug, 'guest-directory');
+    downloadCsvFile(filename, csv);
+    setActionError(null);
+    setActionFeedback(`Exported ${filename} with formula-safe escaping.`);
+  };
+
   return (
     <div className="space-y-6" data-testid="wedding-guest-directory-manager">
       {/* Metrics Summary */}
@@ -503,35 +514,48 @@ export function WeddingGuestDirectoryManager({
           />
         </div>
 
-        {isWritable ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowCsvImport((prev) => !prev);
-                setShowCreateHousehold(false);
-              }}
-              data-testid="toggle-csv-import-button"
-            >
-              <FileSpreadsheet className="size-4" aria-hidden="true" />
-              Import CSV
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                setShowCreateHousehold((prev) => !prev);
-                setShowCsvImport(false);
-              }}
-              data-testid="open-create-household-button"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              New Household
-            </Button>
-          </div>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={directory.totalHouseholds === 0}
+            onClick={handleExportDirectoryCsv}
+            data-testid="export-guest-directory-csv-button"
+          >
+            <Download className="size-4" aria-hidden="true" />
+            Export Directory CSV
+          </Button>
+          {isWritable ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowCsvImport((prev) => !prev);
+                  setShowCreateHousehold(false);
+                }}
+                data-testid="toggle-csv-import-button"
+              >
+                <FileSpreadsheet className="size-4" aria-hidden="true" />
+                Import CSV
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  setShowCreateHousehold((prev) => !prev);
+                  setShowCsvImport(false);
+                }}
+                data-testid="open-create-household-button"
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                New Household
+              </Button>
+            </>
+          ) : null}
+        </div>
       </div>
 
       {isWritable && showCsvImport ? (

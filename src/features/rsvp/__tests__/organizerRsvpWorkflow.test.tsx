@@ -106,7 +106,28 @@ describe('WeddingRsvpDashboard — Custom RSVP Questions, Response Filtering & R
     );
 
     expect(await screen.findByTestId('rsvp-metric-attending-guests')).toHaveTextContent('2');
-    expect(screen.getByText('Truffle Risotto')).toBeInTheDocument();
+    expect(screen.getByTestId('analytics-household-response-rate')).toHaveTextContent(
+      '50% Responded',
+    );
+    expect(screen.getByTestId('analytics-confirmed-headcount')).toHaveTextContent('2 / 5 Seats');
+    expect(screen.getByTestId('analytics-attending-adults')).toHaveTextContent('1');
+    expect(screen.getByTestId('rsvp-responses-card')).toHaveTextContent('Truffle Risotto');
+
+    // Trigger CSV export
+    const createUrlSpy = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:https://example.test/rsvp.csv');
+    const revokeUrlSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const anchorClickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+
+    await user.click(screen.getByTestId('export-rsvp-attendance-csv-button'));
+    expect(anchorClickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeUrlSpy).toHaveBeenCalledTimes(1);
+    createUrlSpy.mockRestore();
+    revokeUrlSpy.mockRestore();
+    anchorClickSpy.mockRestore();
 
     // Filter to Awaiting RSVP -> hides Rivera, keeps Lee
     await user.click(screen.getByTestId('rsvp-filter-pending'));

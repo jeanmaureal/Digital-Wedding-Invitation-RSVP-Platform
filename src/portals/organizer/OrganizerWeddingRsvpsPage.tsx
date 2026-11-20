@@ -186,11 +186,11 @@ export function OrganizerWeddingRsvpsPage(): JSX.Element {
             data-testid="wedding-rsvps-heading"
             className="text-3xl font-semibold tracking-tight"
           >
-            RSVPs &amp; Custom Questions — {wedding.title}
+            RSVPs, Analytics &amp; CSV Exports — {wedding.title}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Configure custom celebration questions and review live token-verified household RSVP
-            submissions.
+            Configure custom celebration questions, inspect household vs. individual attendance
+            analytics, and download spreadsheet-safe CSV exports.
           </p>
         </div>
       </div>
@@ -200,6 +200,7 @@ export function OrganizerWeddingRsvpsPage(): JSX.Element {
         userId={userId}
         workspaceId={workspaceId}
         weddingId={wedding.id}
+        weddingSlug={wedding.slug}
         callerRole={callerRole}
       />
     </section>

@@ -7,6 +7,10 @@ export type RsvpAttendeeRow = Database['public']['Tables']['rsvp_attendees']['Ro
 export type RsvpAnswerRow = Database['public']['Tables']['rsvp_answers']['Row'];
 export type RsvpQuestionType = Database['public']['Enums']['rsvp_question_type'];
 export type RsvpAttendanceStatus = Database['public']['Enums']['rsvp_attendance_status'];
+export type RsvpGuestSide = Database['public']['Enums']['guest_side'];
+export type RsvpInvitationDeliveryStatus =
+  Database['public']['Enums']['invitation_delivery_status'];
+export type HouseholdInvitationLinkState = 'active' | 'expired' | 'revoked' | 'none';
 
 export const RSVP_QUESTION_TYPE_OPTIONS = ['short_text', 'single_select', 'boolean'] as const;
 
@@ -14,6 +18,13 @@ export const RSVP_QUESTION_TYPE_LABELS: Readonly<Record<RsvpQuestionType, string
   short_text: 'Short Text Response',
   single_select: 'Single Choice (Dropdown)',
   boolean: 'Yes / No Question',
+};
+
+export const RSVP_GUEST_SIDE_LABELS: Readonly<Record<RsvpGuestSide, string>> = {
+  partner_one: 'Partner 1 Side',
+  partner_two: 'Partner 2 Side',
+  mutual: 'Mutual Friends & Family',
+  other: 'Other / VIP',
 };
 
 const UNSAFE_SCRIPT_OR_URI_PATTERN = /<\s*script\b|(?:javascript|vbscript):|data:\s*text\/html/i;
@@ -106,6 +117,9 @@ export interface OrganizerHouseholdAttendeeStatus {
   readonly isChild: boolean;
   readonly attendanceStatus: RsvpAttendanceStatus | 'pending';
   readonly dietaryNotes: string;
+  readonly side?: RsvpGuestSide | undefined;
+  readonly email?: string | undefined;
+  readonly phone?: string | undefined;
 }
 
 export interface OrganizerHouseholdAnswerView {
@@ -122,6 +136,10 @@ export interface OrganizerHouseholdRsvpEntry {
   readonly submission: RsvpSubmissionRow | null;
   readonly attendees: readonly OrganizerHouseholdAttendeeStatus[];
   readonly answers: readonly OrganizerHouseholdAnswerView[];
+  readonly notes?: string | undefined;
+  readonly invitationLinkStatus?: HouseholdInvitationLinkState | undefined;
+  readonly deliveryStatus?: RsvpInvitationDeliveryStatus | null | undefined;
+  readonly invitationExpiresAt?: string | null | undefined;
 }
 
 export interface WeddingRsvpOverview {

@@ -3,6 +3,7 @@ export type PublishingErrorCode =
   | 'INSUFFICIENT_WORKSPACE_ROLE'
   | 'ARCHIVED_WEDDING_CANNOT_PUBLISH'
   | 'NO_VISIBLE_SECTIONS_TO_PUBLISH'
+  | 'PUBLISHED_VERSION_NOT_FOUND'
   | 'WEDDING_NOT_FOUND'
   | 'UNSAFE_DESIGN_PAYLOAD'
   | 'VALIDATION_ERROR'
@@ -35,7 +36,7 @@ export function translatePublishingError(rawError: unknown): PublishingDomainErr
   if (rawMessage.includes('ARCHIVED_WEDDING_CANNOT_PUBLISH:')) {
     return new PublishingDomainError(
       'ARCHIVED_WEDDING_CANNOT_PUBLISH',
-      'Restore this archived wedding project to Draft before publishing.',
+      'Restore this archived wedding project to Draft before publishing or activating a snapshot.',
     );
   }
 
@@ -43,6 +44,13 @@ export function translatePublishingError(rawError: unknown): PublishingDomainErr
     return new PublishingDomainError(
       'NO_VISIBLE_SECTIONS_TO_PUBLISH',
       'Enable at least one visible invitation section before publishing.',
+    );
+  }
+
+  if (rawMessage.includes('PUBLISHED_VERSION_NOT_FOUND:')) {
+    return new PublishingDomainError(
+      'PUBLISHED_VERSION_NOT_FOUND',
+      'That historical snapshot version could not be found for this wedding project.',
     );
   }
 
@@ -63,7 +71,7 @@ export function translatePublishingError(rawError: unknown): PublishingDomainErr
   if (sqlState === '42501' || rawMessage.includes('INSUFFICIENT_WORKSPACE_ROLE:')) {
     return new PublishingDomainError(
       'INSUFFICIENT_WORKSPACE_ROLE',
-      'Only workspace owners, admins, and editors can publish or unpublish wedding websites.',
+      'Only workspace owners, admins, and editors can publish, unpublish, or roll back wedding websites.',
     );
   }
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, ClipboardCheck, RefreshCw, Search } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, Download, RefreshCw, Search } from 'lucide-react';
 import { type JSX, useDeferredValue, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,18 +13,26 @@ import {
 } from '@/features/rsvp/api/organizerRsvpApi';
 import { translateOrganizerRsvpError } from '@/features/rsvp/api/rsvpErrors';
 import { RsvpQuestionsManagerCard } from '@/features/rsvp/components/organizer/RsvpQuestionsManagerCard';
+import { WeddingRsvpAnalyticsCard } from '@/features/rsvp/components/organizer/WeddingRsvpAnalyticsCard';
 import { rsvpQueryKeys } from '@/features/rsvp/queryKeys';
 import type {
   OrganizerHouseholdRsvpEntry,
   RsvpQuestionFormValues,
 } from '@/features/rsvp/schemas/organizerRsvpSchemas';
+import { computeWeddingRsvpAnalytics } from '@/features/rsvp/utils/rsvpAnalytics';
+import {
+  buildHouseholdSummaryCsv,
+  buildRsvpAttendanceCsv,
+} from '@/features/rsvp/utils/rsvpCsvExport';
 import type { WorkspaceRole } from '@/features/workspace/schemas/workspaceSchemas';
 import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
+import { buildSafeCsvFilename, downloadCsvFile } from '@/lib/utilities/csvExport';
 
 export interface WeddingRsvpDashboardProps {
   readonly userId: string;
   readonly workspaceId: string;
   readonly weddingId: string;
+  readonly weddingSlug?: string | undefined;
   readonly callerRole: WorkspaceRole;
   readonly client?: TypedSupabaseClient | null;
 }
@@ -39,6 +47,7 @@ export function WeddingRsvpDashboard({
   userId,
   workspaceId,
   weddingId,
+  weddingSlug = 'wedding',
   callerRole,
   client,
 }: WeddingRsvpDashboardProps): JSX.Element {
@@ -150,6 +159,13 @@ export function WeddingRsvpDashboard({
     });
   }, [overviewQuery.data?.households, statusFilter, deferredSearchQuery]);
 
+  const analytics = useMemo(() => {
+    if (!overviewQuery.data) {
+      return null;
+    }
+    return computeWeddingRsvpAnalytics(overviewQuery.data);
+  }, [overviewQuery.data]);
+
   if (overviewQuery.isPending) {
     return (
       <Card data-testid="rsvp-dashboard-loading">
@@ -189,6 +205,20 @@ export function WeddingRsvpDashboard({
     createQuestionMutation.isPending ||
     updateQuestionMutation.isPending ||
     deleteQuestionMutation.isPending;
+
+  const handleExportRsvpAttendanceCsv = (): void => {
+    const csv = buildRsvpAttendanceCsv(overview);
+    const filename = buildSafeCsvFilename(weddingSlug, 'rsvp-attendance');
+    downloadCsvFile(filename, csv);
+    setFeedback(`Exported ${filename} with formula-safe escaping.`);
+  };
+
+  const handleExportHouseholdSummaryCsv = (): void => {
+    const csv = buildHouseholdSummaryCsv(overview);
+    const filename = buildSafeCsvFilename(weddingSlug, 'households-summary');
+    downloadCsvFile(filename, csv);
+    setFeedback(`Exported ${filename} with formula-safe escaping.`);
+  };
 
   return (
     <div className="space-y-6" data-testid="wedding-rsvp-dashboard">
@@ -242,6 +272,8 @@ export function WeddingRsvpDashboard({
         </Card>
       </div>
 
+      {analytics ? <WeddingRsvpAnalyticsCard analytics={analytics} /> : null}
+
       {!isWritable ? (
         <Card data-testid="rsvp-viewer-readonly-banner" className="bg-muted/30">
           <CardContent className="text-muted-foreground py-3 text-xs">
@@ -289,20 +321,44 @@ export function WeddingRsvpDashboard({
                 <span>Household RSVP Responses</span>
               </CardTitle>
               <CardDescription>
-                Live server-verified household submissions, dietary notes, and custom question
-                answers. CSV attendance export &amp; version analytics arrive in Phase 8.
+                Live server-verified household submissions, dietary notes, custom question answers,
+                and spreadsheet-safe CSV attendance exports.
               </CardDescription>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void overviewQuery.refetch()}
-              data-testid="refresh-rsvp-responses-button"
-            >
-              <RefreshCw className="size-3.5" aria-hidden="true" />
-              Refresh
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={overview.households.length === 0}
+                onClick={handleExportRsvpAttendanceCsv}
+                data-testid="export-rsvp-attendance-csv-button"
+              >
+                <Download className="size-3.5" aria-hidden="true" />
+                Export Guest &amp; RSVP CSV
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={overview.households.length === 0}
+                onClick={handleExportHouseholdSummaryCsv}
+                data-testid="export-household-summary-csv-button"
+              >
+                <Download className="size-3.5" aria-hidden="true" />
+                Export Household Summary
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void overviewQuery.refetch()}
+                data-testid="refresh-rsvp-responses-button"
+              >
+                <RefreshCw className="size-3.5" aria-hidden="true" />
+                Refresh
+              </Button>
+            </div>
           </div>
         </CardHeader>
 

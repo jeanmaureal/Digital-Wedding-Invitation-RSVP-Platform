@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOrganizerAuth } from '@/features/auth/context/organizerAuthContext';
 import { WeddingDesignPreviewCard } from '@/features/design/components/WeddingDesignPreviewCard';
+import { PublicationVersionHistoryCard } from '@/features/publishing/components/PublicationVersionHistoryCard';
 import { WeddingPublishingCard } from '@/features/publishing/components/WeddingPublishingCard';
 import { fetchWorkspaceWeddingById } from '@/features/weddings/api/weddingApi';
 import { translateWeddingError } from '@/features/weddings/api/weddingErrors';
@@ -261,8 +262,8 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
               <span>Public Snapshot Publishing</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Publish immutable /w/{wedding.slug} snapshots now; rollback history &amp; RSVP
-              analytics arrive in Phase 8.
+              Publish immutable /w/{wedding.slug} snapshots, preview version history, and roll back
+              live versions safely without altering Builder drafts or RSVPs.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -275,6 +276,14 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
         callerRole={callerRole}
         wedding={wedding}
         settings={settings}
+      />
+
+      <PublicationVersionHistoryCard
+        key={`publishing-history:${workspaceId}:${wedding.id}`}
+        userId={userId}
+        workspaceId={workspaceId}
+        callerRole={callerRole}
+        wedding={wedding}
       />
 
       <WeddingDesignPreviewCard
