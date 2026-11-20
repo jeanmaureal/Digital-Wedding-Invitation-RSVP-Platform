@@ -29,4 +29,12 @@
 
 ## 3. GitHub Actions CI & Live Vercel Production Status (`P9-AC14`)
 
-- **Status:** `NOT RUN` (Pending GPG-signed commit push to `origin/main` and post-deploy live Vercel Production verification via `browser` subagent).
+- **Commit (`main`):** `363b7bd`
+- **GitHub Actions CI:**
+  - `Typecheck, Lint, Format, Test, Build & E2E` (`136093909995`) — **`success`** (includes always-on `phase9-ci-security-and-reliability.spec.ts` `dist/` CSP enforcement)
+  - `Git History Secret Scan (Gitleaks)` (`136093909725`) — **`success`**
+- **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):**
+  - Deployment `https://digital-wedding-invitation-rsvp-platform-q3r35n0lg.vercel.app` (`● Ready`, `18s`)
+  - Host-verified via `browser` subagent `c6c5f60a-c2a9-4b24-a8c9-99cbd56a4f30` (`BROWSER_HOST_FACTS`: `visited_origins: https://digital-wedding-invitation-rsvp-pla.vercel.app`, `blocked_origins: none`, screenshot `final_step_12.png`):
+    - Live HTTP headers verified: `Content-Security-Policy` (`script-src 'self'` without `'unsafe-eval'` or `'unsafe-inline'`), `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+    - `/w/sample-celebration`, `/i/guest-link-probe-...` (`0` raw token echo), and `/app/login?redirectTo=%2F%2Fevil.example.com%2Fphish` (open-redirect neutralized to `/app`) all verified with `0` console/CSP errors.
