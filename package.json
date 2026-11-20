@@ -20,8 +20,10 @@
     "test:e2e:phase4:live": "node scripts/verify-phase4-live-e2e.mjs",
     "test:e2e:phase5:live": "node scripts/verify-phase5-live-e2e.mjs",
     "test:e2e:phase6:live": "node scripts/verify-phase6-live-e2e.mjs",
+    "test:e2e:phase7:live": "node scripts/verify-phase7-live-e2e.mjs",
     "test:db:concurrency": "node scripts/verify-phase1-concurrency.mjs",
     "test:db:phase2:concurrency": "node scripts/verify-phase2-concurrency.mjs",
+    "test:db:phase7:concurrency": "node scripts/verify-phase7-concurrency.mjs",
     "db:types": "node scripts/generate-db-types.mjs",
     "security:secrets": "node scripts/scan-secrets.mjs"
   },

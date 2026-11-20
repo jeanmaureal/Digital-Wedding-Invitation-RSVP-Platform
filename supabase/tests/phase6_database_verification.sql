@@ -133,11 +133,12 @@ BEGIN
         v_rec.schema_name, v_rec.fn_name;
     END IF;
 
-    -- Only `health_check`, `get_public_wedding_by_slug`, and `resolve_invitation_by_token` may be executable by `anon`
+    -- Only `health_check`, `get_public_wedding_by_slug`, `resolve_invitation_by_token`, and `submit_household_rsvp` may be executable by `anon`
     IF v_rec.fn_name NOT IN (
       'health_check',
       'get_public_wedding_by_slug',
-      'resolve_invitation_by_token'
+      'resolve_invitation_by_token',
+      'submit_household_rsvp'
     ) AND v_rec.anon_exec THEN
       RAISE EXCEPTION 'ASSERTION_FAILED [P6-AC04]: Function %.% must NOT be executable by anon.',
         v_rec.schema_name, v_rec.fn_name;

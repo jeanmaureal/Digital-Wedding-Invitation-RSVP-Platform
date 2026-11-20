@@ -24,6 +24,7 @@ import { WORKSPACE_ROLE_LABELS } from '@/features/workspace/schemas/workspaceSch
 import {
   buildOrganizerWeddingBuilderPath,
   buildOrganizerWeddingGuestsPath,
+  buildOrganizerWeddingRsvpsPath,
   ROUTES,
 } from '@/lib/constants/routes';
 
@@ -227,19 +228,28 @@ export function OrganizerWeddingDetailPage(): JSX.Element {
             <CardTitle className="flex items-center justify-between gap-2 text-sm">
               <span className="flex items-center gap-2">
                 <Users className="text-primary size-4" aria-hidden="true" />
-                <span>Households &amp; Invitations</span>
+                <span>Guests &amp; RSVPs</span>
               </span>
-              <Link
-                to={buildOrganizerWeddingGuestsPath(wedding.id)}
-                data-testid="summary-open-guests-link"
-                className="text-primary text-xs font-medium underline-offset-4 hover:underline"
-              >
-                Open Guest Directory
-              </Link>
+              <span className="flex flex-wrap items-center gap-2.5">
+                <Link
+                  to={buildOrganizerWeddingGuestsPath(wedding.id)}
+                  data-testid="summary-open-guests-link"
+                  className="text-primary text-xs font-medium underline-offset-4 hover:underline"
+                >
+                  Guests
+                </Link>
+                <Link
+                  to={buildOrganizerWeddingRsvpsPath(wedding.id)}
+                  data-testid="summary-open-rsvps-link"
+                  className="text-primary text-xs font-medium underline-offset-4 hover:underline"
+                >
+                  RSVPs
+                </Link>
+              </span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Manage household groups, import CSV guest lists, and issue SHA-256 hashed /i/… links
-              &amp; QR codes. Transactional RSVP forms arrive in Phase 7.
+              Manage household groups, CSV imports, QR links, custom RSVP questions, and live
+              token-verified household responses.
             </CardDescription>
           </CardHeader>
         </Card>

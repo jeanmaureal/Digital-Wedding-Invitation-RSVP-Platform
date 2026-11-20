@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Palette, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ClipboardCheck, Palette, RefreshCw } from 'lucide-react';
 import type { JSX } from 'react';
 import { Link, useParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import { WORKSPACE_ROLE_LABELS } from '@/features/workspace/schemas/workspaceSch
 import {
   buildOrganizerWeddingBuilderPath,
   buildOrganizerWeddingPath,
+  buildOrganizerWeddingRsvpsPath,
   ROUTES,
 } from '@/lib/constants/routes';
 
@@ -167,6 +168,15 @@ export function OrganizerWeddingGuestsPage(): JSX.Element {
             <Link to={buildOrganizerWeddingBuilderPath(wedding.id)}>
               <Palette className="size-4" aria-hidden="true" />
               Open Builder
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to={buildOrganizerWeddingRsvpsPath(wedding.id)}
+              data-testid="guests-open-rsvps-link"
+            >
+              <ClipboardCheck className="size-4" aria-hidden="true" />
+              RSVPs &amp; Questions
             </Link>
           </Button>
         </div>

@@ -92,6 +92,18 @@ describe('appRoutes portal boundaries & organizer isolation (P0-AC01, P1-AC06, P
     expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
   });
 
+  it('redirects unauthenticated /app/weddings/:weddingId/rsvps deep links to /app/login with encoded redirectTo (P7-AC07, P7-AC10)', async () => {
+    vi.spyOn(organizerClientModule, 'getOrganizerSupabaseClient').mockReturnValue(null);
+    const { router } = renderRoute('/app/weddings/11111111-2222-4333-8444-555555555555/rsvps');
+
+    expect(await screen.findByTestId('route-organizer-login')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/app/login');
+    expect(router.state.location.search).toBe(
+      '?redirectTo=%2Fapp%2Fweddings%2F11111111-2222-4333-8444-555555555555%2Frsvps',
+    );
+    expect(organizerClientModule.hasInitializedOrganizerSupabaseClient()).toBe(false);
+  });
+
   it('renders safe unavailable state on /w/test without initializing organizerClient', async () => {
     vi.spyOn(publicClientModule, 'getPublicSupabaseClient').mockReturnValue(null);
     renderRoute('/w/test');

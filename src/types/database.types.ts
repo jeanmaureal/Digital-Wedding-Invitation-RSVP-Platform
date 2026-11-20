@@ -269,6 +269,221 @@ export type Database = {
           },
         ]
       }
+      rsvp_answers: {
+        Row: {
+          answer_text: string
+          created_at: string
+          group_id: string
+          id: string
+          question_id: string
+          submission_id: string
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          answer_text?: string
+          created_at?: string
+          group_id: string
+          id?: string
+          question_id: string
+          submission_id: string
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          answer_text?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          question_id?: string
+          submission_id?: string
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_answers_question_fkey"
+            columns: ["workspace_id", "wedding_id", "question_id"]
+            isOneToOne: false
+            referencedRelation: "rsvp_questions"
+            referencedColumns: ["workspace_id", "wedding_id", "id"]
+          },
+          {
+            foreignKeyName: "rsvp_answers_submission_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id", "submission_id"]
+            isOneToOne: false
+            referencedRelation: "rsvp_submissions"
+            referencedColumns: ["workspace_id", "wedding_id", "group_id", "id"]
+          },
+        ]
+      }
+      rsvp_attendees: {
+        Row: {
+          attendance_status: Database["public"]["Enums"]["rsvp_attendance_status"]
+          created_at: string
+          dietary_notes: string
+          group_id: string
+          guest_id: string
+          id: string
+          submission_id: string
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          attendance_status: Database["public"]["Enums"]["rsvp_attendance_status"]
+          created_at?: string
+          dietary_notes?: string
+          group_id: string
+          guest_id: string
+          id?: string
+          submission_id: string
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          attendance_status?: Database["public"]["Enums"]["rsvp_attendance_status"]
+          created_at?: string
+          dietary_notes?: string
+          group_id?: string
+          guest_id?: string
+          id?: string
+          submission_id?: string
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_attendees_guest_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id", "guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["workspace_id", "wedding_id", "group_id", "id"]
+          },
+          {
+            foreignKeyName: "rsvp_attendees_submission_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id", "submission_id"]
+            isOneToOne: false
+            referencedRelation: "rsvp_submissions"
+            referencedColumns: ["workspace_id", "wedding_id", "group_id", "id"]
+          },
+        ]
+      }
+      rsvp_questions: {
+        Row: {
+          created_at: string
+          help_text: string
+          id: string
+          is_required: boolean
+          label: string
+          options: Json
+          question_type: Database["public"]["Enums"]["rsvp_question_type"]
+          sort_order: number
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          help_text?: string
+          id?: string
+          is_required?: boolean
+          label: string
+          options?: Json
+          question_type?: Database["public"]["Enums"]["rsvp_question_type"]
+          sort_order?: number
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          help_text?: string
+          id?: string
+          is_required?: boolean
+          label?: string
+          options?: Json
+          question_type?: Database["public"]["Enums"]["rsvp_question_type"]
+          sort_order?: number
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_questions_workspace_wedding_fkey"
+            columns: ["workspace_id", "wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      rsvp_submissions: {
+        Row: {
+          additional_guests_count: number
+          attending_count: number
+          group_id: string
+          household_note: string
+          id: string
+          invitation_id: string | null
+          overall_status: Database["public"]["Enums"]["rsvp_attendance_status"]
+          response_version: number
+          submitted_at: string
+          updated_at: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Insert: {
+          additional_guests_count?: number
+          attending_count: number
+          group_id: string
+          household_note?: string
+          id?: string
+          invitation_id?: string | null
+          overall_status: Database["public"]["Enums"]["rsvp_attendance_status"]
+          response_version?: number
+          submitted_at?: string
+          updated_at?: string
+          wedding_id: string
+          workspace_id: string
+        }
+        Update: {
+          additional_guests_count?: number
+          attending_count?: number
+          group_id?: string
+          household_note?: string
+          id?: string
+          invitation_id?: string | null
+          overall_status?: Database["public"]["Enums"]["rsvp_attendance_status"]
+          response_version?: number
+          submitted_at?: string
+          updated_at?: string
+          wedding_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_submissions_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvp_submissions_workspace_wedding_group_fkey"
+            columns: ["workspace_id", "wedding_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "guest_groups"
+            referencedColumns: ["workspace_id", "wedding_id", "id"]
+          },
+        ]
+      }
       wedding_sections: {
         Row: {
           content: Json
@@ -774,6 +989,10 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_household_rsvp: {
+        Args: { p_payload: Json; p_token: string }
+        Returns: Json
+      }
       unpublish_wedding: {
         Args: { p_wedding_id: string; p_workspace_id: string }
         Returns: {
@@ -837,6 +1056,8 @@ export type Database = {
       guest_side: "partner_one" | "partner_two" | "mutual" | "other"
       invitation_delivery_status: "not_shared" | "shared"
       invitation_status: "active" | "revoked"
+      rsvp_attendance_status: "attending" | "declined"
+      rsvp_question_type: "short_text" | "single_select" | "boolean"
       wedding_access_mode: "public" | "invite_only"
       wedding_section_type:
         | "hero"
@@ -986,6 +1207,8 @@ export const Constants = {
       guest_side: ["partner_one", "partner_two", "mutual", "other"],
       invitation_delivery_status: ["not_shared", "shared"],
       invitation_status: ["active", "revoked"],
+      rsvp_attendance_status: ["attending", "declined"],
+      rsvp_question_type: ["short_text", "single_select", "boolean"],
       wedding_access_mode: ["public", "invite_only"],
       wedding_section_type: [
         "hero",

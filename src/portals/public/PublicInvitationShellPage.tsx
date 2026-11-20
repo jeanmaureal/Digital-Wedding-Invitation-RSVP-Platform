@@ -12,6 +12,7 @@ import {
   isValidPublicInvitationToken,
   type PublicInvitationLookupResult,
 } from '@/features/guests/schemas/publicInvitationSchemas';
+import { HouseholdRsvpFormCard } from '@/features/rsvp/components/public/HouseholdRsvpFormCard';
 import { ROUTES } from '@/lib/constants/routes';
 import { getPublicSupabaseClient, type TypedSupabaseClient } from '@/lib/supabase/publicClient';
 
@@ -50,6 +51,14 @@ export function PublicInvitationShellPage({
       document.title = previousTitle;
     };
   }, [activeData]);
+
+  function handleScrollToHouseholdRsvp(): void {
+    setShowRsvpNotice(true);
+    const target = document.getElementById('household-rsvp-section');
+    if (target && typeof target.scrollIntoView === 'function') {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 
   if (!isValidFormat || invitationQuery.data?.status === 'invalid_token') {
     return (
@@ -134,7 +143,7 @@ export function PublicInvitationShellPage({
   }
 
   if (activeData) {
-    const { document: invitationDoc, household, versionNumber } = activeData;
+    const { document: invitationDoc, household, rsvp, versionNumber } = activeData;
 
     return (
       <section
@@ -203,13 +212,13 @@ export function PublicInvitationShellPage({
               >
                 <div className="space-y-0.5 text-xs">
                   <p className="font-semibold">
-                    {invitationDoc.wedding.isRsvpOpen
+                    {rsvp.isAcceptingResponses
                       ? `Household RSVP Verified (${household.displayName} — up to ${household.maxAttendees} ${household.maxAttendees === 1 ? 'attendee' : 'attendees'})`
                       : 'Online RSVPs Are Currently Closed'}
                   </p>
                   <p className="text-muted-foreground">
-                    {invitationDoc.wedding.isRsvpOpen
-                      ? 'Your household invitation link is verified and active. Interactive attendance & meal selection submission opens in the next step.'
+                    {rsvp.isAcceptingResponses
+                      ? 'Complete and submit your household attendance form directly below the invitation.'
                       : 'Please reach out to the couple directly if you need to update your attendance details.'}
                   </p>
                 </div>
@@ -229,7 +238,16 @@ export function PublicInvitationShellPage({
         <InvitationRenderer
           document={invitationDoc}
           viewportMode="desktop"
-          onPrimaryRsvpAction={() => setShowRsvpNotice(true)}
+          onPrimaryRsvpAction={handleScrollToHouseholdRsvp}
+        />
+
+        <HouseholdRsvpFormCard
+          key={`rsvp-form:${versionNumber}:${household.displayName}`}
+          rawToken={token}
+          weddingTitle={invitationDoc.wedding.title}
+          household={household}
+          rsvp={rsvp}
+          client={resolvedClient}
         />
       </section>
     );

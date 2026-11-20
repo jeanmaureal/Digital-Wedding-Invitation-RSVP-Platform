@@ -30,6 +30,61 @@ const publicHouseholdSummarySchema = z.strictObject({
 
 export type PublicHouseholdSummary = z.infer<typeof publicHouseholdSummarySchema>;
 
+export const publicRsvpQuestionSchema = z.strictObject({
+  id: z.uuid(),
+  label: z.string().min(1).max(160),
+  helpText: z.string().max(240),
+  questionType: z.enum(['short_text', 'single_select', 'boolean']),
+  options: z.array(z.string().min(1).max(80)).max(10),
+  isRequired: z.boolean(),
+  sortOrder: z.number().int().min(0).max(50),
+});
+
+export type PublicRsvpQuestion = z.infer<typeof publicRsvpQuestionSchema>;
+
+export const publicSubmittedAttendeeSchema = z.strictObject({
+  guestId: z.uuid(),
+  attendanceStatus: z.enum(['attending', 'declined']),
+  dietaryNotes: z.string().max(300),
+});
+
+export type PublicSubmittedAttendee = z.infer<typeof publicSubmittedAttendeeSchema>;
+
+export const publicSubmittedAnswerSchema = z.strictObject({
+  questionId: z.uuid(),
+  answerText: z.string().max(500),
+});
+
+export type PublicSubmittedAnswer = z.infer<typeof publicSubmittedAnswerSchema>;
+
+export const publicExistingRsvpSubmissionSchema = z.strictObject({
+  overallStatus: z.enum(['attending', 'declined']),
+  attendingCount: z.number().int().min(0).max(50),
+  additionalGuestsCount: z.number().int().min(0).max(50),
+  householdNote: z.string().max(500),
+  responseVersion: z.number().int().min(1),
+  submittedAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  attendees: z.array(publicSubmittedAttendeeSchema).max(50),
+  answers: z.array(publicSubmittedAnswerSchema).max(50),
+});
+
+export type PublicExistingRsvpSubmission = z.infer<typeof publicExistingRsvpSubmissionSchema>;
+
+export const publicRsvpContextSchema = z.strictObject({
+  isAcceptingResponses: z.boolean(),
+  closedReason: z.enum(['rsvp_closed', 'deadline_passed']).nullable(),
+  rsvpDeadline: z.string().min(1).nullable(),
+  timezone: z.string().min(1),
+  allowPlusOnes: z.boolean(),
+  showDietaryNotes: z.boolean(),
+  confirmationMessage: z.string(),
+  questions: z.array(publicRsvpQuestionSchema).max(50),
+  existingSubmission: publicExistingRsvpSubmissionSchema.nullable(),
+});
+
+export type PublicRsvpContext = z.infer<typeof publicRsvpContextSchema>;
+
 export const rpcResolveInvitationEnvelopeSchema = z.discriminatedUnion('status', [
   z.strictObject({
     status: z.literal('invalid_token'),
@@ -43,6 +98,7 @@ export const rpcResolveInvitationEnvelopeSchema = z.discriminatedUnion('status',
     publishedAt: z.string().min(1),
     snapshot: z.unknown(),
     household: publicHouseholdSummarySchema,
+    rsvp: publicRsvpContextSchema.optional(),
   }),
 ]);
 
@@ -60,6 +116,7 @@ export type PublicInvitationLookupResult =
       readonly publishedAt: string;
       readonly document: InvitationDocument;
       readonly household: PublicHouseholdSummary;
+      readonly rsvp: PublicRsvpContext;
     };
 
 export function parsePublicInvitationLookupEnvelope(
@@ -90,11 +147,24 @@ export function parsePublicInvitationLookupEnvelope(
     };
   }
 
+  const fallbackRsvpContext: PublicRsvpContext = {
+    isAcceptingResponses: validatedDoc.data.wedding.isRsvpOpen,
+    closedReason: validatedDoc.data.wedding.isRsvpOpen ? null : 'rsvp_closed',
+    rsvpDeadline: validatedDoc.data.wedding.rsvpDeadline,
+    timezone: validatedDoc.data.wedding.timezone,
+    allowPlusOnes: false,
+    showDietaryNotes: true,
+    confirmationMessage: 'Thank you for sharing your household RSVP!',
+    questions: [],
+    existingSubmission: null,
+  };
+
   return {
     status: 'active',
     versionNumber: parsedEnvelope.data.versionNumber,
     publishedAt: parsedEnvelope.data.publishedAt,
     document: validatedDoc.data,
     household: parsedEnvelope.data.household,
+    rsvp: parsedEnvelope.data.rsvp ?? fallbackRsvpContext,
   };
 }

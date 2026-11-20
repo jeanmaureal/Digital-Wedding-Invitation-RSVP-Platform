@@ -98,6 +98,14 @@ export const appRoutes: RouteObject[] = [
               return { Component: OrganizerWeddingGuestsPage };
             },
           },
+          {
+            path: 'weddings/:weddingId/rsvps',
+            lazy: async () => {
+              const { OrganizerWeddingRsvpsPage } =
+                await import('@/portals/organizer/OrganizerWeddingRsvpsPage');
+              return { Component: OrganizerWeddingRsvpsPage };
+            },
+          },
         ],
       },
       {

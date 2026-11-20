@@ -33,7 +33,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/portals/public/**/*.{ts,tsx}'],
+    files: [
+      'src/portals/public/**/*.{ts,tsx}',
+      'src/features/rsvp/components/public/**/*.{ts,tsx}',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -73,9 +76,14 @@ export default tseslint.config(
                 '@/features/guests/utils/*',
                 '@/features/guests/components',
                 '@/features/guests/components/*',
+                '@/features/rsvp/api/organizerRsvpApi',
+                '@/features/rsvp/api/rsvpErrors',
+                '@/features/rsvp/schemas/organizerRsvpSchemas',
+                '@/features/rsvp/components/organizer',
+                '@/features/rsvp/components/organizer/*',
               ],
               message:
-                'Public portal routes must remain isolated from organizer auth/session clients, workspace modules, and organizer builder/publishing/guest-directory modules (P1-AC14 / P2-AC11 / P3-AC09 / P4-AC09 / P5-AC10 / P6-AC11).',
+                'Public portal routes and public RSVP components must remain isolated from organizer auth/session clients, workspace modules, and organizer builder/publishing/guest/RSVP modules (P1-AC14 / P2-AC11 / P3-AC09 / P4-AC09 / P5-AC10 / P6-AC11 / P7-AC10).',
             },
           ],
         },
@@ -117,6 +125,8 @@ export default tseslint.config(
                 '@/features/publishing/*',
                 '@/features/guests',
                 '@/features/guests/*',
+                '@/features/rsvp',
+                '@/features/rsvp/*',
               ],
               message:
                 'Invitation design schemas, themes, registry, and <InvitationRenderer /> must remain pure and runtime-isolated from organizer session clients and builder forms so both Organizer Previews and Public /w/:slug & /i/:token Snapshots can share them safely (P3-AC09 / P4-AC09 / P5-AC10 / P6-AC11).',
