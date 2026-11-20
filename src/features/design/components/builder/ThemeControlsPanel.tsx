@@ -181,6 +181,7 @@ export function ThemeControlsPanel({
 
   const [bgUrlInput, setBgUrlInput] = useState<string>(overrides.backgroundImageUrl ?? '');
   const [bgUrlError, setBgUrlError] = useState<string | null>(null);
+  const [bgPreviewFailed, setBgPreviewFailed] = useState(false);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
 
   const [isUploadingFont, setIsUploadingFont] = useState(false);
@@ -294,6 +295,7 @@ export function ThemeControlsPanel({
     }
 
     setBgUrlError(null);
+    setBgPreviewFailed(false);
     syncValidationBanner(colorErrors, null);
     applyOverridePatch({
       backgroundImageUrl: parsed.data,
@@ -326,6 +328,7 @@ export function ThemeControlsPanel({
         client,
       );
       setBgUrlInput(uploaded.publicUrl);
+      setBgPreviewFailed(false);
       syncValidationBanner(colorErrors, null);
       applyOverridePatch(
         {
@@ -350,6 +353,7 @@ export function ThemeControlsPanel({
     }
     setBgUrlInput('');
     setBgUrlError(null);
+    setBgPreviewFailed(false);
     syncValidationBanner(colorErrors, null);
     applyOverridePatch(
       {
@@ -977,12 +981,12 @@ export function ThemeControlsPanel({
 
           <div className="space-y-1">
             <Label htmlFor="theme-bg-image-url-input" className="text-xs">
-              Or paste image URL (https://)
+              Or paste a direct hosted image URL (https://*.supabase.co/…)
             </Label>
             <Input
               id="theme-bg-image-url-input"
               type="url"
-              placeholder="https://..."
+              placeholder="https://…supabase.co/storage/v1/object/public/wedding-assets/…"
               disabled={!canEdit}
               value={bgUrlInput}
               data-testid="theme-bg-image-url-input"
@@ -990,6 +994,11 @@ export function ThemeControlsPanel({
               onChange={(e) => handleBackgroundUrlTextChange(e.target.value)}
               className="h-8 text-xs"
             />
+            <p className="text-muted-foreground text-[11px]">
+              For best results (and to satisfy browser security policy), use{' '}
+              <strong>Upload image</strong> (up to 50 MB). Webpage share links such as Google Photos
+              cannot be loaded as direct images.
+            </p>
             <FormFieldError id="theme-bg-image-url-error" message={bgUrlError ?? undefined} />
           </div>
 
@@ -999,6 +1008,8 @@ export function ThemeControlsPanel({
                 <img
                   src={overrides.backgroundImageUrl}
                   alt="Invitation background preview"
+                  onLoad={() => setBgPreviewFailed(false)}
+                  onError={() => setBgPreviewFailed(true)}
                   className="h-full w-full object-cover"
                 />
                 <div
@@ -1009,6 +1020,17 @@ export function ThemeControlsPanel({
                   }}
                 />
               </div>
+
+              {bgPreviewFailed ? (
+                <p
+                  role="alert"
+                  className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-2.5 py-2 text-xs"
+                >
+                  This image URL could not be loaded. External hosts and webpage share links (like
+                  Google Photos) are blocked by browser Content-Security-Policy. Download the photo
+                  and use <strong>Upload image</strong> instead.
+                </p>
+              ) : null}
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">

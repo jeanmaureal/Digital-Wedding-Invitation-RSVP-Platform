@@ -137,3 +137,31 @@
 [data-section-body-scale='xl'] :is(p, blockquote, li, dt, dd) {
   font-size: 1.1875rem;
 }
+
+/* Vertical section rhythm (`compact` | `comfortable` | `airy`) inside <InvitationRenderer /> */
+[data-section-spacing='compact'] [data-section-type] > section {
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+}
+[data-section-spacing='compact'] [data-section-type='hero'] > section {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+[data-section-spacing='comfortable'] [data-section-type] > section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+[data-section-spacing='comfortable'] [data-section-type='hero'] > section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+[data-section-spacing='airy'] [data-section-type] > section {
+  padding-top: 4.75rem;
+  padding-bottom: 4.75rem;
+}
+[data-section-spacing='airy'] [data-section-type='hero'] > section {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}

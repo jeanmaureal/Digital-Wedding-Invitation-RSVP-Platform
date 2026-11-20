@@ -126,6 +126,7 @@ export function InvitationRenderer({
         data-theme-preset={doc.theme.presetId}
         data-dark-surface={String(resolvedTheme.isDarkSurface)}
         data-has-background-image={String(hasBackgroundImage)}
+        data-section-spacing={resolvedTheme.sectionSpacing}
         aria-label={`${doc.wedding.title} invitation`}
         className="relative isolate overflow-hidden rounded-xl border shadow-sm"
         style={{
