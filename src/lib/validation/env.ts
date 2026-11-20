@@ -1,3 +1,4 @@
+import '@/lib/validation/zodConfig';
 import { z } from 'zod';
 
 export const APP_ENVIRONMENTS = ['local', 'preview', 'production'] as const;

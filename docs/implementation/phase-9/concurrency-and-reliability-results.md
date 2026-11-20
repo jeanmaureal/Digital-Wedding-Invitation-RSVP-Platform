@@ -1,0 +1,19 @@
+# Phase 9 — Cross-Subsystem Concurrency & Reliability Verification
+
+## 1. Execution Summary
+
+- **Harness:** [verify-phase9-concurrency.mjs](file:///c:/Users/almau/Digital-Wedding-Invitation-RSVP-Platform/scripts/verify-phase9-concurrency.mjs) (`npm run test:db:phase9:concurrency`)
+- **Transport:** Independent stateless & authenticated `@supabase/supabase-js` HTTP clients executing in parallel over Supavisor (`wedding-platform-dev`)
+- **Teardown Verification:** `remaining_ephemeral_users: 0`
+- **Final Result:** `ALL EXECUTED PHASE 9 CROSS-SUBSYSTEM CONCURRENCY VERIFICATIONS PASSED.` (Exit Code `0`)
+
+---
+
+## 2. Multi-Connection Burst Results (`P9-AC05`)
+
+| Burst       | Concurrent Workload                                                                                                                                                                                                     | Verified Post-Burst Invariants                                                                                                                                                                                                                                                       |   Status   |
+| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------: |
+| **Burst 1** | `6` parallel `publish_wedding` + `4` parallel `rollback_wedding_published_version(v1/v2)` calls on the same wedding (`10` concurrent organizer connections)                                                             | `0` `23505` collisions on `(wedding_id, version_number)` or `published_versions_one_active_per_wedding_idx`; `0` `40P01` deadlocks; contiguous versions `[8, 7, 6, 5, 4, 3, 2, 1]`; exact `1` active row (`is_active = true`).                                                       | **PASSED** |
+| **Burst 2** | `1` `publish_wedding` + `1` `rollback_wedding_published_version(1)` + `6` anonymous `get_public_wedding_by_slug` reads + `6` guest `submit_household_rsvp` writes across `3` households (`14` simultaneous connections) | All `6/6` concurrent `/w/:slug` reads returned `status = 'published'` with valid snapshot JSON (zero transient `unavailable` window during version swap); all `6/6` guest RSVPs committed deadlock-free (`response_version = 2` on all `3` households).                              | **PASSED** |
+| **Burst 3** | `6` simultaneous `issue_household_invitation` rotations on `Household 1`                                                                                                                                                | `FOR UPDATE` on `guest_groups` serialized all `6` rotations (`0` `invitations_one_active_per_group_idx` errors); exact `1` `'active'` + `6` `'revoked'` rows in `invitations`; exact `1` winning raw token resolved `'active'` while `5` superseded tokens resolved `'unavailable'`. | **PASSED** |
+| **Burst 4** | `4` simultaneous `reorder_wedding_sections` permutations + `1` valid multi-household `import_wedding_guests` batch + `1` invalid multi-household `import_wedding_guests` batch                                          | `DEFERRABLE` sort-order constraint preserved exact `[0, 1, 2, 3, 4, 5, 6]` ordering; valid CSV batch committed cleanly; failing CSV batch rolled back `100%` atomically (`0` partial household leaks).                                                                               | **PASSED** |

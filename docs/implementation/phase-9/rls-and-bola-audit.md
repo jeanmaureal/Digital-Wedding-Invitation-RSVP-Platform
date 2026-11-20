@@ -1,0 +1,31 @@
+# Phase 9 — PostgreSQL Catalog, Cross-Tenant RLS & BOLA Security Audit
+
+## 1. Execution Summary
+
+- **Executable Suite:** [phase9_security_and_rls_suite.sql](file:///c:/Users/almau/Digital-Wedding-Invitation-RSVP-Platform/supabase/tests/phase9_security_and_rls_suite.sql)
+- **Target Project:** `wedding-platform-dev` (`tfwmbpvbfavugvokdych`, region `ap-southeast-1`)
+- **Transaction Safety:** Self-contained `BEGIN; ... ROLLBACK;` (`0` persistent test rows written)
+- **Schema Migrations Required:** **`0`** (All 12 imperative migrations `20261111142432`..`20261120012113` passed every catalog, grant, RLS, and BOLA invariant without modification)
+- **Final Result:** `ALL_PHASE9_SECURITY_AND_RLS_VERIFICATIONS_PASSED` (Exit Code `0`)
+
+---
+
+## 2. Verified Security Matrix (`P9-AC01` – `P9-AC04`)
+
+| Criterion                                               | Verified Scope                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Outcome    |
+| :------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------- |
+| **`P9-AC01` Catalog & Grant Hardening**                 | Exact `15` `public` tables (`relrowsecurity = true` on all `15`); `0` `anon` table/column privileges across `public` & `app_private`; `0` `SELECT`/`INSERT`/`UPDATE` grants on `public.invitations.token_hash` for both `anon` and `authenticated`; exact 4-RPC `anon` allowlist (`get_public_wedding_by_slug`, `health_check`, `resolve_invitation_by_token`, `submit_household_rsvp`); `0` `PUBLIC` function `EXECUTE` grants; `postgres` owner + fixed empty `search_path` on all `public` & `app_private` functions; `0` unsafe views; `0` `auth.role()`/`user_metadata` RLS expressions; `USING` + `WITH CHECK` parity on every `UPDATE` policy. | **PASSED** |
+| **`P9-AC02` 5-Actor Cross-Tenant & Cross-Wedding BOLA** | `anon` blocked (`42501`) on all `15` organizer RPCs; Outsider `Owner B` receives `0` rows across all `15` Tenant Alpha tables, `0` rows on direct `UPDATE`/`DELETE`, `42501`/`23503` on direct `INSERT`, and deterministic `42501`/`P0002` across all `18` cross-workspace RPC calls (including cross-workspace `duplicate_wedding` and `(Workspace B, Wedding A1)` parameter tampering); same-workspace cross-wedding (`Wedding A1` <-> `Wedding A2`) mixing blocked via composite FKs (`23503`) and RPC validation (`22023`/`P0002`).                                                                                                               | **PASSED** |
+| **`P9-AC03` RBAC, Privacy & Immutability**              | `Viewer A` read-only across all tables & blocked on all `12` mutating workspace/wedding/publishing/guest/invitation RPCs; co-member `email IS NULL` for both `viewer` and `editor` in `list_workspace_members` (`0` email exposure in `list_wedding_published_versions`); `Editor A` blocked from permanent `weddings` `DELETE` and workspace admin while `Admin A` succeeds; `IMMUTABLE_PUBLISHED_SNAPSHOT`, `LAST_WORKSPACE_OWNER_REQUIRED`, and `SOLE_WORKSPACE_OWNER_DELETE_BLOCKED` triggers enforced.                                                                                                                                           | **PASSED** |
+| **`P9-AC04` Public Slug, Token & RSVP Negative Suite**  | Draft/archived slugs -> `unavailable` (`0` UUID leak); `invite_only` slug -> `invite_only` (`0` snapshot/UUID leak); short/unknown/revoked/expired tokens fail closed with `0` raw token echo; `submit_household_rsvp` deterministically rejects `INVITATION_UNAVAILABLE`, `HOUSEHOLD_MEMBER_MISMATCH`, `PLUS_ONES_NOT_ALLOWED`, `UNSAFE_RSVP_PAYLOAD`, `CROSS_HOUSEHOLD_GUEST_DENIED`, `HOUSEHOLD_CAPACITY_EXCEEDED`, `INVALID_RSVP_QUESTION`, `RSVP_ANSWER_VALIDATION_ERROR`, `RSVP_DEADLINE_PASSED`, and `RSVP_CLOSED` while preserving baseline `v1` RSVP `100%` intact.                                                                          | **PASSED** |
+
+---
+
+## 3. Supabase Security & Performance Advisors Review (`P9-AC13`)
+
+- **Security Errors (`ERROR`):** **`0`**
+- **Performance Errors / Warnings (`ERROR` / `WARN`):** **`0`**
+- **Audited Informational / Advisory Notices:**
+  1. `0028_anon_security_definer_function_executable` (`3` functions) & `0029_authenticated_security_definer_function_executable` (`18` functions): Supabase's database linter enumerates every `SECURITY DEFINER` RPC in `public` so teams confirm exposure is intentional. Part 1 of `phase9_security_and_rls_suite.sql` mechanically enforces this exact allowlist (`postgres` owner, `SET search_path = ''`, explicit `REVOKE ALL FROM PUBLIC`, internal `(SELECT auth.uid())` / SHA-256 token checks).
+  2. `0005_unused_index` (`INFO` — `rsvp_attendees_workspace_wedding_group_submission_idx`): Intentionally retained because it indexes the composite foreign key `rsvp_attendees_submission_fkey (workspace_id, wedding_id, group_id, submission_id)` for lock-free `ON DELETE CASCADE` maintenance.
+  3. `auth_leaked_password_protection` (`WARN`): HaveIBeenPwned password checks require a paid Supabase Pro plan; tracked in Phase 10 Production Launch readiness alongside dedicated Production Supabase project provisioning.

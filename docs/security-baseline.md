@@ -30,9 +30,15 @@
 
 ---
 
-## 4. HTTP Headers & Secret Scanning
+## 4. HTTP Headers, CSP, DOM-XSS Prevention & Secret Scanning
 
-- **Baseline headers (`vercel.json`):** `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, restrictive `Permissions-Policy`, and `X-Frame-Options: DENY`. A full `Content-Security-Policy` is intentionally deferred until Supabase, font, and media origins are finalized and tested end-to-end.
+- **Production HTTP Security Headers (`vercel.json`, finalized in `Phase 9`):**
+  - `Content-Security-Policy`: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'` (`src/lib/validation/zodConfig.ts` enables Zod v4 `jitless: true` at boot so `script-src 'self'` operates without `'unsafe-eval'` or `'unsafe-inline'`, and `themePresets.ts` uses offline system font stacks so zero third-party font CDNs are contacted).
+  - `Strict-Transport-Security`: `max-age=63072000; includeSubDomains; preload`
+  - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, and `X-Frame-Options: DENY`.
+- **DOM-XSS & Error-Boundary Hardening (`Phase 9`):**
+  - `eslint.config.js` mechanically forbids `dangerouslySetInnerHTML`, `eval`, `new Function`, and implied string evaluation across `src/**/*.{ts,tsx}`.
+  - `AppErrorBoundary.tsx` redacts `/i/:token` segments in diagnostics and renders safe, token-free recovery messages on unexpected runtime faults.
 - **Complementary secret checks:**
   1. `scripts/scan-secrets.mjs` inspects Git-tracked files (excluding documented `.env.example` placeholders) and built `dist/` assets for secret prefixes, service-role JWTs, private keys, and connection strings.
   2. CI runs `gitleaks` alongside GitHub repository secret scanning to protect commit history.
