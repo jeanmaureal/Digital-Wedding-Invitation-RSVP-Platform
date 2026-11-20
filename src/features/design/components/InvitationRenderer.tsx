@@ -12,6 +12,7 @@ import {
 } from '@/features/design/themes/themePresets';
 
 export type InvitationViewportMode = 'desktop' | 'mobile';
+export type InvitationBackdropMode = 'frame' | 'page';
 
 export interface InvitationRendererProps {
   /**
@@ -21,6 +22,7 @@ export interface InvitationRendererProps {
    */
   readonly document: InvitationDocument | unknown;
   readonly viewportMode?: InvitationViewportMode | undefined;
+  readonly backdropMode?: InvitationBackdropMode | undefined;
   readonly onPrimaryRsvpAction?: (() => void) | undefined;
 }
 
@@ -76,6 +78,7 @@ function useCustomInvitationFonts(customFonts: readonly CustomFontAsset[]): void
 export function InvitationRenderer({
   document: rawDocument,
   viewportMode = 'desktop',
+  backdropMode = 'frame',
   onPrimaryRsvpAction,
 }: InvitationRendererProps): JSX.Element {
   const validation = parseInvitationDocument(rawDocument);
@@ -114,94 +117,133 @@ export function InvitationRenderer({
 
   const isMobileFrame = viewportMode === 'mobile';
   const hasBackgroundImage = Boolean(resolvedTheme.backgroundImageUrl);
+  const isPageBackdrop = backdropMode === 'page';
+
+  const backdropLayers = resolvedTheme.backgroundImageUrl ? (
+    <>
+      <div
+        aria-hidden="true"
+        data-testid="invitation-background-image"
+        className={`pointer-events-none ${
+          isPageBackdrop ? 'fixed inset-0 z-0' : 'absolute inset-0 z-0'
+        } bg-cover bg-center bg-no-repeat`}
+        style={{
+          backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
+        }}
+      />
+      <div
+        aria-hidden="true"
+        data-testid="invitation-background-overlay"
+        data-overlay-opacity={resolvedTheme.backgroundOverlayOpacity}
+        className={`pointer-events-none ${
+          isPageBackdrop ? 'fixed inset-0 z-[1]' : 'absolute inset-0 z-[1]'
+        } transition-opacity duration-150`}
+        style={{
+          backgroundColor: resolvedTheme.canvasBg,
+          opacity: resolvedTheme.backgroundOverlayOpacity / 100,
+        }}
+      />
+    </>
+  ) : null;
+
+  const articleNode = (
+    <article
+      data-testid="invitation-renderer"
+      data-theme-preset={doc.theme.presetId}
+      data-dark-surface={String(resolvedTheme.isDarkSurface)}
+      data-has-background-image={String(hasBackgroundImage)}
+      data-section-spacing={resolvedTheme.sectionSpacing}
+      aria-label={`${doc.wedding.title} invitation`}
+      className={`relative z-10 overflow-hidden rounded-xl border ${
+        hasBackgroundImage ? 'shadow-lg' : 'shadow-sm'
+      }`}
+      style={{
+        ...resolvedTheme.cssVariables,
+        backgroundColor: 'var(--inv-canvas)',
+        color: 'var(--inv-ink)',
+        borderColor: 'var(--inv-border)',
+        fontFamily: 'var(--inv-font-body)',
+      }}
+    >
+      {visibleSections.map((section) => {
+        const sectionStyle = section.content.style;
+        const sectionCss = resolveSectionStyleOverrides(sectionStyle, resolvedTheme);
+        const headingScale =
+          sectionStyle?.headingSize && sectionStyle.headingSize !== 'md'
+            ? sectionStyle.headingSize
+            : undefined;
+        const bodyScale =
+          sectionStyle?.bodySize && sectionStyle.bodySize !== 'md'
+            ? sectionStyle.bodySize
+            : undefined;
+
+        return (
+          <div
+            key={section.id}
+            data-section-type={section.sectionType}
+            data-section-heading-scale={headingScale}
+            data-section-body-scale={bodyScale}
+            style={sectionCss}
+          >
+            {renderRegisteredSection({
+              section,
+              wedding: doc.wedding,
+              ornamentStyle: resolvedTheme.ornamentStyle,
+              onPrimaryAction: onPrimaryRsvpAction,
+            })}
+          </div>
+        );
+      })}
+
+      <footer
+        className="border-t px-6 py-6 text-center text-xs"
+        style={{
+          borderColor: 'var(--inv-border)',
+          color: 'var(--inv-ink-muted)',
+        }}
+      >
+        {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
+      </footer>
+    </article>
+  );
+
+  if (isPageBackdrop) {
+    return (
+      <>
+        {backdropLayers}
+        <div
+          data-testid="invitation-viewport-frame"
+          data-viewport-mode={viewportMode}
+          className={
+            isMobileFrame
+              ? 'relative z-10 mx-auto w-full max-w-[390px] transition-all'
+              : 'relative z-10 w-full'
+          }
+        >
+          {articleNode}
+        </div>
+      </>
+    );
+  }
 
   return (
     <div
       data-testid="invitation-viewport-frame"
       data-viewport-mode={viewportMode}
-      className={isMobileFrame ? 'mx-auto w-full max-w-[390px] transition-all' : 'w-full'}
+      className={
+        hasBackgroundImage
+          ? `relative isolate overflow-hidden rounded-xl p-4 transition-all sm:p-8 ${
+              isMobileFrame ? 'mx-auto w-full max-w-[440px]' : 'w-full'
+            }`
+          : isMobileFrame
+            ? 'mx-auto w-full max-w-[390px] transition-all'
+            : 'w-full'
+      }
     >
-      <article
-        data-testid="invitation-renderer"
-        data-theme-preset={doc.theme.presetId}
-        data-dark-surface={String(resolvedTheme.isDarkSurface)}
-        data-has-background-image={String(hasBackgroundImage)}
-        data-section-spacing={resolvedTheme.sectionSpacing}
-        aria-label={`${doc.wedding.title} invitation`}
-        className="relative isolate overflow-hidden rounded-xl border shadow-sm"
-        style={{
-          ...resolvedTheme.cssVariables,
-          backgroundColor: 'var(--inv-canvas)',
-          color: 'var(--inv-ink)',
-          borderColor: 'var(--inv-border)',
-          fontFamily: 'var(--inv-font-body)',
-        }}
-      >
-        {resolvedTheme.backgroundImageUrl ? (
-          <>
-            <div
-              aria-hidden="true"
-              data-testid="invitation-background-image"
-              className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
-              }}
-            />
-            <div
-              aria-hidden="true"
-              data-testid="invitation-background-overlay"
-              data-overlay-opacity={resolvedTheme.backgroundOverlayOpacity}
-              className="pointer-events-none absolute inset-0 z-[1] transition-opacity duration-150"
-              style={{
-                backgroundColor: 'var(--inv-canvas)',
-                opacity: resolvedTheme.backgroundOverlayOpacity / 100,
-              }}
-            />
-          </>
-        ) : null}
-
-        <div className="relative z-10">
-          {visibleSections.map((section) => {
-            const sectionStyle = section.content.style;
-            const sectionCss = resolveSectionStyleOverrides(sectionStyle, resolvedTheme);
-            const headingScale =
-              sectionStyle?.headingSize && sectionStyle.headingSize !== 'md'
-                ? sectionStyle.headingSize
-                : undefined;
-            const bodyScale =
-              sectionStyle?.bodySize && sectionStyle.bodySize !== 'md'
-                ? sectionStyle.bodySize
-                : undefined;
-
-            return (
-              <div
-                key={section.id}
-                data-section-type={section.sectionType}
-                data-section-heading-scale={headingScale}
-                data-section-body-scale={bodyScale}
-                style={sectionCss}
-              >
-                {renderRegisteredSection({
-                  section,
-                  wedding: doc.wedding,
-                  ornamentStyle: resolvedTheme.ornamentStyle,
-                  onPrimaryAction: onPrimaryRsvpAction,
-                })}
-              </div>
-            );
-          })}
-
-          <footer
-            className="border-t px-6 py-6 text-center text-xs"
-            style={{
-              borderColor: 'var(--inv-border)',
-              color: 'var(--inv-ink-muted)',
-            }}
-          >
-            {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
-          </footer>
-        </div>
-      </article>
+      {backdropLayers}
+      <div className={isMobileFrame ? 'mx-auto w-full max-w-[390px]' : 'w-full'}>
+        {articleNode}
+      </div>
     </div>
   );
 }

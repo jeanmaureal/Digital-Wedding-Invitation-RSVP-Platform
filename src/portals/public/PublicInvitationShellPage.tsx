@@ -154,7 +154,7 @@ export function PublicInvitationShellPage({
       >
         <Card
           data-testid="public-invitation-household-card"
-          className="mx-auto max-w-3xl border-emerald-600/30 bg-emerald-500/5"
+          className="bg-background/95 relative z-10 mx-auto max-w-3xl border-emerald-600/30 backdrop-blur-sm"
         >
           <CardHeader className="pb-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -238,17 +238,20 @@ export function PublicInvitationShellPage({
         <InvitationRenderer
           document={invitationDoc}
           viewportMode="desktop"
+          backdropMode="page"
           onPrimaryRsvpAction={handleScrollToHouseholdRsvp}
         />
 
-        <HouseholdRsvpFormCard
-          key={`rsvp-form:${versionNumber}:${household.displayName}`}
-          rawToken={token}
-          weddingTitle={invitationDoc.wedding.title}
-          household={household}
-          rsvp={rsvp}
-          client={resolvedClient}
-        />
+        <div className="relative z-10">
+          <HouseholdRsvpFormCard
+            key={`rsvp-form:${versionNumber}:${household.displayName}`}
+            rawToken={token}
+            weddingTitle={invitationDoc.wedding.title}
+            household={household}
+            rsvp={rsvp}
+            client={resolvedClient}
+          />
+        </div>
       </section>
     );
   }

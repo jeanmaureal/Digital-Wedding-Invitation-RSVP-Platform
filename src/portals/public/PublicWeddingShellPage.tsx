@@ -176,7 +176,7 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
           <Card
             role="status"
             data-testid="public-rsvp-guidance-card"
-            className="mx-auto max-w-2xl border-emerald-500/30 bg-emerald-500/5"
+            className="bg-background/95 relative z-10 mx-auto max-w-2xl border-emerald-500/30 backdrop-blur-sm"
           >
             <CardContent className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center">
               <div className="space-y-1">
@@ -206,6 +206,7 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
         <InvitationRenderer
           document={invitationDoc}
           viewportMode="desktop"
+          backdropMode="page"
           onPrimaryRsvpAction={() => setShowRsvpGuidance(true)}
         />
       </section>

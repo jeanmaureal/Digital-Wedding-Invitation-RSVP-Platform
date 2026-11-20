@@ -925,7 +925,7 @@ export function ThemeControlsPanel({
         <div>
           <h3 className="text-sm font-semibold">4. Background Picture &amp; Transparency</h3>
           <p className="text-muted-foreground text-xs">
-            Set a full-canvas background image for the public invitation and adjust overlay
+            Set a full-page backdrop photo surrounding the invitation canvas and adjust overlay
             transparency dynamically.
           </p>
         </div>

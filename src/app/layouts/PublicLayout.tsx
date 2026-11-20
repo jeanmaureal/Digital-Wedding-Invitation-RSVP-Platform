@@ -12,9 +12,9 @@ export function PublicLayout(): JSX.Element {
   return (
     <div
       data-testid="public-shell"
-      className="bg-background text-foreground flex min-h-screen flex-col"
+      className="bg-background text-foreground relative isolate flex min-h-screen flex-col"
     >
-      <header className="border-b">
+      <header className="bg-background/90 relative z-20 border-b backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-6">
           <Link
             to={ROUTES.home}
@@ -39,7 +39,7 @@ export function PublicLayout(): JSX.Element {
         <Outlet />
       </main>
 
-      <footer className="text-muted-foreground border-t py-6 text-center text-xs">
+      <footer className="bg-background/90 text-muted-foreground relative z-20 border-t py-6 text-center text-xs backdrop-blur-sm">
         Digital Wedding Invitation &amp; RSVP Platform · Guest access requires no organizer account
       </footer>
     </div>
