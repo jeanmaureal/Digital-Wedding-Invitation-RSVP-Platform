@@ -10,8 +10,8 @@ export type WeddingAssetCategory = 'backgrounds' | 'fonts' | 'milestones';
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif']);
 const FONT_EXTENSIONS = new Set(['ttf', 'otf', 'woff', 'woff2']);
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MiB
-const MAX_FONT_BYTES = 5 * 1024 * 1024; // 5 MiB
+const MAX_IMAGE_BYTES = 50 * 1024 * 1024; // 50 MiB
+const MAX_FONT_BYTES = 15 * 1024 * 1024; // 15 MiB
 
 const MIME_BY_EXTENSION: Readonly<Record<string, string>> = {
   jpg: 'image/jpeg',
@@ -66,7 +66,7 @@ export function validateWeddingAssetFile(
     if (file.size <= 0 || file.size > MAX_FONT_BYTES) {
       return {
         ok: false,
-        message: 'Font file must be between 1 byte and 5 MB.',
+        message: 'Font file must be between 1 byte and 15 MB.',
       };
     }
     return {
@@ -85,7 +85,7 @@ export function validateWeddingAssetFile(
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
     return {
       ok: false,
-      message: 'Image file must be between 1 byte and 8 MB.',
+      message: 'Image file must be between 1 byte and 50 MB.',
     };
   }
 
