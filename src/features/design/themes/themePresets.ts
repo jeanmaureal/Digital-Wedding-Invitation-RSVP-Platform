@@ -8,23 +8,37 @@ import type {
 /**
  * Curated Wedding Theme Presets & CSS Custom-Property Resolver (`P3-AC07`).
  *
- * All font stacks use offline/CSP-safe editorial system stacks so rendering is
+ * All built-in font stacks use offline/CSP-safe editorial system stacks so rendering is
  * 100% deterministic in CI and never leaks guest IPs to third-party font CDNs.
+ * Organizer-uploaded custom fonts (.ttf/.otf/.woff/.woff2) are hosted on Supabase Storage
+ * and registered via the browser `FontFace` API.
  */
 
 export type HeadingFontPairId = NonNullable<ThemeTokenOverrides['headingFontPair']>;
+export type BodyFontPairId = NonNullable<ThemeTokenOverrides['bodyFontPair']>;
+export type CustomFontTargetId = NonNullable<ThemeTokenOverrides['customFontTarget']>;
 export type CornerStyleId = NonNullable<ThemeTokenOverrides['cornerStyle']>;
 export type SectionSpacingId = NonNullable<ThemeTokenOverrides['sectionSpacing']>;
 export type OrnamentStyleId = NonNullable<ThemeTokenOverrides['ornamentStyle']>;
+
+export const DEFAULT_BACKGROUND_OVERLAY_OPACITY = 75;
 
 export const HEADING_FONT_STACKS: Readonly<Record<HeadingFontPairId, string>> = {
   editorial_serif: "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif",
   classic_serif: "Garamond, 'Baskerville Old Face', 'Times New Roman', Georgia, serif",
   romantic_serif: "Georgia, 'Cambria', 'Times New Roman', serif",
   modern_sans: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  handwritten_script: "'Snell Roundhand', 'Brush Script MT', 'Segoe Script', cursive",
+  minimal_mono: "ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Courier New', monospace",
 };
 
-const BODY_FONT_STACK = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif";
+export const BODY_FONT_STACKS: Readonly<Record<BodyFontPairId, string>> = {
+  modern_sans: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  humanist_sans: "'Optima', 'Candara', 'Calibri', 'Segoe UI', sans-serif",
+  editorial_serif: "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif",
+  classic_serif: "Garamond, 'Baskerville Old Face', 'Times New Roman', Georgia, serif",
+  minimal_mono: "ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Courier New', monospace",
+};
 
 export interface ThemePresetDefinition {
   readonly id: WeddingThemePresetId;
@@ -40,6 +54,7 @@ export interface ThemePresetDefinition {
   readonly accentContrastHex: string;
   readonly borderColor: string;
   readonly defaultHeadingFontPair: HeadingFontPairId;
+  readonly defaultBodyFontPair: BodyFontPairId;
   readonly defaultCornerStyle: CornerStyleId;
   readonly defaultSectionSpacing: SectionSpacingId;
   readonly defaultOrnamentStyle: OrnamentStyleId;
@@ -61,6 +76,7 @@ export const WEDDING_THEME_PRESETS: Readonly<Record<WeddingThemePresetId, ThemeP
       accentContrastHex: '#FFFFFF',
       borderColor: '#E5DDD0',
       defaultHeadingFontPair: 'editorial_serif',
+      defaultBodyFontPair: 'modern_sans',
       defaultCornerStyle: 'sharp',
       defaultSectionSpacing: 'airy',
       defaultOrnamentStyle: 'minimal_line',
@@ -79,6 +95,7 @@ export const WEDDING_THEME_PRESETS: Readonly<Record<WeddingThemePresetId, ThemeP
       accentContrastHex: '#FFFFFF',
       borderColor: '#CFDCD1',
       defaultHeadingFontPair: 'romantic_serif',
+      defaultBodyFontPair: 'modern_sans',
       defaultCornerStyle: 'soft',
       defaultSectionSpacing: 'comfortable',
       defaultOrnamentStyle: 'botanical_flourish',
@@ -97,6 +114,7 @@ export const WEDDING_THEME_PRESETS: Readonly<Record<WeddingThemePresetId, ThemeP
       accentContrastHex: '#111827',
       borderColor: '#33415C',
       defaultHeadingFontPair: 'classic_serif',
+      defaultBodyFontPair: 'modern_sans',
       defaultCornerStyle: 'sharp',
       defaultSectionSpacing: 'airy',
       defaultOrnamentStyle: 'monogram_crest',
@@ -115,6 +133,7 @@ export const WEDDING_THEME_PRESETS: Readonly<Record<WeddingThemePresetId, ThemeP
       accentContrastHex: '#FFFFFF',
       borderColor: '#E6D2BE',
       defaultHeadingFontPair: 'editorial_serif',
+      defaultBodyFontPair: 'modern_sans',
       defaultCornerStyle: 'arch',
       defaultSectionSpacing: 'comfortable',
       defaultOrnamentStyle: 'minimal_line',
@@ -130,6 +149,7 @@ export const WEDDING_THEME_PRESET_LIST: readonly ThemePresetDefinition[] = [
 
 export interface ResolvedInvitationTheme {
   readonly preset: ThemePresetDefinition;
+  readonly isDarkSurface: boolean;
   readonly accentHex: string;
   readonly accentContrastHex: string;
   readonly canvasBg: string;
@@ -140,6 +160,11 @@ export interface ResolvedInvitationTheme {
   readonly borderColor: string;
   readonly headingFontFamily: string;
   readonly bodyFontFamily: string;
+  readonly customFontFamilyName: string | null;
+  readonly customFontUrl: string | null;
+  readonly customFontTarget: CustomFontTargetId;
+  readonly backgroundImageUrl: string | null;
+  readonly backgroundOverlayOpacity: number;
   readonly cornerStyle: CornerStyleId;
   readonly sectionSpacing: SectionSpacingId;
   readonly ornamentStyle: OrnamentStyleId;
@@ -152,6 +177,18 @@ function getRelativeLuminance(hex: string): number {
   const b = Number.parseInt(hex.slice(5, 7), 16) / 255;
   const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+/**
+ * Produces a deterministic, CSS-safe `FontFace` family identifier from a font URL
+ * without ever interpolating untrusted strings into CSS.
+ */
+export function buildCustomFontFamilyName(url: string): string {
+  let hash = 5381;
+  for (let i = 0; i < url.length; i += 1) {
+    hash = ((hash << 5) + hash + url.charCodeAt(i)) >>> 0;
+  }
+  return `InvCustomFont_${hash.toString(36)}`;
 }
 
 export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvitationTheme {
@@ -173,8 +210,44 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
   } else if (!preset.isDarkSurface && overrides.surfaceTint === 'high_contrast') {
     canvasBg = '#FFFFFF';
   }
+  if (overrides.canvasBgHex) {
+    canvasBg = overrides.canvasBgHex;
+  }
+
+  const isDarkSurface = overrides.canvasBgHex
+    ? getRelativeLuminance(overrides.canvasBgHex) < 0.2
+    : preset.isDarkSurface;
+
+  const surfaceBg = overrides.surfaceBgHex ?? preset.surfaceBg;
+  const surfaceMutedBg = overrides.surfaceMutedBgHex ?? preset.surfaceMutedBg;
+  const inkPrimary = overrides.inkPrimaryHex ?? preset.inkPrimary;
+  const inkMuted = overrides.inkMutedHex ?? preset.inkMuted;
+  const borderColor = overrides.borderColorHex ?? preset.borderColor;
 
   const headingPair = overrides.headingFontPair ?? preset.defaultHeadingFontPair;
+  const bodyPair = overrides.bodyFontPair ?? preset.defaultBodyFontPair;
+
+  const customFontUrl = overrides.customFontUrl ?? null;
+  const customFontFamilyName = customFontUrl ? buildCustomFontFamilyName(customFontUrl) : null;
+  const customFontTarget: CustomFontTargetId = overrides.customFontTarget ?? 'heading';
+
+  const baseHeadingStack = HEADING_FONT_STACKS[headingPair];
+  const baseBodyStack = BODY_FONT_STACKS[bodyPair];
+
+  const headingFontFamily =
+    customFontFamilyName && (customFontTarget === 'heading' || customFontTarget === 'both')
+      ? `'${customFontFamilyName}', ${baseHeadingStack}`
+      : baseHeadingStack;
+
+  const bodyFontFamily =
+    customFontFamilyName && (customFontTarget === 'body' || customFontTarget === 'both')
+      ? `'${customFontFamilyName}', ${baseBodyStack}`
+      : baseBodyStack;
+
+  const backgroundImageUrl = overrides.backgroundImageUrl ?? null;
+  const backgroundOverlayOpacity =
+    overrides.backgroundOverlayOpacity ?? DEFAULT_BACKGROUND_OVERLAY_OPACITY;
+
   const cornerStyle = overrides.cornerStyle ?? preset.defaultCornerStyle;
   const sectionSpacing = overrides.sectionSpacing ?? preset.defaultSectionSpacing;
   const ornamentStyle = overrides.ornamentStyle ?? preset.defaultOrnamentStyle;
@@ -184,30 +257,36 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
 
   const cssVariables = {
     '--inv-canvas': canvasBg,
-    '--inv-surface': preset.surfaceBg,
-    '--inv-surface-muted': preset.surfaceMutedBg,
-    '--inv-ink': preset.inkPrimary,
-    '--inv-ink-muted': preset.inkMuted,
+    '--inv-surface': surfaceBg,
+    '--inv-surface-muted': surfaceMutedBg,
+    '--inv-ink': inkPrimary,
+    '--inv-ink-muted': inkMuted,
     '--inv-accent': accentHex,
     '--inv-accent-contrast': accentContrastHex,
-    '--inv-border': preset.borderColor,
-    '--inv-font-heading': HEADING_FONT_STACKS[headingPair],
-    '--inv-font-body': BODY_FONT_STACK,
+    '--inv-border': borderColor,
+    '--inv-font-heading': headingFontFamily,
+    '--inv-font-body': bodyFontFamily,
     '--inv-radius': radiusCss,
   } as CSSProperties;
 
   return {
     preset,
+    isDarkSurface,
     accentHex,
     accentContrastHex,
     canvasBg,
-    surfaceBg: preset.surfaceBg,
-    surfaceMutedBg: preset.surfaceMutedBg,
-    inkPrimary: preset.inkPrimary,
-    inkMuted: preset.inkMuted,
-    borderColor: preset.borderColor,
-    headingFontFamily: HEADING_FONT_STACKS[headingPair],
-    bodyFontFamily: BODY_FONT_STACK,
+    surfaceBg,
+    surfaceMutedBg,
+    inkPrimary,
+    inkMuted,
+    borderColor,
+    headingFontFamily,
+    bodyFontFamily,
+    customFontFamilyName,
+    customFontUrl,
+    customFontTarget,
+    backgroundImageUrl,
+    backgroundOverlayOpacity,
     cornerStyle,
     sectionSpacing,
     ornamentStyle,

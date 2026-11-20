@@ -14,12 +14,16 @@ import type {
   InvitationSection,
   InvitationWeddingMetadata,
 } from '@/features/design/schemas/designSchemas';
+import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
 
 export interface SectionEditorDispatcherProps {
   readonly section: InvitationSection;
   readonly wedding: InvitationWeddingMetadata;
   readonly dressCode: string;
   readonly canEdit: boolean;
+  readonly workspaceId?: string | undefined;
+  readonly weddingId?: string | undefined;
+  readonly client?: TypedSupabaseClient | null | undefined;
   readonly onUpdateSection: (
     nextSection: InvitationSection,
     options?: { readonly immediate?: boolean | undefined },
@@ -32,6 +36,9 @@ export function SectionEditorDispatcher({
   wedding,
   dressCode,
   canEdit,
+  workspaceId,
+  weddingId,
+  client,
   onUpdateSection,
   onSectionValidationIssue,
 }: SectionEditorDispatcherProps): JSX.Element {
@@ -142,6 +149,9 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
+          workspaceId={workspaceId}
+          weddingId={weddingId}
+          client={client}
           onValidChange={(content) => onUpdateSection({ ...section, content })}
           onValidationIssue={handleValidationIssue}
         />

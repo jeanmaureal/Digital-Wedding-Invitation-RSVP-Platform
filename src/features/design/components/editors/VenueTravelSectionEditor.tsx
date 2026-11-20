@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
 import type { JSX } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { FormFieldError } from '@/components/forms/FormFieldError';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const httpsUrlInputSchema = z
 const venueTravelFormSchema = z
   .strictObject({
     heading: venueTravelSectionContentSchema.shape.heading,
+    sameLocation: z.boolean().optional(),
     ceremonyVenueName: venueTravelSectionContentSchema.shape.ceremonyVenueName,
     ceremonyAddress: venueTravelSectionContentSchema.shape.ceremonyAddress,
     receptionVenueName: venueTravelSectionContentSchema.shape.receptionVenueName,
@@ -53,6 +54,17 @@ export interface VenueTravelSectionEditorProps {
   readonly onValidationIssue: (message: string | null) => void;
 }
 
+function inferInitialSameLocation(content: VenueTravelSectionContent): boolean {
+  if (typeof content.sameLocation === 'boolean') {
+    return content.sameLocation;
+  }
+  const cName = content.ceremonyVenueName.trim().toLowerCase();
+  const rName = content.receptionVenueName.trim().toLowerCase();
+  const cAddr = content.ceremonyAddress.trim().toLowerCase();
+  const rAddr = content.receptionAddress.trim().toLowerCase();
+  return Boolean((cName || cAddr) && cName === rName && cAddr === rAddr);
+}
+
 export function VenueTravelSectionEditor({
   content,
   canEdit,
@@ -63,6 +75,7 @@ export function VenueTravelSectionEditor({
     register,
     control,
     getValues,
+    setValue,
     trigger,
     formState: { errors },
   } = useForm<VenueTravelFormInput, unknown, VenueTravelSectionContent>({
@@ -70,6 +83,7 @@ export function VenueTravelSectionEditor({
     mode: 'onChange',
     defaultValues: {
       heading: content.heading,
+      sameLocation: inferInitialSameLocation(content),
       ceremonyVenueName: content.ceremonyVenueName,
       ceremonyAddress: content.ceremonyAddress,
       receptionVenueName: content.receptionVenueName,
@@ -89,11 +103,22 @@ export function VenueTravelSectionEditor({
     name: 'accommodations',
   });
 
+  const isSameLocation = Boolean(useWatch({ control, name: 'sameLocation' }));
+
   const emitCurrentDraft = () => {
     if (!canEdit) {
       return;
     }
-    const parsed = venueTravelFormSchema.safeParse(getValues());
+    const raw = getValues();
+    const normalized = raw.sameLocation
+      ? {
+          ...raw,
+          receptionVenueName: raw.ceremonyVenueName,
+          receptionAddress: raw.ceremonyAddress,
+        }
+      : raw;
+
+    const parsed = venueTravelFormSchema.safeParse(normalized);
     if (parsed.success) {
       onValidChange(parsed.data);
     } else {
@@ -123,9 +148,33 @@ export function VenueTravelSectionEditor({
         <FormFieldError message={errors.heading?.message} />
       </div>
 
+      <label className="bg-muted/20 flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm">
+        <input
+          type="checkbox"
+          disabled={!canEdit}
+          data-testid="venue-same-location-checkbox"
+          checked={isSameLocation}
+          onChange={(event) => {
+            const checked = event.target.checked;
+            setValue('sameLocation', checked, { shouldDirty: true });
+            if (checked) {
+              setValue('receptionVenueName', getValues('ceremonyVenueName'), { shouldDirty: true });
+              setValue('receptionAddress', getValues('ceremonyAddress'), { shouldDirty: true });
+            }
+            emitCurrentDraft();
+          }}
+          className="accent-primary size-4 rounded border"
+        />
+        <span className="text-xs font-medium">
+          Ceremony and reception are at the same location
+        </span>
+      </label>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="venue-ceremony-name">Ceremony venue (optional)</Label>
+          <Label htmlFor="venue-ceremony-name">
+            {isSameLocation ? 'Ceremony & reception venue (optional)' : 'Ceremony venue (optional)'}
+          </Label>
           <Input
             id="venue-ceremony-name"
             disabled={!canEdit}
@@ -137,7 +186,9 @@ export function VenueTravelSectionEditor({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="venue-ceremony-address">Ceremony address (optional)</Label>
+          <Label htmlFor="venue-ceremony-address">
+            {isSameLocation ? 'Venue address (optional)' : 'Ceremony address (optional)'}
+          </Label>
           <Input
             id="venue-ceremony-address"
             disabled={!canEdit}
@@ -149,31 +200,33 @@ export function VenueTravelSectionEditor({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="venue-reception-name">Reception venue (optional)</Label>
-          <Input
-            id="venue-reception-name"
-            disabled={!canEdit}
-            data-testid="venue-reception-name-input"
-            aria-invalid={Boolean(errors.receptionVenueName)}
-            {...register('receptionVenueName')}
-          />
-          <FormFieldError message={errors.receptionVenueName?.message} />
-        </div>
+      {!isSameLocation ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="venue-reception-name">Reception venue (optional)</Label>
+            <Input
+              id="venue-reception-name"
+              disabled={!canEdit}
+              data-testid="venue-reception-name-input"
+              aria-invalid={Boolean(errors.receptionVenueName)}
+              {...register('receptionVenueName')}
+            />
+            <FormFieldError message={errors.receptionVenueName?.message} />
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="venue-reception-address">Reception address (optional)</Label>
-          <Input
-            id="venue-reception-address"
-            disabled={!canEdit}
-            data-testid="venue-reception-address-input"
-            aria-invalid={Boolean(errors.receptionAddress)}
-            {...register('receptionAddress')}
-          />
-          <FormFieldError message={errors.receptionAddress?.message} />
+          <div className="space-y-1.5">
+            <Label htmlFor="venue-reception-address">Reception address (optional)</Label>
+            <Input
+              id="venue-reception-address"
+              disabled={!canEdit}
+              data-testid="venue-reception-address-input"
+              aria-invalid={Boolean(errors.receptionAddress)}
+              {...register('receptionAddress')}
+            />
+            <FormFieldError message={errors.receptionAddress?.message} />
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="space-y-1.5">
         <Label htmlFor="venue-directions-note">Directions &amp; parking note (optional)</Label>

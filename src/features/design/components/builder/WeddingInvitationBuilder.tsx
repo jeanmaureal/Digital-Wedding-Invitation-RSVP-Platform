@@ -469,6 +469,9 @@ export function WeddingInvitationBuilder({
                         wedding={draftDocument.wedding}
                         dressCode={settings.dress_code}
                         canEdit={canEdit}
+                        workspaceId={workspaceId}
+                        weddingId={wedding.id}
+                        client={client}
                         onUpdateSection={queueSectionUpdate}
                         onSectionValidationIssue={handleSectionValidationIssue}
                       />
@@ -480,6 +483,9 @@ export function WeddingInvitationBuilder({
                   key={`theme:${themePanelResetKey(draftDocument.theme.presetId)}`}
                   theme={draftDocument.theme}
                   canEdit={canEdit}
+                  workspaceId={workspaceId}
+                  weddingId={wedding.id}
+                  client={client}
                   onUpdateTheme={queueThemeUpdate}
                   onThemeValidationIssue={handleThemeValidationIssue}
                 />

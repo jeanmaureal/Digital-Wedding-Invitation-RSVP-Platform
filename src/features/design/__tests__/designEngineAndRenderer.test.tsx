@@ -225,4 +225,154 @@ describe('Invitation Design System, Zod Validation & <InvitationRenderer /> (P3-
     });
     expect(darkAccent.accentContrastHex).toBe('#FFFFFF');
   });
+
+  it('supports custom color themes, custom TrueType fonts, background pictures with dynamic transparency, auto-hiding story milestones with tiled photos, and unified same-location venues', () => {
+    const baseDoc = createStarterInvitationDocument({
+      presetId: 'editorial_ivory',
+      wedding: {
+        title: 'Sofia & Marco Wedding',
+        partnerOneName: 'Sofia',
+        partnerTwoName: 'Marco',
+        slug: 'sofia-marco',
+        eventDate: '2027-09-12',
+        venueName: 'Villa del Lago',
+        venueLocation: 'Lake Como, Italy',
+        timezone: 'Europe/Rome',
+        rsvpDeadline: null,
+        isRsvpOpen: true,
+      },
+    });
+
+    const customizedDoc: InvitationDocument = {
+      ...baseDoc,
+      theme: {
+        schemaVersion: DESIGN_SCHEMA_VERSION,
+        presetId: 'editorial_ivory',
+        tokenOverrides: {
+          primaryAccentHex: '#7A3E48',
+          canvasBgHex: '#18141A',
+          surfaceBgHex: '#241E27',
+          inkPrimaryHex: '#F7F1E8',
+          inkMutedHex: '#C8BFC9',
+          borderColorHex: '#3B3240',
+          headingFontPair: 'handwritten_script',
+          bodyFontPair: 'humanist_sans',
+          customFontName: 'Bespoke Script',
+          customFontUrl: 'https://example.supabase.co/storage/v1/object/public/wedding-assets/font.ttf',
+          customFontTarget: 'both',
+          backgroundImageUrl:
+            'https://example.supabase.co/storage/v1/object/public/wedding-assets/bg.jpg',
+          backgroundOverlayOpacity: 40,
+        },
+      },
+      sections: baseDoc.sections.map((section) => {
+        if (section.sectionType === 'our_story') {
+          return {
+            ...section,
+            content: {
+              heading: 'Our Story',
+              leadQuote: '',
+              narrative: '',
+              milestones: [
+                {
+                  periodLabel: 'First Trip',
+                  dateLabel: '2022-06-14',
+                  title: '',
+                  description: 'A weekend by the coast.',
+                  imageLayout: 'custom_mosaic' as const,
+                  images: [
+                    {
+                      id: 'img-1',
+                      url: 'https://example.supabase.co/storage/v1/object/public/wedding-assets/m1.jpg',
+                      alt: 'Sunset pier',
+                      tileSpan: 'wide' as const,
+                    },
+                    {
+                      id: 'img-2',
+                      url: 'https://example.supabase.co/storage/v1/object/public/wedding-assets/m2.jpg',
+                      alt: '',
+                      tileSpan: 'tall' as const,
+                    },
+                  ],
+                },
+                // Completely empty milestone should auto-hide
+                {
+                  periodLabel: '',
+                  dateLabel: '',
+                  title: '',
+                  description: '',
+                },
+              ],
+            },
+          };
+        }
+        return section;
+      }),
+    };
+
+    const { unmount } = render(<InvitationRenderer document={customizedDoc} />);
+
+    const renderer = screen.getByTestId('invitation-renderer');
+    expect(renderer).toHaveAttribute('data-dark-surface', 'true');
+    expect(renderer).toHaveAttribute('data-has-background-image', 'true');
+    const styleAttr = renderer.getAttribute('style') ?? '';
+    expect(styleAttr).toContain('--inv-canvas: #18141A');
+    expect(styleAttr).toContain('--inv-surface: #241E27');
+    expect(styleAttr).toContain('--inv-ink: #F7F1E8');
+    expect(styleAttr).toContain('InvCustomFont_');
+
+    expect(screen.getByTestId('invitation-background-image')).toBeInTheDocument();
+    expect(screen.getByTestId('invitation-background-overlay')).toHaveAttribute(
+      'data-overlay-opacity',
+      '40',
+    );
+
+    // Our Story milestone: label + formatted date shown, empty title auto-hidden, empty 2nd milestone auto-hidden
+    expect(screen.getByTestId('invitation-story-milestone-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('invitation-story-milestone-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('invitation-story-milestone-label-0')).toHaveTextContent('First Trip');
+    expect(screen.getByTestId('invitation-story-milestone-date-0')).toHaveTextContent(
+      'June 14, 2022',
+    );
+    expect(screen.queryByTestId('invitation-story-milestone-title-0')).not.toBeInTheDocument();
+    expect(screen.getByTestId('milestone-image-grid')).toHaveAttribute(
+      'data-image-layout',
+      'custom_mosaic',
+    );
+    expect(screen.getByTestId('milestone-image-tile-0')).toHaveAttribute('data-tile-span', 'wide');
+    expect(screen.getByTestId('milestone-image-tile-1')).toHaveAttribute('data-tile-span', 'tall');
+
+    // Venue & Travel: same ceremony & reception location renders as ONE unified card
+    expect(screen.getByTestId('venue-combined-card')).toHaveTextContent('Ceremony & Reception');
+    expect(screen.getByTestId('venue-combined-card')).toHaveTextContent('Villa del Lago');
+    expect(screen.queryByTestId('venue-ceremony-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('venue-reception-card')).not.toBeInTheDocument();
+
+    unmount();
+
+    // Distinct ceremony & reception venues render as two separate cards
+    const splitVenueDoc: InvitationDocument = {
+      ...baseDoc,
+      sections: baseDoc.sections.map((section) =>
+        section.sectionType === 'venue_travel'
+          ? {
+              ...section,
+              content: {
+                ...section.content,
+                sameLocation: false,
+                ceremonyVenueName: 'St. Mark Chapel',
+                ceremonyAddress: '100 Main St',
+                receptionVenueName: 'Grand Ballroom',
+                receptionAddress: '200 Harbor Ave',
+              },
+            }
+          : section,
+      ),
+    };
+
+    render(<InvitationRenderer document={splitVenueDoc} />);
+    expect(screen.queryByTestId('venue-combined-card')).not.toBeInTheDocument();
+    expect(screen.getByTestId('venue-ceremony-card')).toHaveTextContent('St. Mark Chapel');
+    expect(screen.getByTestId('venue-reception-card')).toHaveTextContent('Grand Ballroom');
+  });
 });

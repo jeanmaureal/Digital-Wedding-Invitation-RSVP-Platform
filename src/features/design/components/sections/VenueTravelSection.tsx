@@ -8,10 +8,31 @@ export interface VenueTravelSectionProps {
   readonly ornamentStyle: OrnamentStyleId;
 }
 
+function normalizeVenueText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
 export function VenueTravelSection({
   content,
   ornamentStyle,
 }: VenueTravelSectionProps): JSX.Element {
+  const ceremonyName = content.ceremonyVenueName.trim();
+  const ceremonyAddress = content.ceremonyAddress.trim();
+  const receptionName = content.receptionVenueName.trim();
+  const receptionAddress = content.receptionAddress.trim();
+
+  const hasCeremony = Boolean(ceremonyName || ceremonyAddress);
+  const hasReception = Boolean(receptionName || receptionAddress);
+
+  const venuesMatch =
+    hasCeremony &&
+    hasReception &&
+    normalizeVenueText(ceremonyName) === normalizeVenueText(receptionName) &&
+    normalizeVenueText(ceremonyAddress) === normalizeVenueText(receptionAddress);
+
+  const renderAsUnifiedCard =
+    content.sameLocation === true || venuesMatch || (!hasCeremony && !hasReception);
+
   return (
     <section
       data-testid="invitation-section-venue_travel"
@@ -29,9 +50,10 @@ export function VenueTravelSection({
           <OrnamentDivider styleId={ornamentStyle} />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        {renderAsUnifiedCard ? (
           <div
-            className="border p-5"
+            data-testid="venue-combined-card"
+            className="mx-auto max-w-xl border p-6 text-center"
             style={{
               backgroundColor: 'var(--inv-surface)',
               borderColor: 'var(--inv-border)',
@@ -42,48 +64,87 @@ export function VenueTravelSection({
               className="text-xs font-semibold tracking-wider uppercase"
               style={{ color: 'var(--inv-accent)' }}
             >
-              Ceremony
+              Ceremony &amp; Reception
             </p>
             <h3
-              className="mt-1 text-lg font-medium"
+              className="mt-1.5 text-lg font-medium"
               style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
             >
-              {content.ceremonyVenueName || 'Venue details forthcoming'}
+              {ceremonyName || receptionName || 'Venue details forthcoming'}
             </h3>
-            {content.ceremonyAddress ? (
+            {ceremonyAddress || receptionAddress ? (
               <p className="mt-1 text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
-                {content.ceremonyAddress}
+                {ceremonyAddress || receptionAddress}
               </p>
             ) : null}
           </div>
+        ) : (
+          <div
+            className={`grid gap-4 ${
+              hasCeremony && hasReception ? 'sm:grid-cols-2' : 'mx-auto max-w-xl grid-cols-1'
+            }`}
+          >
+            {hasCeremony ? (
+              <div
+                data-testid="venue-ceremony-card"
+                className="border p-5"
+                style={{
+                  backgroundColor: 'var(--inv-surface)',
+                  borderColor: 'var(--inv-border)',
+                  borderRadius: 'var(--inv-radius)',
+                }}
+              >
+                <p
+                  className="text-xs font-semibold tracking-wider uppercase"
+                  style={{ color: 'var(--inv-accent)' }}
+                >
+                  Ceremony
+                </p>
+                <h3
+                  className="mt-1 text-lg font-medium"
+                  style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
+                >
+                  {ceremonyName || 'Venue details forthcoming'}
+                </h3>
+                {ceremonyAddress ? (
+                  <p className="mt-1 text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
+                    {ceremonyAddress}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
-          <div
-            className="border p-5"
-            style={{
-              backgroundColor: 'var(--inv-surface)',
-              borderColor: 'var(--inv-border)',
-              borderRadius: 'var(--inv-radius)',
-            }}
-          >
-            <p
-              className="text-xs font-semibold tracking-wider uppercase"
-              style={{ color: 'var(--inv-accent)' }}
-            >
-              Reception
-            </p>
-            <h3
-              className="mt-1 text-lg font-medium"
-              style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
-            >
-              {content.receptionVenueName || 'Reception details forthcoming'}
-            </h3>
-            {content.receptionAddress ? (
-              <p className="mt-1 text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
-                {content.receptionAddress}
-              </p>
+            {hasReception ? (
+              <div
+                data-testid="venue-reception-card"
+                className="border p-5"
+                style={{
+                  backgroundColor: 'var(--inv-surface)',
+                  borderColor: 'var(--inv-border)',
+                  borderRadius: 'var(--inv-radius)',
+                }}
+              >
+                <p
+                  className="text-xs font-semibold tracking-wider uppercase"
+                  style={{ color: 'var(--inv-accent)' }}
+                >
+                  Reception
+                </p>
+                <h3
+                  className="mt-1 text-lg font-medium"
+                  style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
+                >
+                  {receptionName || 'Reception details forthcoming'}
+                </h3>
+                {receptionAddress ? (
+                  <p className="mt-1 text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
+                    {receptionAddress}
+                  </p>
+                ) : null}
+              </div>
             ) : null}
           </div>
-        </div>
+        )}
 
         {content.directionsNote ? (
           <p className="text-center text-sm" style={{ color: 'var(--inv-ink-muted)' }}>

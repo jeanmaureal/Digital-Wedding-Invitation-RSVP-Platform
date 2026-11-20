@@ -175,14 +175,31 @@ function createMockSupabaseDesignClient() {
     };
   });
 
+  const uploadedAssets: Array<{ path: string; contentType: string }> = [];
+  const storageMock = {
+    from: vi.fn((bucket: string) => ({
+      upload: vi.fn(async (path: string, _file: File, options?: { contentType?: string }) => {
+        uploadedAssets.push({ path, contentType: options?.contentType ?? '' });
+        return { data: { path }, error: null };
+      }),
+      getPublicUrl: vi.fn((path: string) => ({
+        data: {
+          publicUrl: `https://example.supabase.co/storage/v1/object/public/${bucket}/${path}`,
+        },
+      })),
+    })),
+  };
+
   return {
     client: {
       from: fromMock,
       rpc: rpcMock,
+      storage: storageMock,
     } as unknown as TypedSupabaseClient,
     themeUpdates,
     sectionUpdates,
     reorderCalls,
+    uploadedAssets,
   };
 }
 
@@ -426,5 +443,68 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
     expect(mockApi.sectionUpdates).toHaveLength(0);
     expect(mockApi.themeUpdates).toHaveLength(0);
     expect(mockApi.reorderCalls).toHaveLength(0);
+  });
+
+  it('supports custom font .ttf upload, background picture with transparency slider, milestone photo upload/reorder/tiling, and venue same-location toggle', async () => {
+    const user = userEvent.setup();
+    const { mockApi } = renderBuilder({ debounceMs: 40 });
+
+    // 1. Theme tab: upload custom .ttf font & background image + adjust transparency
+    await user.click(screen.getByTestId('inspector-tab-theme'));
+
+    const fontFile = new File([new Uint8Array([0, 1, 0, 0])], 'Playfair-Display.ttf', {
+      type: 'font/ttf',
+    });
+    await user.upload(screen.getByTestId('theme-custom-font-file-input'), fontFile);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('theme-custom-font-name-input')).toHaveValue('Playfair Display');
+    });
+
+    const bgFile = new File([new Uint8Array([255, 216, 255])], 'garden-bg.jpg', {
+      type: 'image/jpeg',
+    });
+    await user.upload(screen.getByTestId('theme-bg-image-file-input'), bgFile);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('invitation-background-image')).toBeInTheDocument();
+      expect(screen.getByTestId('theme-bg-opacity-slider')).toBeInTheDocument();
+    });
+
+    expect(mockApi.uploadedAssets.length).toBe(2);
+
+    // 2. Sections tab -> Our Story: set date field + upload 2 photos + reorder + change tile span
+    await user.click(screen.getByTestId('inspector-tab-sections'));
+    await user.click(screen.getByTestId('select-section-our_story'));
+
+    const photoA = new File([new Uint8Array([1, 2, 3])], 'first.jpg', { type: 'image/jpeg' });
+    const photoB = new File([new Uint8Array([4, 5, 6])], 'second.png', { type: 'image/png' });
+    await user.upload(screen.getByTestId('story-milestone-upload-0'), [photoA, photoB]);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('story-milestone-0-image-0')).toBeInTheDocument();
+      expect(screen.getByTestId('story-milestone-0-image-1')).toBeInTheDocument();
+    });
+
+    await user.selectOptions(screen.getByTestId('story-milestone-0-img-span-0'), 'wide');
+    expect(screen.getByTestId('milestone-image-tile-0')).toHaveAttribute('data-tile-span', 'wide');
+
+    // Reorder photo 0 to the right -> photo 1 becomes first
+    await user.click(screen.getByTestId('story-milestone-0-img-move-right-0'));
+    expect(screen.getByTestId('milestone-image-tile-1')).toHaveAttribute('data-tile-span', 'wide');
+
+    // 3. Venue & Travel: starts unified (same location), unchecking reveals Reception fields
+    await user.click(screen.getByTestId('select-section-venue_travel'));
+    expect(screen.getByTestId('venue-combined-card')).toBeInTheDocument();
+    expect(screen.getByTestId('venue-same-location-checkbox')).toBeChecked();
+
+    await user.click(screen.getByTestId('venue-same-location-checkbox'));
+    expect(screen.getByTestId('venue-reception-name-input')).toBeInTheDocument();
+    const receptionInput = screen.getByTestId('venue-reception-name-input');
+    await user.clear(receptionInput);
+    await user.type(receptionInput, 'Grand Pavilion');
+
+    expect(screen.getByTestId('venue-ceremony-card')).toBeInTheDocument();
+    expect(screen.getByTestId('venue-reception-card')).toHaveTextContent('Grand Pavilion');
   });
 });

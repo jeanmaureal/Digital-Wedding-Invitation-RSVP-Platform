@@ -105,6 +105,41 @@ export const hexColorSchema = z
   .regex(HEX_COLOR_PATTERN, 'Color must be a 6-digit hex code such as #9A7B4F.')
   .transform((val) => val.toUpperCase());
 
+export const httpsUrlSchema = z
+  .string()
+  .trim()
+  .min(1, 'URL is required.')
+  .superRefine((val, ctx) => {
+    const lower = val.toLowerCase();
+    if (
+      val.length > 500 ||
+      hasDisallowedControlChars(val, false) ||
+      containsForbiddenPayloadPattern(val) ||
+      lower.includes('url(') ||
+      lower.includes('expression(')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'URL is invalid or exceeds 500 characters.',
+      });
+      return;
+    }
+    try {
+      const parsed = new URL(val);
+      if (parsed.protocol !== 'https:') {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Asset and external URLs must use https://.',
+        });
+      }
+    } catch {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Enter a valid https:// URL.',
+      });
+    }
+  });
+
 export const nullableHttpsUrlSchema = z
   .union([z.string(), z.null()])
   .transform((val) => {
@@ -147,10 +182,31 @@ export const nullableHttpsUrlSchema = z
 
 export const themeTokenOverridesSchema = z.strictObject({
   primaryAccentHex: hexColorSchema.optional(),
+  canvasBgHex: hexColorSchema.optional(),
+  surfaceBgHex: hexColorSchema.optional(),
+  surfaceMutedBgHex: hexColorSchema.optional(),
+  inkPrimaryHex: hexColorSchema.optional(),
+  inkMutedHex: hexColorSchema.optional(),
+  borderColorHex: hexColorSchema.optional(),
   surfaceTint: z.enum(['default', 'warm', 'cool', 'high_contrast']).optional(),
   headingFontPair: z
-    .enum(['editorial_serif', 'classic_serif', 'modern_sans', 'romantic_serif'])
+    .enum([
+      'editorial_serif',
+      'classic_serif',
+      'modern_sans',
+      'romantic_serif',
+      'handwritten_script',
+      'minimal_mono',
+    ])
     .optional(),
+  bodyFontPair: z
+    .enum(['modern_sans', 'editorial_serif', 'classic_serif', 'humanist_sans', 'minimal_mono'])
+    .optional(),
+  customFontName: safeLineString(1, 60, 'Custom font name').optional(),
+  customFontUrl: httpsUrlSchema.optional(),
+  customFontTarget: z.enum(['heading', 'body', 'both']).optional(),
+  backgroundImageUrl: httpsUrlSchema.optional(),
+  backgroundOverlayOpacity: z.number().int().min(0).max(100).optional(),
   cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
   sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),
   ornamentStyle: z
@@ -184,16 +240,39 @@ export const heroSectionContentSchema = z.strictObject({
 });
 export type HeroSectionContent = z.output<typeof heroSectionContentSchema>;
 
-export const storyMilestoneSchema = z.strictObject({
-  periodLabel: safeLineString(1, 40, 'Milestone label'),
-  title: safeLineString(1, 80, 'Milestone title'),
-  description: safeMultilineString(1, 300, 'Milestone description'),
+export const storyMilestoneImageTileSpanSchema = z.enum(['standard', 'wide', 'tall']);
+export type StoryMilestoneImageTileSpan = z.output<typeof storyMilestoneImageTileSpanSchema>;
+
+export const storyMilestoneImageLayoutSchema = z.enum([
+  'grid_2',
+  'grid_3',
+  'featured_top',
+  'custom_mosaic',
+]);
+export type StoryMilestoneImageLayout = z.output<typeof storyMilestoneImageLayoutSchema>;
+
+export const storyMilestoneImageSchema = z.strictObject({
+  id: safeLineString(1, 64, 'Image ID'),
+  url: httpsUrlSchema,
+  alt: safeOptionalLineString(120, 'Image caption'),
+  tileSpan: storyMilestoneImageTileSpanSchema.optional(),
 });
+export type StoryMilestoneImage = z.output<typeof storyMilestoneImageSchema>;
+
+export const storyMilestoneSchema = z.strictObject({
+  periodLabel: safeOptionalLineString(40, 'Milestone label'),
+  dateLabel: safeOptionalLineString(40, 'Milestone date').optional(),
+  title: safeOptionalLineString(80, 'Milestone title'),
+  description: safeMultilineString(0, 300, 'Milestone description'),
+  images: z.array(storyMilestoneImageSchema).max(6).optional(),
+  imageLayout: storyMilestoneImageLayoutSchema.optional(),
+});
+export type StoryMilestone = z.output<typeof storyMilestoneSchema>;
 
 export const ourStorySectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Story heading'),
   leadQuote: safeOptionalLineString(240, 'Lead quote'),
-  narrative: safeMultilineString(1, 1500, 'Story narrative'),
+  narrative: safeMultilineString(0, 1500, 'Story narrative'),
   milestones: z.array(storyMilestoneSchema).max(6),
 });
 export type OurStorySectionContent = z.output<typeof ourStorySectionContentSchema>;
@@ -221,6 +300,7 @@ export const accommodationItemSchema = z.strictObject({
 
 export const venueTravelSectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Venue heading'),
+  sameLocation: z.boolean().optional(),
   ceremonyVenueName: safeOptionalLineString(120, 'Ceremony venue'),
   ceremonyAddress: safeOptionalLineString(160, 'Ceremony address'),
   receptionVenueName: safeOptionalLineString(120, 'Reception venue'),
