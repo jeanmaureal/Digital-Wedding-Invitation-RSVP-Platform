@@ -45,12 +45,15 @@ export interface SectionStyleControlsProps {
 function cleanSectionStyle(
   raw: Partial<SectionStyleOverrides>,
 ): SectionStyleOverrides | undefined {
-  const cleaned: Record<string, string> = {};
+  const cleaned: Record<string, string | number> = {};
   if (raw.backgroundBgHex) cleaned.backgroundBgHex = raw.backgroundBgHex;
   if (raw.surfaceBgHex) cleaned.surfaceBgHex = raw.surfaceBgHex;
   if (raw.inkPrimaryHex) cleaned.inkPrimaryHex = raw.inkPrimaryHex;
   if (raw.inkMutedHex) cleaned.inkMutedHex = raw.inkMutedHex;
   if (raw.accentHex) cleaned.accentHex = raw.accentHex;
+  if (typeof raw.cardOpacity === 'number' && raw.cardOpacity < 100) {
+    cleaned.cardOpacity = raw.cardOpacity;
+  }
   if (raw.headingFont) cleaned.headingFont = raw.headingFont;
   if (raw.bodyFont) cleaned.bodyFont = raw.bodyFont;
   if (raw.headingSize && raw.headingSize !== 'md') cleaned.headingSize = raw.headingSize;
@@ -150,12 +153,17 @@ export function SectionStyleControls({
         aria-expanded={isOpen}
         className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-xs font-semibold transition-colors hover:bg-muted/40"
       >
-        <span className="flex items-center gap-2">
+        <span className="flex flex-wrap items-center gap-2">
           <Palette className="text-muted-foreground size-3.5" aria-hidden="true" />
-          <span>Section Canvas Style (Colors, Font &amp; Size)</span>
+          <span>Section Canvas Style (Colors, Wash, Font &amp; Size)</span>
           {activeOverrideCount > 0 ? (
             <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
               {activeOverrideCount} custom
+            </Badge>
+          ) : null}
+          {customFonts.length > 0 ? (
+            <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+              {customFonts.length} imported {customFonts.length === 1 ? 'font' : 'fonts'}
             </Badge>
           ) : null}
         </span>
@@ -312,6 +320,38 @@ export function SectionStyleControls({
                 <option value="lg">Large</option>
                 <option value="xl">Extra Large</option>
               </NativeSelect>
+            </div>
+          </div>
+
+          {/* Per-Section Card Wash / Transparency */}
+          <div className="space-y-1.5 border-t pt-3">
+            <div className="flex items-center justify-between text-xs">
+              <Label htmlFor={`sec-card-opacity-${sectionType}`}>
+                Section card wash / transparency
+              </Label>
+              <span className="text-muted-foreground font-mono text-[11px]">
+                {style?.cardOpacity ?? 100}%
+              </span>
+            </div>
+            <input
+              id={`sec-card-opacity-${sectionType}`}
+              type="range"
+              min={10}
+              max={100}
+              step={1}
+              disabled={!canEdit}
+              value={style?.cardOpacity ?? 100}
+              data-testid={`section-card-opacity-slider-${sectionType}`}
+              onChange={(e) => {
+                const val = Number.parseInt(e.target.value, 10);
+                applyPatch({ cardOpacity: val >= 100 ? undefined : val });
+              }}
+              className="accent-primary w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <div className="text-muted-foreground flex justify-between text-[10px]">
+              <span>10% (Frosted glass)</span>
+              <span>70% (Washed out)</span>
+              <span>100% (Solid)</span>
             </div>
           </div>
 

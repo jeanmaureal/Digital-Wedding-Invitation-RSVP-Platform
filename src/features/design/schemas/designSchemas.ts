@@ -190,12 +190,21 @@ export type CustomFontAsset = z.output<typeof customFontAssetSchema>;
 export const sectionFontScaleSchema = z.enum(['xs', 'sm', 'md', 'lg', 'xl']);
 export type SectionFontScale = z.output<typeof sectionFontScaleSchema>;
 
+export const invitationAnimationStyleSchema = z.enum([
+  'none',
+  'gentle_fade',
+  'editorial_rise',
+  'romantic_float',
+]);
+export type InvitationAnimationStyle = z.output<typeof invitationAnimationStyleSchema>;
+
 export const sectionStyleOverridesSchema = z.strictObject({
   backgroundBgHex: hexColorSchema.optional(),
   surfaceBgHex: hexColorSchema.optional(),
   inkPrimaryHex: hexColorSchema.optional(),
   inkMutedHex: hexColorSchema.optional(),
   accentHex: hexColorSchema.optional(),
+  cardOpacity: z.number().int().min(10).max(100).optional(),
   headingFont: safeLineString(1, 64, 'Section heading font').optional(),
   bodyFont: safeLineString(1, 64, 'Section body font').optional(),
   headingSize: sectionFontScaleSchema.optional(),
@@ -234,6 +243,8 @@ export const themeTokenOverridesSchema = z.strictObject({
   customFontTarget: z.enum(['heading', 'body', 'both']).optional(),
   backgroundImageUrl: httpsUrlSchema.optional(),
   backgroundOverlayOpacity: z.number().int().min(0).max(100).optional(),
+  cardOpacity: z.number().int().min(10).max(100).optional(),
+  animationStyle: invitationAnimationStyleSchema.optional(),
   cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
   sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),
   ornamentStyle: z
@@ -292,7 +303,7 @@ export const storyMilestoneSchema = z.strictObject({
   dateLabel: safeOptionalLineString(40, 'Milestone date').optional(),
   title: safeOptionalLineString(80, 'Milestone title'),
   description: safeMultilineString(0, 300, 'Milestone description'),
-  images: z.array(storyMilestoneImageSchema).max(6).optional(),
+  images: z.array(storyMilestoneImageSchema).optional(),
   imageLayout: storyMilestoneImageLayoutSchema.optional(),
 });
 export type StoryMilestone = z.output<typeof storyMilestoneSchema>;
@@ -301,7 +312,7 @@ export const ourStorySectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Story heading'),
   leadQuote: safeOptionalLineString(240, 'Lead quote'),
   narrative: safeMultilineString(0, 1500, 'Story narrative'),
-  milestones: z.array(storyMilestoneSchema).max(6),
+  milestones: z.array(storyMilestoneSchema).max(24),
   style: sectionStyleOverridesSchema.optional(),
 });
 export type OurStorySectionContent = z.output<typeof ourStorySectionContentSchema>;

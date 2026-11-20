@@ -1,4 +1,5 @@
-import { type JSX, useEffect } from 'react';
+import { type CSSProperties, type JSX, useEffect, useState } from 'react';
+import { OurStoryGalleryView } from '@/features/design/components/sections/OurStoryGalleryView';
 import { renderRegisteredSection } from '@/features/design/registry/sectionRegistry';
 import {
   type CustomFontAsset,
@@ -7,6 +8,7 @@ import {
 } from '@/features/design/schemas/designSchemas';
 import {
   buildCustomFontFamilyName,
+  isVideoAssetUrl,
   resolveInvitationTheme,
   resolveSectionStyleOverrides,
 } from '@/features/design/themes/themePresets';
@@ -81,6 +83,8 @@ export function InvitationRenderer({
   backdropMode = 'frame',
   onPrimaryRsvpAction,
 }: InvitationRendererProps): JSX.Element {
+  const [activeView, setActiveView] = useState<'invitation' | 'story'>('invitation');
+
   const validation = parseInvitationDocument(rawDocument);
   const resolvedTheme = validation.ok ? resolveInvitationTheme(validation.data.theme) : null;
 
@@ -115,29 +119,58 @@ export function InvitationRenderer({
     .filter((section) => section.isVisible)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
+  const storySection = doc.sections.find((s) => s.sectionType === 'our_story');
+
   const isMobileFrame = viewportMode === 'mobile';
-  const hasBackgroundImage = Boolean(resolvedTheme.backgroundImageUrl);
+  const hasBackgroundMedia = Boolean(resolvedTheme.backgroundImageUrl);
+  const isVideoBackdrop = isVideoAssetUrl(resolvedTheme.backgroundImageUrl);
   const isPageBackdrop = backdropMode === 'page';
+  const isGlassCard = resolvedTheme.cardOpacity < 100;
+
+  const handleOpenFullStory = () => {
+    setActiveView('story');
+    if (isPageBackdrop && typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleBackToInvitation = () => {
+    setActiveView('invitation');
+    if (isPageBackdrop && typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const backdropPositionClass = isPageBackdrop ? 'fixed inset-0' : 'absolute inset-0';
 
   const backdropLayers = resolvedTheme.backgroundImageUrl ? (
     <>
-      <div
-        aria-hidden="true"
-        data-testid="invitation-background-image"
-        className={`pointer-events-none ${
-          isPageBackdrop ? 'fixed inset-0 z-0' : 'absolute inset-0 z-0'
-        } bg-cover bg-center bg-no-repeat`}
-        style={{
-          backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
-        }}
-      />
+      {isVideoBackdrop ? (
+        <video
+          aria-hidden="true"
+          data-testid="invitation-background-video"
+          src={resolvedTheme.backgroundImageUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={`pointer-events-none ${backdropPositionClass} z-0 h-full w-full object-cover`}
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          data-testid="invitation-background-image"
+          className={`pointer-events-none ${backdropPositionClass} z-0 bg-cover bg-center bg-no-repeat`}
+          style={{
+            backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
+          }}
+        />
+      )}
       <div
         aria-hidden="true"
         data-testid="invitation-background-overlay"
         data-overlay-opacity={resolvedTheme.backgroundOverlayOpacity}
-        className={`pointer-events-none ${
-          isPageBackdrop ? 'fixed inset-0 z-[1]' : 'absolute inset-0 z-[1]'
-        } transition-opacity duration-150`}
+        className={`pointer-events-none ${backdropPositionClass} z-[1] transition-opacity duration-150`}
         style={{
           backgroundColor: resolvedTheme.canvasBg,
           opacity: resolvedTheme.backgroundOverlayOpacity / 100,
@@ -146,64 +179,104 @@ export function InvitationRenderer({
     </>
   ) : null;
 
+  const articleStyle: CSSProperties = {
+    ...resolvedTheme.cssVariables,
+    backgroundColor: 'var(--inv-canvas)',
+    color: 'var(--inv-ink)',
+    borderColor: 'var(--inv-border)',
+    fontFamily: 'var(--inv-font-body)',
+    ...(isGlassCard
+      ? {
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }
+      : {}),
+  };
+
   const articleNode = (
     <article
       data-testid="invitation-renderer"
       data-theme-preset={doc.theme.presetId}
       data-dark-surface={String(resolvedTheme.isDarkSurface)}
-      data-has-background-image={String(hasBackgroundImage)}
+      data-has-background-image={String(hasBackgroundMedia)}
       data-section-spacing={resolvedTheme.sectionSpacing}
+      data-animation-style={resolvedTheme.animationStyle}
+      data-card-opacity={resolvedTheme.cardOpacity}
       aria-label={`${doc.wedding.title} invitation`}
       className={`relative z-10 overflow-hidden rounded-xl border ${
-        hasBackgroundImage ? 'shadow-lg' : 'shadow-sm'
+        hasBackgroundMedia ? 'shadow-lg' : 'shadow-sm'
       }`}
-      style={{
-        ...resolvedTheme.cssVariables,
-        backgroundColor: 'var(--inv-canvas)',
-        color: 'var(--inv-ink)',
-        borderColor: 'var(--inv-border)',
-        fontFamily: 'var(--inv-font-body)',
-      }}
+      style={articleStyle}
     >
-      {visibleSections.map((section) => {
-        const sectionStyle = section.content.style;
-        const sectionCss = resolveSectionStyleOverrides(sectionStyle, resolvedTheme);
-        const headingScale =
-          sectionStyle?.headingSize && sectionStyle.headingSize !== 'md'
-            ? sectionStyle.headingSize
-            : undefined;
-        const bodyScale =
-          sectionStyle?.bodySize && sectionStyle.bodySize !== 'md'
-            ? sectionStyle.bodySize
-            : undefined;
+      {activeView === 'story' && storySection && storySection.sectionType === 'our_story' ? (
+        <div
+          style={resolveSectionStyleOverrides(storySection.content.style, resolvedTheme)}
+          data-section-heading-scale={
+            storySection.content.style?.headingSize &&
+            storySection.content.style.headingSize !== 'md'
+              ? storySection.content.style.headingSize
+              : undefined
+          }
+          data-section-body-scale={
+            storySection.content.style?.bodySize && storySection.content.style.bodySize !== 'md'
+              ? storySection.content.style.bodySize
+              : undefined
+          }
+        >
+          <OurStoryGalleryView
+            content={storySection.content}
+            wedding={doc.wedding}
+            ornamentStyle={resolvedTheme.ornamentStyle}
+            onBack={handleBackToInvitation}
+          />
+        </div>
+      ) : (
+        <>
+          {visibleSections.map((section, idx) => {
+            const sectionStyle = section.content.style;
+            const sectionCss = {
+              ...resolveSectionStyleOverrides(sectionStyle, resolvedTheme),
+              '--inv-stagger-idx': idx,
+            } as CSSProperties;
+            const headingScale =
+              sectionStyle?.headingSize && sectionStyle.headingSize !== 'md'
+                ? sectionStyle.headingSize
+                : undefined;
+            const bodyScale =
+              sectionStyle?.bodySize && sectionStyle.bodySize !== 'md'
+                ? sectionStyle.bodySize
+                : undefined;
 
-        return (
-          <div
-            key={section.id}
-            data-section-type={section.sectionType}
-            data-section-heading-scale={headingScale}
-            data-section-body-scale={bodyScale}
-            style={sectionCss}
+            return (
+              <div
+                key={section.id}
+                data-section-type={section.sectionType}
+                data-section-heading-scale={headingScale}
+                data-section-body-scale={bodyScale}
+                style={sectionCss}
+              >
+                {renderRegisteredSection({
+                  section,
+                  wedding: doc.wedding,
+                  ornamentStyle: resolvedTheme.ornamentStyle,
+                  onPrimaryAction: onPrimaryRsvpAction,
+                  onOpenFullStory: handleOpenFullStory,
+                })}
+              </div>
+            );
+          })}
+
+          <footer
+            className="border-t px-6 py-6 text-center text-xs"
+            style={{
+              borderColor: 'var(--inv-border)',
+              color: 'var(--inv-ink-muted)',
+            }}
           >
-            {renderRegisteredSection({
-              section,
-              wedding: doc.wedding,
-              ornamentStyle: resolvedTheme.ornamentStyle,
-              onPrimaryAction: onPrimaryRsvpAction,
-            })}
-          </div>
-        );
-      })}
-
-      <footer
-        className="border-t px-6 py-6 text-center text-xs"
-        style={{
-          borderColor: 'var(--inv-border)',
-          color: 'var(--inv-ink-muted)',
-        }}
-      >
-        {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
-      </footer>
+            {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
+          </footer>
+        </>
+      )}
     </article>
   );
 
@@ -231,7 +304,7 @@ export function InvitationRenderer({
       data-testid="invitation-viewport-frame"
       data-viewport-mode={viewportMode}
       className={
-        hasBackgroundImage
+        hasBackgroundMedia
           ? `relative isolate overflow-hidden rounded-xl p-4 transition-all sm:p-8 ${
               isMobileFrame ? 'mx-auto w-full max-w-[440px]' : 'w-full'
             }`

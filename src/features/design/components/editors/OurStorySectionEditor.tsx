@@ -1,5 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Image as ImageIcon, Loader2, Plus, Trash2, Upload } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { type ChangeEvent, type JSX, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import type { z } from 'zod';
@@ -77,7 +87,7 @@ export function OurStorySectionEditor({
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control,
     name: 'milestones',
   });
@@ -155,17 +165,6 @@ export function OurStorySectionEditor({
       return;
     }
 
-    const existingImages = getValues(`milestones.${milestoneIndex}.images`) ?? [];
-    const remainingSlots = Math.max(0, 6 - existingImages.length);
-    if (remainingSlots === 0) {
-      setUploadErrors((prev) => ({
-        ...prev,
-        [milestoneIndex]: 'Maximum of 6 images per milestone reached.',
-      }));
-      return;
-    }
-
-    const toUpload = files.slice(0, remainingSlots);
     setUploadingMilestoneIdx(milestoneIndex);
     setUploadErrors((prev) => {
       const next = { ...prev };
@@ -175,7 +174,7 @@ export function OurStorySectionEditor({
 
     try {
       const uploadedItems: StoryMilestoneImage[] = [];
-      for (const file of toUpload) {
+      for (const file of files) {
         const uploaded = await uploadWeddingDesignAsset(
           {
             workspaceId,
@@ -301,16 +300,18 @@ export function OurStorySectionEditor({
       <div className="space-y-3 border-t pt-4">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-sm font-medium">Story milestones ({fields.length}/6)</p>
+            <p className="text-sm font-medium">Story milestones ({fields.length}/24)</p>
             <p className="text-muted-foreground text-xs">
-              Any blank field is automatically hidden on the public invitation.
+              Reorder chapters anytime. Empty fields auto-hide. The main invitation features your
+              first photo, and guests can open the dedicated Story &amp; Photos page to see them
+              all.
             </p>
           </div>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            disabled={!canEdit || fields.length >= 6}
+            disabled={!canEdit || fields.length >= 24}
             data-testid="story-add-milestone-button"
             onClick={() => {
               append({
@@ -346,23 +347,57 @@ export function OurStorySectionEditor({
                 <span className="text-xs font-semibold tracking-wide uppercase">
                   Milestone {index + 1}
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={!canEdit}
-                  className="text-destructive h-7 px-2 text-xs"
-                  aria-label={`Remove milestone ${index + 1}`}
-                  data-testid={`story-remove-milestone-${index}`}
-                  onClick={() => {
-                    remove(index);
-                    void trigger('milestones');
-                    emitCurrentDraft();
-                  }}
-                >
-                  <Trash2 className="size-3.5" aria-hidden="true" />
-                  Remove
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canEdit || index === 0}
+                    className="h-7 w-7 p-0"
+                    aria-label={`Move milestone ${index + 1} up`}
+                    data-testid={`story-move-milestone-up-${index}`}
+                    onClick={() => {
+                      move(index, index - 1);
+                      void trigger('milestones');
+                      emitCurrentDraft();
+                    }}
+                  >
+                    <ArrowUp className="size-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canEdit || index === fields.length - 1}
+                    className="h-7 w-7 p-0"
+                    aria-label={`Move milestone ${index + 1} down`}
+                    data-testid={`story-move-milestone-down-${index}`}
+                    onClick={() => {
+                      move(index, index + 1);
+                      void trigger('milestones');
+                      emitCurrentDraft();
+                    }}
+                  >
+                    <ArrowDown className="size-3.5" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canEdit}
+                    className="text-destructive h-7 px-2 text-xs"
+                    aria-label={`Remove milestone ${index + 1}`}
+                    data-testid={`story-remove-milestone-${index}`}
+                    onClick={() => {
+                      remove(index);
+                      void trigger('milestones');
+                      emitCurrentDraft();
+                    }}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                    Remove
+                  </Button>
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -424,7 +459,7 @@ export function OurStorySectionEditor({
                   <div className="flex items-center gap-1.5">
                     <ImageIcon className="text-muted-foreground size-3.5" aria-hidden="true" />
                     <span className="text-xs font-medium">
-                      Photos ({milestoneImages.length}/6)
+                      Photos ({milestoneImages.length} uploaded · unlimited)
                     </span>
                   </div>
 
@@ -454,16 +489,16 @@ export function OurStorySectionEditor({
 
                     <label
                       className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
-                        !canEdit || isUploadingHere || milestoneImages.length >= 6
+                        !canEdit || isUploadingHere
                           ? 'pointer-events-none opacity-50'
                           : 'bg-background hover:bg-accent'
                       }`}
                     >
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
                         multiple
-                        disabled={!canEdit || isUploadingHere || milestoneImages.length >= 6}
+                        disabled={!canEdit || isUploadingHere}
                         data-testid={`story-milestone-upload-${index}`}
                         onChange={(e) => void handleMilestoneImageUpload(index, e)}
                         className="sr-only"

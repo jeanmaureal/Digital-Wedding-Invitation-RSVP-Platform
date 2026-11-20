@@ -21,7 +21,9 @@ import {
 import {
   buildCustomFontFamilyName,
   DEFAULT_BACKGROUND_OVERLAY_OPACITY,
+  DEFAULT_CARD_OPACITY,
   getNormalizedCustomFonts,
+  isVideoAssetUrl,
   LEGACY_CUSTOM_FONT_ID,
   WEDDING_THEME_PRESET_LIST,
   WEDDING_THEME_PRESETS,
@@ -144,6 +146,10 @@ function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeToken
       cleaned.backgroundOverlayOpacity = raw.backgroundOverlayOpacity;
     }
   }
+  if (typeof raw.cardOpacity === 'number' && raw.cardOpacity < 100) {
+    cleaned.cardOpacity = raw.cardOpacity;
+  }
+  if (raw.animationStyle) cleaned.animationStyle = raw.animationStyle;
   if (raw.cornerStyle) cleaned.cornerStyle = raw.cornerStyle;
   if (raw.sectionSpacing) cleaned.sectionSpacing = raw.sectionSpacing;
   if (raw.ornamentStyle) cleaned.ornamentStyle = raw.ornamentStyle;
@@ -920,13 +926,13 @@ export function ThemeControlsPanel({
         </div>
       </div>
 
-      {/* 4. Background Image & Dynamic Transparency */}
+      {/* 4. Background Media (Photo, GIF, or Motion Photo) & Transparency */}
       <div className="space-y-4 border-t pt-5">
         <div>
-          <h3 className="text-sm font-semibold">4. Background Picture &amp; Transparency</h3>
+          <h3 className="text-sm font-semibold">4. Background Media &amp; Card Wash</h3>
           <p className="text-muted-foreground text-xs">
-            Set a full-page backdrop photo surrounding the invitation canvas and adjust overlay
-            transparency dynamically.
+            Set a full-page backdrop photo, animated GIF, or live motion photo (MP4/WebM/MOV)
+            surrounding the invitation canvas, and adjust backdrop &amp; card transparency.
           </p>
         </div>
 
@@ -934,14 +940,14 @@ export function ThemeControlsPanel({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ImageIcon className="text-muted-foreground size-4" aria-hidden="true" />
-              <span className="text-xs font-semibold">Invitation Background Photo</span>
+              <span className="text-xs font-semibold">Backdrop Photo, GIF, or Motion Video</span>
             </div>
 
             <div className="flex items-center gap-1.5">
               <input
                 ref={bgFileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/avif"
+                accept="image/jpeg,image/png,image/webp,image/avif,image/gif,video/mp4,video/webm,video/quicktime,.gif,.mp4,.webm,.mov"
                 disabled={!canEdit || isUploadingBg}
                 data-testid="theme-bg-image-file-input"
                 onChange={(e) => void handleBackgroundFileUpload(e)}
@@ -960,7 +966,7 @@ export function ThemeControlsPanel({
                 ) : (
                   <Upload className="size-3.5" aria-hidden="true" />
                 )}
-                {overrides.backgroundImageUrl ? 'Change image' : 'Upload image'}
+                {overrides.backgroundImageUrl ? 'Change media' : 'Upload media'}
               </Button>
               {overrides.backgroundImageUrl ? (
                 <Button
@@ -969,7 +975,7 @@ export function ThemeControlsPanel({
                   size="sm"
                   disabled={!canEdit}
                   className="text-destructive h-8 px-2"
-                  aria-label="Remove background image"
+                  aria-label="Remove background media"
                   data-testid="theme-remove-bg-image-button"
                   onClick={handleRemoveBackgroundImage}
                 >
@@ -981,7 +987,7 @@ export function ThemeControlsPanel({
 
           <div className="space-y-1">
             <Label htmlFor="theme-bg-image-url-input" className="text-xs">
-              Or paste a direct hosted image URL (https://*.supabase.co/…)
+              Or paste a direct hosted media URL (https://*.supabase.co/…)
             </Label>
             <Input
               id="theme-bg-image-url-input"
@@ -995,9 +1001,8 @@ export function ThemeControlsPanel({
               className="h-8 text-xs"
             />
             <p className="text-muted-foreground text-[11px]">
-              For best results (and to satisfy browser security policy), use{' '}
-              <strong>Upload image</strong> (up to 50 MB). Webpage share links such as Google Photos
-              cannot be loaded as direct images.
+              Supports JPG, PNG, WebP, AVIF, animated GIF, and Live/Motion Photos (MP4, WebM, MOV)
+              up to 50 MB via <strong>Upload media</strong>.
             </p>
             <FormFieldError id="theme-bg-image-url-error" message={bgUrlError ?? undefined} />
           </div>
@@ -1005,13 +1010,26 @@ export function ThemeControlsPanel({
           {overrides.backgroundImageUrl ? (
             <div className="space-y-3 pt-1">
               <div className="relative h-24 w-full overflow-hidden rounded-md border">
-                <img
-                  src={overrides.backgroundImageUrl}
-                  alt="Invitation background preview"
-                  onLoad={() => setBgPreviewFailed(false)}
-                  onError={() => setBgPreviewFailed(true)}
-                  className="h-full w-full object-cover"
-                />
+                {isVideoAssetUrl(overrides.backgroundImageUrl) ? (
+                  <video
+                    src={overrides.backgroundImageUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    onLoadedData={() => setBgPreviewFailed(false)}
+                    onError={() => setBgPreviewFailed(true)}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={overrides.backgroundImageUrl}
+                    alt="Invitation background preview"
+                    onLoad={() => setBgPreviewFailed(false)}
+                    onError={() => setBgPreviewFailed(true)}
+                    className="h-full w-full object-cover"
+                  />
+                )}
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
@@ -1026,22 +1044,22 @@ export function ThemeControlsPanel({
                   role="alert"
                   className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-2.5 py-2 text-xs"
                 >
-                  This image URL could not be loaded. External hosts and webpage share links (like
-                  Google Photos) are blocked by browser Content-Security-Policy. Download the photo
-                  and use <strong>Upload image</strong> instead.
+                  This media URL could not be loaded. External hosts and webpage share links (like
+                  Google Photos) are blocked by browser Content-Security-Policy. Download the file
+                  and use <strong>Upload media</strong> instead.
                 </p>
               ) : null}
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <Label htmlFor="theme-bg-opacity-slider">
-                    Background transparency / wash
+                    Backdrop transparency / wash
                   </Label>
                   <span
                     className="text-muted-foreground font-mono text-[11px]"
                     data-testid="theme-bg-opacity-readout"
                   >
-                    Overlay {currentOverlayOpacity}% · Photo {photoVisibilityPercent}%
+                    Overlay {currentOverlayOpacity}% · Media {photoVisibilityPercent}%
                   </span>
                 </div>
                 <input
@@ -1061,26 +1079,83 @@ export function ThemeControlsPanel({
                   className="accent-primary w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <div className="text-muted-foreground flex justify-between text-[10px]">
-                  <span>0% (Vivid photo)</span>
+                  <span>0% (Vivid media)</span>
                   <span>50% (Balanced)</span>
-                  <span>100% (Solid canvas)</span>
+                  <span>100% (Solid wash)</span>
                 </div>
               </div>
             </div>
           ) : null}
+
+          {/* Global Section Card Transparency / Wash */}
+          <div className="space-y-1.5 border-t pt-3">
+            <div className="flex items-center justify-between text-xs">
+              <Label htmlFor="theme-card-opacity-slider">
+                Invitation &amp; section card opacity
+              </Label>
+              <span
+                className="text-muted-foreground font-mono text-[11px]"
+                data-testid="theme-card-opacity-readout"
+              >
+                {overrides.cardOpacity ?? DEFAULT_CARD_OPACITY}%
+              </span>
+            </div>
+            <input
+              id="theme-card-opacity-slider"
+              type="range"
+              min={10}
+              max={100}
+              step={1}
+              disabled={!canEdit}
+              value={overrides.cardOpacity ?? DEFAULT_CARD_OPACITY}
+              data-testid="theme-card-opacity-slider"
+              onChange={(e) => {
+                const nextOpacity = Number.parseInt(e.target.value, 10);
+                applyOverridePatch({
+                  cardOpacity: nextOpacity >= 100 ? undefined : nextOpacity,
+                });
+              }}
+              className="accent-primary w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <div className="text-muted-foreground flex justify-between text-[10px]">
+              <span>10% (Frosted glass)</span>
+              <span>75% (Washed out)</span>
+              <span>100% (Solid card)</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 5. Surface, Corners, Spacing & Dividers */}
+      {/* 5. Surface, Corners, Spacing, Animations & Ornaments */}
       <div className="space-y-4 border-t pt-5">
         <div>
-          <h3 className="text-sm font-semibold">5. Surfaces, Corners &amp; Ornaments</h3>
+          <h3 className="text-sm font-semibold">5. Surfaces, Corners, Animations &amp; Ornaments</h3>
           <p className="text-muted-foreground text-xs">
-            Fine-tune card geometry, vertical spacing, and editorial dividers.
+            Fine-tune card geometry, vertical spacing, entrance animations, and editorial dividers.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="theme-animation-style-select">Invitation animation style</Label>
+            <NativeSelect
+              id="theme-animation-style-select"
+              disabled={!canEdit}
+              value={overrides.animationStyle ?? ''}
+              data-testid="theme-animation-style-select"
+              onChange={(e) =>
+                applyOverridePatch({
+                  animationStyle: (e.target.value || undefined) as ThemeTokenOverrides['animationStyle'],
+                })
+              }
+            >
+              <option value="">Default (Editorial Rise)</option>
+              <option value="editorial_rise">Editorial Rise (staggered upward glide)</option>
+              <option value="gentle_fade">Gentle Fade (soft opacity reveal)</option>
+              <option value="romantic_float">Romantic Float (bloom + floating accents)</option>
+              <option value="none">None (static)</option>
+            </NativeSelect>
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="theme-surface-tint-select">Canvas surface tint</Label>
             <NativeSelect

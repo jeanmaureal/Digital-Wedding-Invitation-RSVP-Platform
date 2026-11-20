@@ -471,15 +471,21 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
       );
     });
 
-    const bgFile = new File([new Uint8Array([255, 216, 255])], 'garden-bg.jpg', {
-      type: 'image/jpeg',
+    const bgFile = new File([new Uint8Array([0, 0, 0, 24])], 'motion-garden.mp4', {
+      type: 'video/mp4',
     });
     await user.upload(screen.getByTestId('theme-bg-image-file-input'), bgFile);
 
     await waitFor(() => {
-      expect(screen.getByTestId('invitation-background-image')).toBeInTheDocument();
+      expect(screen.getByTestId('invitation-background-video')).toBeInTheDocument();
       expect(screen.getByTestId('theme-bg-opacity-slider')).toBeInTheDocument();
     });
+
+    await user.selectOptions(screen.getByTestId('theme-animation-style-select'), 'romantic_float');
+    expect(screen.getByTestId('invitation-renderer')).toHaveAttribute(
+      'data-animation-style',
+      'romantic_float',
+    );
 
     expect(mockApi.uploadedAssets.length).toBe(3);
 
@@ -505,7 +511,7 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
     expect(storyWrapper).not.toHaveAttribute('data-section-heading-scale');
     expect(storyWrapper?.getAttribute('style') ?? '').not.toContain('InvCustomFont_');
 
-    // 3. Our Story: upload 2 photos + reorder + change tile span
+    // 3. Our Story: upload 2 photos + reorder photos + reorder milestones + open dedicated story gallery
     await user.click(screen.getByTestId('select-section-our_story'));
 
     const photoA = new File([new Uint8Array([1, 2, 3])], 'first.jpg', { type: 'image/jpeg' });
@@ -517,12 +523,27 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
       expect(screen.getByTestId('story-milestone-0-image-1')).toBeInTheDocument();
     });
 
-    await user.selectOptions(screen.getByTestId('story-milestone-0-img-span-0'), 'wide');
-    expect(screen.getByTestId('milestone-image-tile-0')).toHaveAttribute('data-tile-span', 'wide');
+    // Main invitation shows single featured image + "Read Full Story & View All 2 Photos" button
+    expect(screen.getByTestId('our-story-featured-image')).toBeInTheDocument();
 
+    await user.selectOptions(screen.getByTestId('story-milestone-0-img-span-0'), 'wide');
     // Reorder photo 0 to the right -> photo 1 becomes first
     await user.click(screen.getByTestId('story-milestone-0-img-move-right-0'));
+
+    // Open dedicated story page inside live preview and verify reordered custom-tiled photos
+    await user.click(screen.getByTestId('our-story-more-button'));
+    expect(screen.getByTestId('our-story-dedicated-page')).toBeInTheDocument();
     expect(screen.getByTestId('milestone-image-tile-1')).toHaveAttribute('data-tile-span', 'wide');
+
+    // Return to main invitation preview
+    await user.click(screen.getByTestId('our-story-back-button'));
+    expect(screen.queryByTestId('our-story-dedicated-page')).not.toBeInTheDocument();
+
+    // Reorder Milestone 0 down -> swaps with Milestone 1
+    await user.click(screen.getByTestId('story-move-milestone-down-0'));
+    expect(screen.getByTestId('invitation-story-milestone-label-0')).toHaveTextContent(
+      'The Proposal',
+    );
 
     // 4. Venue & Travel: starts unified (same location), unchecking reveals Reception fields
     await user.click(screen.getByTestId('select-section-venue_travel'));

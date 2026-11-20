@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type {
   CustomFontAsset,
+  InvitationAnimationStyle,
   SectionStyleOverrides,
   ThemeTokenOverrides,
   WeddingThemeConfig,
@@ -24,7 +25,23 @@ export type SectionSpacingId = NonNullable<ThemeTokenOverrides['sectionSpacing']
 export type OrnamentStyleId = NonNullable<ThemeTokenOverrides['ornamentStyle']>;
 
 export const DEFAULT_BACKGROUND_OVERLAY_OPACITY = 75;
+export const DEFAULT_CARD_OPACITY = 100;
+export const DEFAULT_ANIMATION_STYLE: InvitationAnimationStyle = 'editorial_rise';
 export const LEGACY_CUSTOM_FONT_ID = 'legacy-custom-font' as const;
+
+const MOTION_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov']);
+
+export function isVideoAssetUrl(url: string | null | undefined): boolean {
+  if (!url) {
+    return false;
+  }
+  const cleanPath = (url.split(/[?#]/)[0] ?? '').trim().toLowerCase();
+  const lastDot = cleanPath.lastIndexOf('.');
+  if (lastDot < 0 || lastDot === cleanPath.length - 1) {
+    return false;
+  }
+  return MOTION_VIDEO_EXTENSIONS.has(cleanPath.slice(lastDot + 1));
+}
 
 export const HEADING_FONT_STACKS: Readonly<Record<HeadingFontPairId, string>> = {
   editorial_serif: "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif",
@@ -218,6 +235,8 @@ export interface ResolvedInvitationTheme {
   readonly customFontTarget: CustomFontTargetId;
   readonly backgroundImageUrl: string | null;
   readonly backgroundOverlayOpacity: number;
+  readonly cardOpacity: number;
+  readonly animationStyle: InvitationAnimationStyle;
   readonly cornerStyle: CornerStyleId;
   readonly sectionSpacing: SectionSpacingId;
   readonly ornamentStyle: OrnamentStyleId;
@@ -281,6 +300,13 @@ export function resolveFontSelectionToCssStack(
   return BUILTIN_STACK_BY_KEY[selection] ?? null;
 }
 
+function mixColorOpacity(hex: string, opacityPercent: number): string {
+  if (opacityPercent >= 100) {
+    return hex;
+  }
+  return `color-mix(in srgb, ${hex} ${opacityPercent}%, transparent)`;
+}
+
 export function resolveSectionStyleOverrides(
   style: SectionStyleOverrides | undefined,
   resolvedTheme: ResolvedInvitationTheme,
@@ -290,13 +316,24 @@ export function resolveSectionStyleOverrides(
   }
 
   const vars: Record<string, string> = {};
+  const effectiveOpacity = style.cardOpacity ?? resolvedTheme.cardOpacity;
 
-  if (style.backgroundBgHex) {
-    vars['--inv-canvas'] = style.backgroundBgHex;
-    vars.backgroundColor = style.backgroundBgHex;
+  const baseBg = style.backgroundBgHex ?? resolvedTheme.canvasBg;
+  const baseSurface = style.surfaceBgHex ?? resolvedTheme.surfaceBg;
+  const baseSurfaceMuted = style.backgroundBgHex ?? resolvedTheme.surfaceMutedBg;
+
+  if (style.backgroundBgHex || typeof style.cardOpacity === 'number') {
+    const mixedBg = mixColorOpacity(baseBg, effectiveOpacity);
+    vars['--inv-canvas'] = mixedBg;
+    vars.backgroundColor = mixedBg;
+    vars['--inv-surface-muted'] = mixColorOpacity(baseSurfaceMuted, effectiveOpacity);
   }
-  if (style.surfaceBgHex) {
-    vars['--inv-surface'] = style.surfaceBgHex;
+  if (style.surfaceBgHex || typeof style.cardOpacity === 'number') {
+    vars['--inv-surface'] = mixColorOpacity(baseSurface, effectiveOpacity);
+  }
+  if (typeof style.cardOpacity === 'number' && style.cardOpacity < 100) {
+    vars.backdropFilter = 'blur(8px)';
+    vars.WebkitBackdropFilter = 'blur(8px)';
   }
   if (style.inkPrimaryHex) {
     vars['--inv-ink'] = style.inkPrimaryHex;
@@ -412,6 +449,9 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
   const backgroundImageUrl = overrides.backgroundImageUrl ?? null;
   const backgroundOverlayOpacity =
     overrides.backgroundOverlayOpacity ?? DEFAULT_BACKGROUND_OVERLAY_OPACITY;
+  const cardOpacity = overrides.cardOpacity ?? DEFAULT_CARD_OPACITY;
+  const animationStyle: InvitationAnimationStyle =
+    overrides.animationStyle ?? DEFAULT_ANIMATION_STYLE;
 
   const cornerStyle = overrides.cornerStyle ?? preset.defaultCornerStyle;
   const sectionSpacing = overrides.sectionSpacing ?? preset.defaultSectionSpacing;
@@ -421,9 +461,9 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
     cornerStyle === 'sharp' ? '0.25rem' : cornerStyle === 'arch' ? '1.5rem' : '0.875rem';
 
   const cssVariables = {
-    '--inv-canvas': canvasBg,
-    '--inv-surface': surfaceBg,
-    '--inv-surface-muted': surfaceMutedBg,
+    '--inv-canvas': mixColorOpacity(canvasBg, cardOpacity),
+    '--inv-surface': mixColorOpacity(surfaceBg, cardOpacity),
+    '--inv-surface-muted': mixColorOpacity(surfaceMutedBg, cardOpacity),
     '--inv-ink': inkPrimary,
     '--inv-ink-muted': inkMuted,
     '--inv-accent': accentHex,
@@ -453,6 +493,8 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
     customFontTarget,
     backgroundImageUrl,
     backgroundOverlayOpacity,
+    cardOpacity,
+    animationStyle,
     cornerStyle,
     sectionSpacing,
     ornamentStyle,

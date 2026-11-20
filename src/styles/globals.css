@@ -139,29 +139,109 @@
 }
 
 /* Vertical section rhythm (`compact` | `comfortable` | `airy`) inside <InvitationRenderer /> */
-[data-section-spacing='compact'] [data-section-type] > section {
+[data-section-spacing='compact'] [data-section-type] > :is(section, header) {
   padding-top: 1.75rem;
   padding-bottom: 1.75rem;
 }
-[data-section-spacing='compact'] [data-section-type='hero'] > section {
+[data-section-spacing='compact'] [data-section-type='hero'] > :is(section, header) {
   padding-top: 2.5rem;
   padding-bottom: 2.5rem;
 }
 
-[data-section-spacing='comfortable'] [data-section-type] > section {
+[data-section-spacing='comfortable'] [data-section-type] > :is(section, header) {
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
-[data-section-spacing='comfortable'] [data-section-type='hero'] > section {
+[data-section-spacing='comfortable'] [data-section-type='hero'] > :is(section, header) {
   padding-top: 4rem;
   padding-bottom: 4rem;
 }
 
-[data-section-spacing='airy'] [data-section-type] > section {
+[data-section-spacing='airy'] [data-section-type] > :is(section, header) {
   padding-top: 4.75rem;
   padding-bottom: 4.75rem;
 }
-[data-section-spacing='airy'] [data-section-type='hero'] > section {
+[data-section-spacing='airy'] [data-section-type='hero'] > :is(section, header) {
   padding-top: 6rem;
   padding-bottom: 6rem;
+}
+
+/* Curated invitation entrance & ambient animations (`gentle_fade` | `editorial_rise` | `romantic_float`) */
+@keyframes inv-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes inv-editorial-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes inv-romantic-bloom {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes inv-gentle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+[data-animation-style='gentle_fade'] [data-section-type] {
+  animation: inv-fade-in 0.7s ease-out both;
+  animation-delay: calc(var(--inv-stagger-idx, 0) * 90ms);
+}
+
+[data-animation-style='editorial_rise'] [data-section-type] {
+  animation: inv-editorial-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--inv-stagger-idx, 0) * 110ms);
+}
+
+[data-animation-style='romantic_float'] [data-section-type] {
+  animation: inv-romantic-bloom 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--inv-stagger-idx, 0) * 130ms);
+}
+
+[data-animation-style='romantic_float'] [data-testid='invitation-hero-cta'],
+[data-animation-style='editorial_rise'] [data-testid='invitation-hero-cta'] {
+  transition: transform 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+}
+
+[data-animation-style='romantic_float'] [data-testid='invitation-hero-cta']:hover,
+[data-animation-style='editorial_rise'] [data-testid='invitation-hero-cta']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.25);
+}
+
+[data-animation-style='romantic_float'] [data-section-type='hero'] svg {
+  animation: inv-gentle-float 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animation-style] [data-section-type],
+  [data-animation-style] svg {
+    animation: none !important;
+    transition: none !important;
+  }
 }

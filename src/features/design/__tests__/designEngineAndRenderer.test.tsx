@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { InvitationRenderer } from '@/features/design/components/InvitationRenderer';
 import { createStarterInvitationDocument } from '@/features/design/registry/sectionRegistry';
@@ -327,7 +327,9 @@ describe('Invitation Design System, Zod Validation & <InvitationRenderer /> (P3-
       '40',
     );
 
-    // Our Story milestone: label + formatted date shown, empty title auto-hidden, empty 2nd milestone auto-hidden
+    // Our Story: main invitation features ONLY ONE image + "Read Full Story & Photos" button
+    expect(screen.getByTestId('our-story-featured-image')).toBeInTheDocument();
+    expect(screen.queryByTestId('milestone-image-grid')).not.toBeInTheDocument();
     expect(screen.getByTestId('invitation-story-milestone-0')).toBeInTheDocument();
     expect(screen.queryByTestId('invitation-story-milestone-1')).not.toBeInTheDocument();
     expect(screen.getByTestId('invitation-story-milestone-label-0')).toHaveTextContent('First Trip');
@@ -335,12 +337,20 @@ describe('Invitation Design System, Zod Validation & <InvitationRenderer /> (P3-
       'June 14, 2022',
     );
     expect(screen.queryByTestId('invitation-story-milestone-title-0')).not.toBeInTheDocument();
+
+    // Clicking "Read Full Story & View All 2 Photos" opens the dedicated Story & Photos page
+    fireEvent.click(screen.getByTestId('our-story-more-button'));
+    expect(screen.getByTestId('our-story-dedicated-page')).toBeInTheDocument();
     expect(screen.getByTestId('milestone-image-grid')).toHaveAttribute(
       'data-image-layout',
       'custom_mosaic',
     );
     expect(screen.getByTestId('milestone-image-tile-0')).toHaveAttribute('data-tile-span', 'wide');
     expect(screen.getByTestId('milestone-image-tile-1')).toHaveAttribute('data-tile-span', 'tall');
+
+    // Clicking "Back to Invitation" returns to the main invitation
+    fireEvent.click(screen.getByTestId('our-story-back-button'));
+    expect(screen.queryByTestId('our-story-dedicated-page')).not.toBeInTheDocument();
 
     // Venue & Travel: same ceremony & reception location renders as ONE unified card
     expect(screen.getByTestId('venue-combined-card')).toHaveTextContent('Ceremony & Reception');

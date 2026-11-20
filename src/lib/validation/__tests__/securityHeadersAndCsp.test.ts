@@ -71,6 +71,12 @@ describe('Production HTTP Security Headers, CSP & Zod jitless mode (P9-AC06, P9-
       'blob:',
       'https://*.supabase.co',
     ]);
+    expect(directives.get('media-src')).toEqual([
+      "'self'",
+      'data:',
+      'blob:',
+      'https://*.supabase.co',
+    ]);
     expect(directives.get('font-src')).toEqual([
       "'self'",
       'data:',

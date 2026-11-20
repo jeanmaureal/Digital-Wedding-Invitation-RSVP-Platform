@@ -174,6 +174,7 @@ export interface RenderRegisteredSectionParams {
   readonly wedding: InvitationWeddingMetadata;
   readonly ornamentStyle: OrnamentStyleId;
   readonly onPrimaryAction?: (() => void) | undefined;
+  readonly onOpenFullStory?: (() => void) | undefined;
 }
 
 export function renderRegisteredSection({
@@ -181,6 +182,7 @@ export function renderRegisteredSection({
   wedding,
   ornamentStyle,
   onPrimaryAction,
+  onOpenFullStory,
 }: RenderRegisteredSectionParams): JSX.Element {
   switch (section.sectionType) {
     case 'hero':
@@ -193,7 +195,13 @@ export function renderRegisteredSection({
         />
       );
     case 'our_story':
-      return <OurStorySection content={section.content} ornamentStyle={ornamentStyle} />;
+      return (
+        <OurStorySection
+          content={section.content}
+          ornamentStyle={ornamentStyle}
+          onOpenFullStory={onOpenFullStory}
+        />
+      );
     case 'event_schedule':
       return (
         <EventScheduleSection
