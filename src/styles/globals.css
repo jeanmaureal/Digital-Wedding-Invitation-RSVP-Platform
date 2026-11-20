@@ -80,3 +80,60 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+/* Per-section typography scale overrides inside <InvitationRenderer /> */
+[data-section-heading-scale='xs'] h1 {
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+[data-section-heading-scale='sm'] h1 {
+  font-size: 2.15rem;
+  line-height: 1.15;
+}
+[data-section-heading-scale='lg'] h1 {
+  font-size: 3.25rem;
+  line-height: 1.1;
+}
+[data-section-heading-scale='xl'] h1 {
+  font-size: 3.85rem;
+  line-height: 1.08;
+}
+
+[data-section-heading-scale='xs'] h2 {
+  font-size: 1.25rem;
+}
+[data-section-heading-scale='sm'] h2 {
+  font-size: 1.5rem;
+}
+[data-section-heading-scale='lg'] h2 {
+  font-size: 2.25rem;
+}
+[data-section-heading-scale='xl'] h2 {
+  font-size: 2.75rem;
+}
+
+[data-section-heading-scale='xs'] h3 {
+  font-size: 0.95rem;
+}
+[data-section-heading-scale='sm'] h3 {
+  font-size: 1.05rem;
+}
+[data-section-heading-scale='lg'] h3 {
+  font-size: 1.35rem;
+}
+[data-section-heading-scale='xl'] h3 {
+  font-size: 1.55rem;
+}
+
+[data-section-body-scale='xs'] :is(p, blockquote, li, dt, dd) {
+  font-size: 0.78rem;
+}
+[data-section-body-scale='sm'] :is(p, blockquote, li, dt, dd) {
+  font-size: 0.875rem;
+}
+[data-section-body-scale='lg'] :is(p, blockquote, li, dt, dd) {
+  font-size: 1.0625rem;
+}
+[data-section-body-scale='xl'] :is(p, blockquote, li, dt, dd) {
+  font-size: 1.1875rem;
+}

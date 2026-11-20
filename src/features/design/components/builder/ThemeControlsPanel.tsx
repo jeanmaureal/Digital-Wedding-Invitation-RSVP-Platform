@@ -11,6 +11,7 @@ import {
   uploadWeddingDesignAsset,
 } from '@/features/design/api/designAssetsApi';
 import {
+  type CustomFontAsset,
   hexColorSchema,
   httpsUrlSchema,
   type ThemeTokenOverrides,
@@ -18,7 +19,10 @@ import {
   type WeddingThemePresetId,
 } from '@/features/design/schemas/designSchemas';
 import {
+  buildCustomFontFamilyName,
   DEFAULT_BACKGROUND_OVERLAY_OPACITY,
+  getNormalizedCustomFonts,
+  LEGACY_CUSTOM_FONT_ID,
   WEDDING_THEME_PRESET_LIST,
   WEDDING_THEME_PRESETS,
 } from '@/features/design/themes/themePresets';
@@ -113,7 +117,7 @@ export interface ThemeControlsPanelProps {
 }
 
 function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeTokenOverrides {
-  const cleaned: Record<string, string | number> = {};
+  const cleaned: Record<string, unknown> = {};
   if (raw.primaryAccentHex) cleaned.primaryAccentHex = raw.primaryAccentHex;
   if (raw.canvasBgHex) cleaned.canvasBgHex = raw.canvasBgHex;
   if (raw.surfaceBgHex) cleaned.surfaceBgHex = raw.surfaceBgHex;
@@ -124,6 +128,11 @@ function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeToken
   if (raw.surfaceTint) cleaned.surfaceTint = raw.surfaceTint;
   if (raw.headingFontPair) cleaned.headingFontPair = raw.headingFontPair;
   if (raw.bodyFontPair) cleaned.bodyFontPair = raw.bodyFontPair;
+  if (raw.customFonts && raw.customFonts.length > 0) {
+    cleaned.customFonts = raw.customFonts;
+  }
+  if (raw.headingCustomFontId) cleaned.headingCustomFontId = raw.headingCustomFontId;
+  if (raw.bodyCustomFontId) cleaned.bodyCustomFontId = raw.bodyCustomFontId;
   if (raw.customFontUrl) {
     cleaned.customFontUrl = raw.customFontUrl;
     if (raw.customFontName) cleaned.customFontName = raw.customFontName;
@@ -139,6 +148,13 @@ function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeToken
   if (raw.sectionSpacing) cleaned.sectionSpacing = raw.sectionSpacing;
   if (raw.ornamentStyle) cleaned.ornamentStyle = raw.ornamentStyle;
   return cleaned as ThemeTokenOverrides;
+}
+
+function generateFontId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+  }
+  return `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
 
 export function ThemeControlsPanel({
@@ -344,6 +360,102 @@ export function ThemeControlsPanel({
     );
   };
 
+  const fontLibrary = getNormalizedCustomFonts(overrides);
+
+  const resolvedHeadingSelectValue = (() => {
+    if (overrides.headingCustomFontId) {
+      return `custom:${overrides.headingCustomFontId}`;
+    }
+    if (
+      !overrides.headingFontPair &&
+      overrides.customFontUrl &&
+      (overrides.customFontTarget === undefined ||
+        overrides.customFontTarget === 'heading' ||
+        overrides.customFontTarget === 'both')
+    ) {
+      const legacyMatch = fontLibrary.find((f) => f.url === overrides.customFontUrl);
+      if (legacyMatch) {
+        return `custom:${legacyMatch.id}`;
+      }
+    }
+    return overrides.headingFontPair ?? '';
+  })();
+
+  const resolvedBodySelectValue = (() => {
+    if (overrides.bodyCustomFontId) {
+      return `custom:${overrides.bodyCustomFontId}`;
+    }
+    if (
+      !overrides.bodyFontPair &&
+      overrides.customFontUrl &&
+      (overrides.customFontTarget === 'body' || overrides.customFontTarget === 'both')
+    ) {
+      const legacyMatch = fontLibrary.find((f) => f.url === overrides.customFontUrl);
+      if (legacyMatch) {
+        return `custom:${legacyMatch.id}`;
+      }
+    }
+    return overrides.bodyFontPair ?? '';
+  })();
+
+  const buildMigratedLibraryPatch = (
+    nextFonts: CustomFontAsset[],
+    extra: Partial<ThemeTokenOverrides> = {},
+  ): Partial<ThemeTokenOverrides> => ({
+    customFonts: nextFonts,
+    // Clear legacy single-slot fields once represented in `customFonts`
+    customFontName: undefined,
+    customFontUrl: undefined,
+    customFontTarget: undefined,
+    ...extra,
+  });
+
+  const handleGlobalHeadingFontChange = (value: string) => {
+    if (!canEdit) {
+      return;
+    }
+    const migratedFonts = [...fontLibrary];
+    const extra: Partial<ThemeTokenOverrides> = {};
+    if (value.startsWith('custom:')) {
+      extra.headingCustomFontId = value.slice('custom:'.length);
+      extra.headingFontPair = undefined;
+    } else {
+      extra.headingCustomFontId = undefined;
+      extra.headingFontPair = (value || undefined) as ThemeTokenOverrides['headingFontPair'];
+    }
+    // Preserve body selection if legacy font was active on body
+    if (!overrides.bodyCustomFontId && overrides.customFontUrl && overrides.customFontTarget === 'both') {
+      extra.bodyCustomFontId = LEGACY_CUSTOM_FONT_ID;
+    }
+    applyOverridePatch(buildMigratedLibraryPatch(migratedFonts, extra));
+  };
+
+  const handleGlobalBodyFontChange = (value: string) => {
+    if (!canEdit) {
+      return;
+    }
+    const migratedFonts = [...fontLibrary];
+    const extra: Partial<ThemeTokenOverrides> = {};
+    if (value.startsWith('custom:')) {
+      extra.bodyCustomFontId = value.slice('custom:'.length);
+      extra.bodyFontPair = undefined;
+    } else {
+      extra.bodyCustomFontId = undefined;
+      extra.bodyFontPair = (value || undefined) as ThemeTokenOverrides['bodyFontPair'];
+    }
+    // Preserve heading selection if legacy font was active on heading
+    if (
+      !overrides.headingCustomFontId &&
+      overrides.customFontUrl &&
+      (overrides.customFontTarget === undefined ||
+        overrides.customFontTarget === 'heading' ||
+        overrides.customFontTarget === 'both')
+    ) {
+      extra.headingCustomFontId = LEGACY_CUSTOM_FONT_ID;
+    }
+    applyOverridePatch(buildMigratedLibraryPatch(migratedFonts, extra));
+  };
+
   const handleFontFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -352,6 +464,10 @@ export function ThemeControlsPanel({
     }
     if (!workspaceId || !weddingId) {
       setFontUploadError('Workspace context is unavailable for font uploads.');
+      return;
+    }
+    if (fontLibrary.length >= 8) {
+      setFontUploadError('Maximum of 8 imported fonts reached. Remove one to import another.');
       return;
     }
 
@@ -368,14 +484,33 @@ export function ThemeControlsPanel({
         client,
       );
       const displayName = deriveFontDisplayName(uploaded.fileName);
-      applyOverridePatch(
-        {
-          customFontName: displayName,
-          customFontUrl: uploaded.publicUrl,
-          customFontTarget: overrides.customFontTarget ?? 'heading',
-        },
-        true,
-      );
+      const newFont: CustomFontAsset = {
+        id: generateFontId(),
+        name: displayName,
+        url: uploaded.publicUrl,
+      };
+      const nextFonts = [...fontLibrary, newFont];
+
+      // Preserve any active legacy heading/body font selection during migration
+      const extra: Partial<ThemeTokenOverrides> = {};
+      if (
+        !overrides.headingCustomFontId &&
+        overrides.customFontUrl &&
+        (overrides.customFontTarget === undefined ||
+          overrides.customFontTarget === 'heading' ||
+          overrides.customFontTarget === 'both')
+      ) {
+        extra.headingCustomFontId = LEGACY_CUSTOM_FONT_ID;
+      }
+      if (
+        !overrides.bodyCustomFontId &&
+        overrides.customFontUrl &&
+        (overrides.customFontTarget === 'body' || overrides.customFontTarget === 'both')
+      ) {
+        extra.bodyCustomFontId = LEGACY_CUSTOM_FONT_ID;
+      }
+
+      applyOverridePatch(buildMigratedLibraryPatch(nextFonts, extra), true);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unable to upload font file.';
       setFontUploadError(message);
@@ -384,19 +519,30 @@ export function ThemeControlsPanel({
     }
   };
 
-  const handleRemoveCustomFont = () => {
+  const handleRenameCustomFont = (fontId: string, nextName: string) => {
+    if (!canEdit) {
+      return;
+    }
+    const nextFonts = fontLibrary.map((f) =>
+      f.id === fontId ? { ...f, name: nextName.trim() || 'Custom Font' } : f,
+    );
+    applyOverridePatch(buildMigratedLibraryPatch(nextFonts));
+  };
+
+  const handleRemoveCustomFont = (fontId: string) => {
     if (!canEdit) {
       return;
     }
     setFontUploadError(null);
-    applyOverridePatch(
-      {
-        customFontName: undefined,
-        customFontUrl: undefined,
-        customFontTarget: undefined,
-      },
-      true,
-    );
+    const nextFonts = fontLibrary.filter((f) => f.id !== fontId);
+    const extra: Partial<ThemeTokenOverrides> = {};
+    if (overrides.headingCustomFontId === fontId) {
+      extra.headingCustomFontId = undefined;
+    }
+    if (overrides.bodyCustomFontId === fontId) {
+      extra.bodyCustomFontId = undefined;
+    }
+    applyOverridePatch(buildMigratedLibraryPatch(nextFonts, extra), true);
   };
 
   const handleResetAllOverrides = () => {
@@ -612,82 +758,99 @@ export function ThemeControlsPanel({
         </div>
       </div>
 
-      {/* 3. Typography & Custom TrueType Font Import */}
+      {/* 3. Typography & Font Library */}
       <div className="space-y-4 border-t pt-5">
         <div>
-          <h3 className="text-sm font-semibold">3. Typography &amp; Custom Font</h3>
+          <h3 className="text-sm font-semibold">3. Typography &amp; Font Library</h3>
           <p className="text-muted-foreground text-xs">
-            Choose built-in editorial font pairs or install your own TrueType (.ttf), OpenType
-            (.otf), or WOFF font file.
+            Choose default invitation fonts or import TrueType (.ttf), OpenType (.otf), and WOFF
+            files into your permanent font library. Imported fonts can also be picked per section.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="theme-heading-font-select">Heading typography</Label>
+            <Label htmlFor="theme-heading-font-select">Default heading font</Label>
             <NativeSelect
               id="theme-heading-font-select"
               disabled={!canEdit}
-              value={overrides.headingFontPair ?? ''}
+              value={resolvedHeadingSelectValue}
               data-testid="theme-heading-font-select"
-              onChange={(e) =>
-                applyOverridePatch({
-                  headingFontPair: (e.target.value || undefined) as ThemeTokenOverrides['headingFontPair'],
-                })
-              }
+              onChange={(e) => handleGlobalHeadingFontChange(e.target.value)}
             >
               <option value="">Preset default ({activePreset.defaultHeadingFontPair})</option>
-              <option value="editorial_serif">Editorial Serif</option>
-              <option value="classic_serif">Classic Serif</option>
-              <option value="romantic_serif">Romantic Serif</option>
-              <option value="modern_sans">Modern Sans</option>
-              <option value="handwritten_script">Handwritten Script</option>
-              <option value="minimal_mono">Minimal Monospace</option>
+              {fontLibrary.length > 0 ? (
+                <optgroup label="Imported Fonts">
+                  {fontLibrary.map((font) => (
+                    <option key={font.id} value={`custom:${font.id}`}>
+                      {font.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              <optgroup label="Built-in Fonts">
+                <option value="editorial_serif">Editorial Serif</option>
+                <option value="classic_serif">Classic Serif</option>
+                <option value="romantic_serif">Romantic Serif</option>
+                <option value="modern_sans">Modern Sans</option>
+                <option value="handwritten_script">Handwritten Script</option>
+                <option value="minimal_mono">Minimal Monospace</option>
+              </optgroup>
             </NativeSelect>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="theme-body-font-select">Body typography</Label>
+            <Label htmlFor="theme-body-font-select">Default body font</Label>
             <NativeSelect
               id="theme-body-font-select"
               disabled={!canEdit}
-              value={overrides.bodyFontPair ?? ''}
+              value={resolvedBodySelectValue}
               data-testid="theme-body-font-select"
-              onChange={(e) =>
-                applyOverridePatch({
-                  bodyFontPair: (e.target.value || undefined) as ThemeTokenOverrides['bodyFontPair'],
-                })
-              }
+              onChange={(e) => handleGlobalBodyFontChange(e.target.value)}
             >
               <option value="">Preset default ({activePreset.defaultBodyFontPair})</option>
-              <option value="modern_sans">Modern Sans</option>
-              <option value="humanist_sans">Humanist Sans</option>
-              <option value="editorial_serif">Editorial Serif</option>
-              <option value="classic_serif">Classic Serif</option>
-              <option value="minimal_mono">Minimal Monospace</option>
+              {fontLibrary.length > 0 ? (
+                <optgroup label="Imported Fonts">
+                  {fontLibrary.map((font) => (
+                    <option key={font.id} value={`custom:${font.id}`}>
+                      {font.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              <optgroup label="Built-in Fonts">
+                <option value="modern_sans">Modern Sans</option>
+                <option value="humanist_sans">Humanist Sans</option>
+                <option value="editorial_serif">Editorial Serif</option>
+                <option value="classic_serif">Classic Serif</option>
+                <option value="minimal_mono">Minimal Monospace</option>
+              </optgroup>
             </NativeSelect>
           </div>
         </div>
 
-        {/* Custom Font File Upload (.ttf/.otf/.woff/.woff2) */}
+        {/* Non-Destructive Imported Font Library */}
         <div className="bg-muted/20 space-y-3 rounded-lg border p-3.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Type className="text-muted-foreground size-4" aria-hidden="true" />
               <div>
-                <p className="text-xs font-semibold">Custom Font File (.ttf, .otf, .woff, .woff2)</p>
+                <p className="text-xs font-semibold">
+                  Imported Font Library ({fontLibrary.length}/8)
+                </p>
                 <p className="text-muted-foreground text-[11px]">
-                  Import a TrueType font to apply directly to your invitation. Max 5 MB.
+                  Import .ttf, .otf, .woff, or .woff2 files. They stay in all font dropdowns until
+                  you remove them.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div>
               <input
                 ref={fontFileInputRef}
                 type="file"
                 accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2"
-                disabled={!canEdit || isUploadingFont}
+                disabled={!canEdit || isUploadingFont || fontLibrary.length >= 8}
                 data-testid="theme-custom-font-file-input"
                 onChange={(e) => void handleFontFileUpload(e)}
                 className="sr-only"
@@ -696,7 +859,7 @@ export function ThemeControlsPanel({
                 type="button"
                 variant="outline"
                 size="sm"
-                disabled={!canEdit || isUploadingFont}
+                disabled={!canEdit || isUploadingFont || fontLibrary.length >= 8}
                 data-testid="theme-upload-font-button"
                 onClick={() => fontFileInputRef.current?.click()}
               >
@@ -705,66 +868,48 @@ export function ThemeControlsPanel({
                 ) : (
                   <Upload className="size-3.5" aria-hidden="true" />
                 )}
-                {overrides.customFontUrl ? 'Replace font' : 'Import font'}
+                Import font
               </Button>
-              {overrides.customFontUrl ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={!canEdit}
-                  className="text-destructive h-8 px-2"
-                  aria-label="Remove custom font"
-                  data-testid="theme-remove-font-button"
-                  onClick={handleRemoveCustomFont}
-                >
-                  <Trash2 className="size-3.5" aria-hidden="true" />
-                </Button>
-              ) : null}
             </div>
           </div>
 
-          {overrides.customFontUrl ? (
-            <div className="grid gap-3 pt-1 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="theme-custom-font-name" className="text-xs">
-                  Installed font label
-                </Label>
-                <Input
-                  id="theme-custom-font-name"
-                  disabled={!canEdit}
-                  value={overrides.customFontName ?? ''}
-                  data-testid="theme-custom-font-name-input"
-                  onChange={(e) =>
-                    applyOverridePatch({
-                      customFontName: e.target.value.trim() || 'Custom Font',
-                    })
-                  }
-                  className="h-8 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="theme-custom-font-target" className="text-xs">
-                  Apply custom font to
-                </Label>
-                <NativeSelect
-                  id="theme-custom-font-target"
-                  disabled={!canEdit}
-                  value={overrides.customFontTarget ?? 'heading'}
-                  data-testid="theme-custom-font-target-select"
-                  onChange={(e) =>
-                    applyOverridePatch({
-                      customFontTarget: e.target.value as ThemeTokenOverrides['customFontTarget'],
-                    })
-                  }
+          {fontLibrary.length > 0 ? (
+            <ul className="space-y-2 pt-1" data-testid="theme-font-library-list">
+              {fontLibrary.map((font, idx) => (
+                <li
+                  key={font.id}
+                  data-testid={`theme-font-library-item-${idx}`}
+                  className="bg-background flex flex-wrap items-center gap-2 rounded-md border p-2"
                 >
-                  <option value="heading">Headings only</option>
-                  <option value="body">Body text only</option>
-                  <option value="both">Headings &amp; body</option>
-                </NativeSelect>
-              </div>
-            </div>
+                  <Input
+                    aria-label={`Font ${idx + 1} display name`}
+                    disabled={!canEdit}
+                    defaultValue={font.name}
+                    data-testid={`theme-custom-font-name-input-${idx}`}
+                    onBlur={(e) => handleRenameCustomFont(font.id, e.target.value)}
+                    className="h-7 min-w-[8rem] flex-1 text-xs"
+                  />
+                  <span
+                    className="text-muted-foreground px-2 text-sm"
+                    style={{ fontFamily: `'${buildCustomFontFamilyName(font.url)}', serif` }}
+                  >
+                    Aa Bb Cc
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canEdit}
+                    className="text-destructive h-7 w-7 p-0"
+                    aria-label={`Remove ${font.name} from font library`}
+                    data-testid={`theme-remove-font-button-${idx}`}
+                    onClick={() => handleRemoveCustomFont(font.id)}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
           ) : null}
 
           <FormFieldError message={fontUploadError ?? undefined} />

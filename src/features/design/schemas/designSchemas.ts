@@ -180,6 +180,29 @@ export const nullableHttpsUrlSchema = z
     }
   });
 
+export const customFontAssetSchema = z.strictObject({
+  id: safeLineString(1, 32, 'Font ID'),
+  name: safeLineString(1, 60, 'Font name'),
+  url: httpsUrlSchema,
+});
+export type CustomFontAsset = z.output<typeof customFontAssetSchema>;
+
+export const sectionFontScaleSchema = z.enum(['xs', 'sm', 'md', 'lg', 'xl']);
+export type SectionFontScale = z.output<typeof sectionFontScaleSchema>;
+
+export const sectionStyleOverridesSchema = z.strictObject({
+  backgroundBgHex: hexColorSchema.optional(),
+  surfaceBgHex: hexColorSchema.optional(),
+  inkPrimaryHex: hexColorSchema.optional(),
+  inkMutedHex: hexColorSchema.optional(),
+  accentHex: hexColorSchema.optional(),
+  headingFont: safeLineString(1, 64, 'Section heading font').optional(),
+  bodyFont: safeLineString(1, 64, 'Section body font').optional(),
+  headingSize: sectionFontScaleSchema.optional(),
+  bodySize: sectionFontScaleSchema.optional(),
+});
+export type SectionStyleOverrides = z.output<typeof sectionStyleOverridesSchema>;
+
 export const themeTokenOverridesSchema = z.strictObject({
   primaryAccentHex: hexColorSchema.optional(),
   canvasBgHex: hexColorSchema.optional(),
@@ -202,6 +225,10 @@ export const themeTokenOverridesSchema = z.strictObject({
   bodyFontPair: z
     .enum(['modern_sans', 'editorial_serif', 'classic_serif', 'humanist_sans', 'minimal_mono'])
     .optional(),
+  customFonts: z.array(customFontAssetSchema).max(8).optional(),
+  headingCustomFontId: safeLineString(1, 32, 'Heading custom font ID').optional(),
+  bodyCustomFontId: safeLineString(1, 32, 'Body custom font ID').optional(),
+  // Legacy single-font fields retained for backward compatibility with saved drafts/snapshots
   customFontName: safeLineString(1, 60, 'Custom font name').optional(),
   customFontUrl: httpsUrlSchema.optional(),
   customFontTarget: z.enum(['heading', 'body', 'both']).optional(),
@@ -237,6 +264,7 @@ export const heroSectionContentSchema = z.strictObject({
   primaryCtaLabel: safeLineString(1, 40, 'Primary button label'),
   showCountdownBadge: z.boolean(),
   alignment: z.enum(['center', 'split']),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type HeroSectionContent = z.output<typeof heroSectionContentSchema>;
 
@@ -274,6 +302,7 @@ export const ourStorySectionContentSchema = z.strictObject({
   leadQuote: safeOptionalLineString(240, 'Lead quote'),
   narrative: safeMultilineString(0, 1500, 'Story narrative'),
   milestones: z.array(storyMilestoneSchema).max(6),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type OurStorySectionContent = z.output<typeof ourStorySectionContentSchema>;
 
@@ -289,6 +318,7 @@ export const eventScheduleSectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Schedule heading'),
   timezoneNote: safeOptionalLineString(120, 'Timezone note'),
   items: z.array(scheduleEventItemSchema).min(1).max(8),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type EventScheduleSectionContent = z.output<typeof eventScheduleSectionContentSchema>;
 
@@ -308,6 +338,7 @@ export const venueTravelSectionContentSchema = z.strictObject({
   directionsNote: safeMultilineString(0, 600, 'Directions note'),
   mapUrl: nullableHttpsUrlSchema,
   accommodations: z.array(accommodationItemSchema).max(4),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type VenueTravelSectionContent = z.output<typeof venueTravelSectionContentSchema>;
 
@@ -316,6 +347,7 @@ export const dressCodeSectionContentSchema = z.strictObject({
   dressCodeTitle: safeLineString(1, 80, 'Dress code title'),
   guidance: safeMultilineString(0, 500, 'Dress code guidance'),
   swatchHexes: z.array(hexColorSchema).max(5),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type DressCodeSectionContent = z.output<typeof dressCodeSectionContentSchema>;
 
@@ -327,6 +359,7 @@ export const faqItemSchema = z.strictObject({
 export const faqNotesSectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'FAQ heading'),
   items: z.array(faqItemSchema).min(1).max(10),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type FaqNotesSectionContent = z.output<typeof faqNotesSectionContentSchema>;
 
@@ -335,6 +368,7 @@ export const rsvpBannerSectionContentSchema = z.strictObject({
   message: safeMultilineString(1, 400, 'RSVP message'),
   buttonLabel: safeLineString(1, 40, 'RSVP button label'),
   showDeadline: z.boolean(),
+  style: sectionStyleOverridesSchema.optional(),
 });
 export type RsvpBannerSectionContent = z.output<typeof rsvpBannerSectionContentSchema>;
 

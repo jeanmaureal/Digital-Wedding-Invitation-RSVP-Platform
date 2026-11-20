@@ -445,20 +445,30 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
     expect(mockApi.reorderCalls).toHaveLength(0);
   });
 
-  it('supports custom font .ttf upload, background picture with transparency slider, milestone photo upload/reorder/tiling, and venue same-location toggle', async () => {
+  it('supports non-destructive font library imports, per-section canvas colors/fonts/sizes, background picture with transparency slider, milestone photo upload/reorder/tiling, and venue same-location toggle', async () => {
     const user = userEvent.setup();
     const { mockApi } = renderBuilder({ debounceMs: 40 });
 
-    // 1. Theme tab: upload custom .ttf font & background image + adjust transparency
+    // 1. Theme tab: import TWO .ttf fonts non-destructively into the permanent Font Library
     await user.click(screen.getByTestId('inspector-tab-theme'));
 
-    const fontFile = new File([new Uint8Array([0, 1, 0, 0])], 'Playfair-Display.ttf', {
+    const fontFileA = new File([new Uint8Array([0, 1, 0, 0])], 'Playfair-Display.ttf', {
       type: 'font/ttf',
     });
-    await user.upload(screen.getByTestId('theme-custom-font-file-input'), fontFile);
-
+    const fontFileB = new File([new Uint8Array([0, 1, 0, 1])], 'GreatVibes-Regular.ttf', {
+      type: 'font/ttf',
+    });
+    await user.upload(screen.getByTestId('theme-custom-font-file-input'), fontFileA);
     await waitFor(() => {
-      expect(screen.getByTestId('theme-custom-font-name-input')).toHaveValue('Playfair Display');
+      expect(screen.getByTestId('theme-custom-font-name-input-0')).toHaveValue('Playfair Display');
+    });
+
+    await user.upload(screen.getByTestId('theme-custom-font-file-input'), fontFileB);
+    await waitFor(() => {
+      expect(screen.getByTestId('theme-custom-font-name-input-0')).toHaveValue('Playfair Display');
+      expect(screen.getByTestId('theme-custom-font-name-input-1')).toHaveValue(
+        'GreatVibes Regular',
+      );
     });
 
     const bgFile = new File([new Uint8Array([255, 216, 255])], 'garden-bg.jpg', {
@@ -471,10 +481,31 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
       expect(screen.getByTestId('theme-bg-opacity-slider')).toBeInTheDocument();
     });
 
-    expect(mockApi.uploadedAssets.length).toBe(2);
+    expect(mockApi.uploadedAssets.length).toBe(3);
 
-    // 2. Sections tab -> Our Story: set date field + upload 2 photos + reorder + change tile span
+    // 2. Per-section canvas styling: apply GreatVibes Regular + xl heading size + custom bg ONLY to Hero
     await user.click(screen.getByTestId('inspector-tab-sections'));
+    await user.click(screen.getByTestId('select-section-hero'));
+    await user.click(screen.getByTestId('section-style-toggle-hero'));
+
+    const heroFontSelect = screen.getByTestId('section-heading-font-select-hero');
+    const greatVibesOption = within(heroFontSelect).getByRole('option', {
+      name: 'GreatVibes Regular',
+    }) as HTMLOptionElement;
+    await user.selectOptions(heroFontSelect, greatVibesOption.value);
+    await user.selectOptions(screen.getByTestId('section-heading-size-select-hero'), 'xl');
+    await user.type(screen.getByTestId('section-color-hero-backgroundBgHex'), '#1F2937');
+
+    const previewStage = screen.getByTestId('builder-live-preview-stage');
+    const heroWrapper = previewStage.querySelector('[data-section-type="hero"]');
+    const storyWrapper = previewStage.querySelector('[data-section-type="our_story"]');
+    expect(heroWrapper).toHaveAttribute('data-section-heading-scale', 'xl');
+    expect(heroWrapper?.getAttribute('style') ?? '').toContain('--inv-canvas: #1F2937');
+    expect(heroWrapper?.getAttribute('style') ?? '').toContain('InvCustomFont_');
+    expect(storyWrapper).not.toHaveAttribute('data-section-heading-scale');
+    expect(storyWrapper?.getAttribute('style') ?? '').not.toContain('InvCustomFont_');
+
+    // 3. Our Story: upload 2 photos + reorder + change tile span
     await user.click(screen.getByTestId('select-section-our_story'));
 
     const photoA = new File([new Uint8Array([1, 2, 3])], 'first.jpg', { type: 'image/jpeg' });
@@ -493,7 +524,7 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
     await user.click(screen.getByTestId('story-milestone-0-img-move-right-0'));
     expect(screen.getByTestId('milestone-image-tile-1')).toHaveAttribute('data-tile-span', 'wide');
 
-    // 3. Venue & Travel: starts unified (same location), unchecking reveals Reception fields
+    // 4. Venue & Travel: starts unified (same location), unchecking reveals Reception fields
     await user.click(screen.getByTestId('select-section-venue_travel'));
     expect(screen.getByTestId('venue-combined-card')).toBeInTheDocument();
     expect(screen.getByTestId('venue-same-location-checkbox')).toBeChecked();

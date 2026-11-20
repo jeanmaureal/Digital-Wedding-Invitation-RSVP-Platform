@@ -1,10 +1,15 @@
 import { type JSX, useEffect } from 'react';
 import { renderRegisteredSection } from '@/features/design/registry/sectionRegistry';
 import {
+  type CustomFontAsset,
   type InvitationDocument,
   parseInvitationDocument,
 } from '@/features/design/schemas/designSchemas';
-import { resolveInvitationTheme } from '@/features/design/themes/themePresets';
+import {
+  buildCustomFontFamilyName,
+  resolveInvitationTheme,
+  resolveSectionStyleOverrides,
+} from '@/features/design/themes/themePresets';
 
 export type InvitationViewportMode = 'desktop' | 'mobile';
 
@@ -21,48 +26,51 @@ export interface InvitationRendererProps {
 
 const loadedCustomFontKeys = new Set<string>();
 
-function useCustomInvitationFont(
-  familyName: string | null,
-  fontUrl: string | null,
-): void {
+function useCustomInvitationFonts(customFonts: readonly CustomFontAsset[]): void {
+  const fontSignature = customFonts.map((f) => `${f.id}:${f.url}`).join('|');
+
   useEffect(() => {
-    if (!familyName || !fontUrl) {
+    if (customFonts.length === 0) {
       return;
     }
     if (typeof window === 'undefined' || typeof FontFace === 'undefined' || !document.fonts) {
       return;
     }
 
-    const cacheKey = `${familyName}::${fontUrl}`;
-    if (loadedCustomFontKeys.has(cacheKey)) {
-      return;
-    }
-
     let cancelled = false;
-    try {
-      const face = new FontFace(familyName, `url("${encodeURI(fontUrl)}")`, {
-        display: 'swap',
-      });
-      void face
-        .load()
-        .then((loadedFace) => {
-          if (cancelled) {
-            return;
-          }
-          document.fonts.add(loadedFace);
-          loadedCustomFontKeys.add(cacheKey);
-        })
-        .catch(() => {
-          // Graceful fallback to the configured system editorial font stack.
+
+    for (const font of customFonts) {
+      const familyName = buildCustomFontFamilyName(font.url);
+      const cacheKey = `${familyName}::${font.url}`;
+      if (loadedCustomFontKeys.has(cacheKey)) {
+        continue;
+      }
+
+      try {
+        const face = new FontFace(familyName, `url("${encodeURI(font.url)}")`, {
+          display: 'swap',
         });
-    } catch {
-      // Graceful fallback if FontFace construction fails in restricted environments.
+        void face
+          .load()
+          .then((loadedFace) => {
+            if (cancelled) {
+              return;
+            }
+            document.fonts.add(loadedFace);
+            loadedCustomFontKeys.add(cacheKey);
+          })
+          .catch(() => {
+            // Graceful fallback to configured editorial font stack.
+          });
+      } catch {
+        // Graceful fallback in restricted environments.
+      }
     }
 
     return () => {
       cancelled = true;
     };
-  }, [familyName, fontUrl]);
+  }, [customFonts, fontSignature]);
 }
 
 export function InvitationRenderer({
@@ -73,10 +81,7 @@ export function InvitationRenderer({
   const validation = parseInvitationDocument(rawDocument);
   const resolvedTheme = validation.ok ? resolveInvitationTheme(validation.data.theme) : null;
 
-  useCustomInvitationFont(
-    resolvedTheme?.customFontFamilyName ?? null,
-    resolvedTheme?.customFontUrl ?? null,
-  );
+  useCustomInvitationFonts(resolvedTheme?.customFonts ?? []);
 
   if (!validation.ok || !resolvedTheme) {
     return (
@@ -155,16 +160,35 @@ export function InvitationRenderer({
         ) : null}
 
         <div className="relative z-10">
-          {visibleSections.map((section) => (
-            <div key={section.id} data-section-type={section.sectionType}>
-              {renderRegisteredSection({
-                section,
-                wedding: doc.wedding,
-                ornamentStyle: resolvedTheme.ornamentStyle,
-                onPrimaryAction: onPrimaryRsvpAction,
-              })}
-            </div>
-          ))}
+          {visibleSections.map((section) => {
+            const sectionStyle = section.content.style;
+            const sectionCss = resolveSectionStyleOverrides(sectionStyle, resolvedTheme);
+            const headingScale =
+              sectionStyle?.headingSize && sectionStyle.headingSize !== 'md'
+                ? sectionStyle.headingSize
+                : undefined;
+            const bodyScale =
+              sectionStyle?.bodySize && sectionStyle.bodySize !== 'md'
+                ? sectionStyle.bodySize
+                : undefined;
+
+            return (
+              <div
+                key={section.id}
+                data-section-type={section.sectionType}
+                data-section-heading-scale={headingScale}
+                data-section-body-scale={bodyScale}
+                style={sectionCss}
+              >
+                {renderRegisteredSection({
+                  section,
+                  wedding: doc.wedding,
+                  ornamentStyle: resolvedTheme.ornamentStyle,
+                  onPrimaryAction: onPrimaryRsvpAction,
+                })}
+              </div>
+            );
+          })}
 
           <footer
             className="border-t px-6 py-6 text-center text-xs"

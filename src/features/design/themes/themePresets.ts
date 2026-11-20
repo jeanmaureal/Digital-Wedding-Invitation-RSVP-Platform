@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react';
 import type {
+  CustomFontAsset,
+  SectionStyleOverrides,
   ThemeTokenOverrides,
   WeddingThemeConfig,
   WeddingThemePresetId,
@@ -22,6 +24,7 @@ export type SectionSpacingId = NonNullable<ThemeTokenOverrides['sectionSpacing']
 export type OrnamentStyleId = NonNullable<ThemeTokenOverrides['ornamentStyle']>;
 
 export const DEFAULT_BACKGROUND_OVERLAY_OPACITY = 75;
+export const LEGACY_CUSTOM_FONT_ID = 'legacy-custom-font' as const;
 
 export const HEADING_FONT_STACKS: Readonly<Record<HeadingFontPairId, string>> = {
   editorial_serif: "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif",
@@ -39,6 +42,55 @@ export const BODY_FONT_STACKS: Readonly<Record<BodyFontPairId, string>> = {
   classic_serif: "Garamond, 'Baskerville Old Face', 'Times New Roman', Georgia, serif",
   minimal_mono: "ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Courier New', monospace",
 };
+
+export const ALL_BUILTIN_FONT_OPTIONS: ReadonlyArray<{
+  readonly value: string;
+  readonly label: string;
+  readonly stack: string;
+}> = [
+  {
+    value: 'builtin:editorial_serif',
+    label: 'Editorial Serif',
+    stack: HEADING_FONT_STACKS.editorial_serif,
+  },
+  {
+    value: 'builtin:classic_serif',
+    label: 'Classic Serif',
+    stack: HEADING_FONT_STACKS.classic_serif,
+  },
+  {
+    value: 'builtin:romantic_serif',
+    label: 'Romantic Serif',
+    stack: HEADING_FONT_STACKS.romantic_serif,
+  },
+  {
+    value: 'builtin:modern_sans',
+    label: 'Modern Sans',
+    stack: HEADING_FONT_STACKS.modern_sans,
+  },
+  {
+    value: 'builtin:humanist_sans',
+    label: 'Humanist Sans',
+    stack: BODY_FONT_STACKS.humanist_sans,
+  },
+  {
+    value: 'builtin:handwritten_script',
+    label: 'Handwritten Script',
+    stack: HEADING_FONT_STACKS.handwritten_script,
+  },
+  {
+    value: 'builtin:minimal_mono',
+    label: 'Minimal Monospace',
+    stack: HEADING_FONT_STACKS.minimal_mono,
+  },
+];
+
+const BUILTIN_STACK_BY_KEY: Readonly<Record<string, string>> = Object.fromEntries(
+  ALL_BUILTIN_FONT_OPTIONS.flatMap((opt) => [
+    [opt.value, opt.stack],
+    [opt.value.replace(/^builtin:/, ''), opt.stack],
+  ]),
+);
 
 export interface ThemePresetDefinition {
   readonly id: WeddingThemePresetId;
@@ -160,6 +212,7 @@ export interface ResolvedInvitationTheme {
   readonly borderColor: string;
   readonly headingFontFamily: string;
   readonly bodyFontFamily: string;
+  readonly customFonts: readonly CustomFontAsset[];
   readonly customFontFamilyName: string | null;
   readonly customFontUrl: string | null;
   readonly customFontTarget: CustomFontTargetId;
@@ -171,7 +224,7 @@ export interface ResolvedInvitationTheme {
   readonly cssVariables: CSSProperties;
 }
 
-function getRelativeLuminance(hex: string): number {
+export function getRelativeLuminance(hex: string): number {
   const r = Number.parseInt(hex.slice(1, 3), 16) / 255;
   const g = Number.parseInt(hex.slice(3, 5), 16) / 255;
   const b = Number.parseInt(hex.slice(5, 7), 16) / 255;
@@ -189,6 +242,95 @@ export function buildCustomFontFamilyName(url: string): string {
     hash = ((hash << 5) + hash + url.charCodeAt(i)) >>> 0;
   }
   return `InvCustomFont_${hash.toString(36)}`;
+}
+
+/**
+ * Returns the full library of imported custom fonts, seamlessly including any
+ * legacy single `customFontUrl` entry so previously uploaded fonts are preserved.
+ */
+export function getNormalizedCustomFonts(
+  overrides: ThemeTokenOverrides,
+): readonly CustomFontAsset[] {
+  const list: CustomFontAsset[] = [...(overrides.customFonts ?? [])];
+  if (overrides.customFontUrl && !list.some((f) => f.url === overrides.customFontUrl)) {
+    list.unshift({
+      id: LEGACY_CUSTOM_FONT_ID,
+      name: overrides.customFontName ?? 'Custom Font',
+      url: overrides.customFontUrl,
+    });
+  }
+  return list;
+}
+
+export function resolveFontSelectionToCssStack(
+  selection: string | undefined,
+  fallbackStack: string,
+  customFonts: readonly CustomFontAsset[],
+): string | null {
+  if (!selection) {
+    return null;
+  }
+  if (selection.startsWith('custom:')) {
+    const fontId = selection.slice('custom:'.length);
+    const font = customFonts.find((f) => f.id === fontId);
+    if (!font) {
+      return null;
+    }
+    return `'${buildCustomFontFamilyName(font.url)}', ${fallbackStack}`;
+  }
+  return BUILTIN_STACK_BY_KEY[selection] ?? null;
+}
+
+export function resolveSectionStyleOverrides(
+  style: SectionStyleOverrides | undefined,
+  resolvedTheme: ResolvedInvitationTheme,
+): CSSProperties {
+  if (!style) {
+    return {};
+  }
+
+  const vars: Record<string, string> = {};
+
+  if (style.backgroundBgHex) {
+    vars['--inv-canvas'] = style.backgroundBgHex;
+    vars.backgroundColor = style.backgroundBgHex;
+  }
+  if (style.surfaceBgHex) {
+    vars['--inv-surface'] = style.surfaceBgHex;
+  }
+  if (style.inkPrimaryHex) {
+    vars['--inv-ink'] = style.inkPrimaryHex;
+    vars.color = style.inkPrimaryHex;
+  }
+  if (style.inkMutedHex) {
+    vars['--inv-ink-muted'] = style.inkMutedHex;
+  }
+  if (style.accentHex) {
+    vars['--inv-accent'] = style.accentHex;
+    vars['--inv-accent-contrast'] =
+      getRelativeLuminance(style.accentHex) > 0.42 ? '#1A1A1A' : '#FFFFFF';
+  }
+
+  const headingStack = resolveFontSelectionToCssStack(
+    style.headingFont,
+    resolvedTheme.headingFontFamily,
+    resolvedTheme.customFonts,
+  );
+  if (headingStack) {
+    vars['--inv-font-heading'] = headingStack;
+  }
+
+  const bodyStack = resolveFontSelectionToCssStack(
+    style.bodyFont,
+    resolvedTheme.bodyFontFamily,
+    resolvedTheme.customFonts,
+  );
+  if (bodyStack) {
+    vars['--inv-font-body'] = bodyStack;
+    vars.fontFamily = bodyStack;
+  }
+
+  return vars as CSSProperties;
 }
 
 export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvitationTheme {
@@ -224,25 +366,48 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
   const inkMuted = overrides.inkMutedHex ?? preset.inkMuted;
   const borderColor = overrides.borderColorHex ?? preset.borderColor;
 
+  const customFonts = getNormalizedCustomFonts(overrides);
+
   const headingPair = overrides.headingFontPair ?? preset.defaultHeadingFontPair;
   const bodyPair = overrides.bodyFontPair ?? preset.defaultBodyFontPair;
-
-  const customFontUrl = overrides.customFontUrl ?? null;
-  const customFontFamilyName = customFontUrl ? buildCustomFontFamilyName(customFontUrl) : null;
-  const customFontTarget: CustomFontTargetId = overrides.customFontTarget ?? 'heading';
 
   const baseHeadingStack = HEADING_FONT_STACKS[headingPair];
   const baseBodyStack = BODY_FONT_STACKS[bodyPair];
 
-  const headingFontFamily =
-    customFontFamilyName && (customFontTarget === 'heading' || customFontTarget === 'both')
-      ? `'${customFontFamilyName}', ${baseHeadingStack}`
-      : baseHeadingStack;
+  // Resolve global heading font: explicit headingCustomFontId > legacy customFontUrl+target > built-in stack
+  const customFontTarget: CustomFontTargetId = overrides.customFontTarget ?? 'heading';
+  let resolvedHeadingCustomFont: CustomFontAsset | undefined;
+  let resolvedBodyCustomFont: CustomFontAsset | undefined;
 
-  const bodyFontFamily =
-    customFontFamilyName && (customFontTarget === 'body' || customFontTarget === 'both')
-      ? `'${customFontFamilyName}', ${baseBodyStack}`
-      : baseBodyStack;
+  if (overrides.headingCustomFontId) {
+    resolvedHeadingCustomFont = customFonts.find((f) => f.id === overrides.headingCustomFontId);
+  } else if (
+    overrides.customFontUrl &&
+    (customFontTarget === 'heading' || customFontTarget === 'both')
+  ) {
+    resolvedHeadingCustomFont = customFonts.find((f) => f.url === overrides.customFontUrl);
+  }
+
+  if (overrides.bodyCustomFontId) {
+    resolvedBodyCustomFont = customFonts.find((f) => f.id === overrides.bodyCustomFontId);
+  } else if (
+    overrides.customFontUrl &&
+    (customFontTarget === 'body' || customFontTarget === 'both')
+  ) {
+    resolvedBodyCustomFont = customFonts.find((f) => f.url === overrides.customFontUrl);
+  }
+
+  const headingFontFamily = resolvedHeadingCustomFont
+    ? `'${buildCustomFontFamilyName(resolvedHeadingCustomFont.url)}', ${baseHeadingStack}`
+    : baseHeadingStack;
+
+  const bodyFontFamily = resolvedBodyCustomFont
+    ? `'${buildCustomFontFamilyName(resolvedBodyCustomFont.url)}', ${baseBodyStack}`
+    : baseBodyStack;
+
+  const primaryCustomFont = resolvedHeadingCustomFont ?? resolvedBodyCustomFont ?? null;
+  const customFontUrl = primaryCustomFont?.url ?? overrides.customFontUrl ?? null;
+  const customFontFamilyName = customFontUrl ? buildCustomFontFamilyName(customFontUrl) : null;
 
   const backgroundImageUrl = overrides.backgroundImageUrl ?? null;
   const backgroundOverlayOpacity =
@@ -282,6 +447,7 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
     borderColor,
     headingFontFamily,
     bodyFontFamily,
+    customFonts,
     customFontFamilyName,
     customFontUrl,
     customFontTarget,

@@ -8,11 +8,14 @@ import { FaqNotesSectionEditor } from '@/features/design/components/editors/FaqN
 import { HeroSectionEditor } from '@/features/design/components/editors/HeroSectionEditor';
 import { OurStorySectionEditor } from '@/features/design/components/editors/OurStorySectionEditor';
 import { RsvpBannerSectionEditor } from '@/features/design/components/editors/RsvpBannerSectionEditor';
+import { SectionStyleControls } from '@/features/design/components/editors/SectionStyleControls';
 import { VenueTravelSectionEditor } from '@/features/design/components/editors/VenueTravelSectionEditor';
 import { SECTION_REGISTRY } from '@/features/design/registry/sectionRegistry';
 import type {
+  CustomFontAsset,
   InvitationSection,
   InvitationWeddingMetadata,
+  SectionStyleOverrides,
 } from '@/features/design/schemas/designSchemas';
 import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
 
@@ -21,6 +24,7 @@ export interface SectionEditorDispatcherProps {
   readonly wedding: InvitationWeddingMetadata;
   readonly dressCode: string;
   readonly canEdit: boolean;
+  readonly customFonts?: readonly CustomFontAsset[] | undefined;
   readonly workspaceId?: string | undefined;
   readonly weddingId?: string | undefined;
   readonly client?: TypedSupabaseClient | null | undefined;
@@ -36,6 +40,7 @@ export function SectionEditorDispatcher({
   wedding,
   dressCode,
   canEdit,
+  customFonts = [],
   workspaceId,
   weddingId,
   client,
@@ -108,6 +113,24 @@ export function SectionEditorDispatcher({
 
   const editorKey = `${section.id}:${resetGeneration}`;
 
+  const mergeContentPreservingStyle = <T extends Record<string, unknown>>(nextContent: T): T => {
+    const existingStyle = section.content.style;
+    if (!existingStyle) {
+      return nextContent;
+    }
+    return { ...nextContent, style: existingStyle };
+  };
+
+  const handleStyleChange = (nextStyle: SectionStyleOverrides | undefined) => {
+    const nextContent = { ...section.content };
+    if (nextStyle && Object.keys(nextStyle).length > 0) {
+      nextContent.style = nextStyle;
+    } else {
+      delete nextContent.style;
+    }
+    onUpdateSection({ ...section, content: nextContent } as InvitationSection);
+  };
+
   return (
     <div className="space-y-4" data-testid="active-section-editor-panel">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b pb-3">
@@ -134,12 +157,24 @@ export function SectionEditorDispatcher({
         </Button>
       </div>
 
+      <SectionStyleControls
+        key={`style:${editorKey}`}
+        sectionType={section.sectionType}
+        style={section.content.style}
+        customFonts={customFonts}
+        canEdit={canEdit}
+        onChangeStyle={handleStyleChange}
+        onValidationIssue={handleValidationIssue}
+      />
+
       {section.sectionType === 'hero' ? (
         <HeroSectionEditor
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -152,7 +187,9 @@ export function SectionEditorDispatcher({
           workspaceId={workspaceId}
           weddingId={weddingId}
           client={client}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -163,7 +200,9 @@ export function SectionEditorDispatcher({
           content={section.content}
           timezone={wedding.timezone}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -173,7 +212,9 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -183,7 +224,9 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -193,7 +236,9 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}
@@ -203,7 +248,9 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
-          onValidChange={(content) => onUpdateSection({ ...section, content })}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
           onValidationIssue={handleValidationIssue}
         />
       ) : null}

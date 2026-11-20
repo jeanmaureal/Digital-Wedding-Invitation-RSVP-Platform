@@ -31,6 +31,7 @@ import type {
   InvitationDocument,
   InvitationSection,
 } from '@/features/design/schemas/designSchemas';
+import { getNormalizedCustomFonts } from '@/features/design/themes/themePresets';
 import type { WeddingRecord, WeddingSettingsRecord } from '@/features/weddings/api/weddingApi';
 import { canCreateOrEditWedding } from '@/features/weddings/permissions/weddingPermissions';
 import {
@@ -469,6 +470,7 @@ export function WeddingInvitationBuilder({
                         wedding={draftDocument.wedding}
                         dressCode={settings.dress_code}
                         canEdit={canEdit}
+                        customFonts={getNormalizedCustomFonts(draftDocument.theme.tokenOverrides)}
                         workspaceId={workspaceId}
                         weddingId={wedding.id}
                         client={client}
