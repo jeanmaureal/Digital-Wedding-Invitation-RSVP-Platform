@@ -1,25 +1,25 @@
 # Implementation Status Tracker
 
-**Current Phase:** Phase 7 — RSVP Management System (**Implementation, Gate 5 Concurrency & Live E2E Completed — `P7-AC01`–`P7-AC13` Passed; Pending Signed Push, CI & Vercel Production Verification for `P7-AC14`**)  
+**Current Phase:** Phase 7 — RSVP Management System (**Completed — `P7-AC01`–`P7-AC14` Verified; Mandatory Quality Gate 5 Green; Ready for Phase 8**)  
 **Last Updated:** 2026-11-20
 
 ---
 
 ## 1. Phase Overview
 
-| Phase  | Name                                        | Status                             | Exit Gate Status                                                  |
-| :----: | :------------------------------------------ | :--------------------------------- | :---------------------------------------------------------------- |
-| **0**  | Project Foundation & Engineering Standards  | **Completed**                      | **Passed (`P0-AC01`–`P0-AC10` verified)**                         |
-| **1**  | Authentication & Workspace Management       | **Completed**                      | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**          |
-| **2**  | Wedding Project Management                  | **Completed**                      | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**          |
-| **3**  | Invitation Design System & Rendering Engine | **Completed**                      | **Passed (`P3-AC01`–`P3-AC12` verified)**                         |
-| **4**  | Invitation Builder & Live Preview           | **Completed**                      | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)**          |
-| **5**  | Public Wedding Website                      | **Completed**                      | **Passed (`P5-AC01`–`P5-AC13` verified — Gate 4 Green)**          |
-| **6**  | Guest & Invitation Management               | **Completed**                      | **Passed (`P6-AC01`–`P6-AC14` verified — Gate 5 Part 1)**         |
-| **7**  | RSVP Management System                      | **In Progress (Awaiting CI/Prod)** | `P7-AC01`–`P7-AC13` **PASSED (Gate 5 Proven)**; `P7-AC14` pending |
-| **8**  | Publishing, Versioning & Analytics          | Not Started                        | Next after Phase 7 (Version Rollback, Metrics, CSV RSVP Export)   |
-| **9**  | Testing, Security & Reliability             | Not Started                        | Blocked on Phase 8                                                |
-| **10** | Production Deployment & Launch              | Not Started                        | Blocked on Phase 9 & dedicated Prod Supabase DB                   |
+| Phase  | Name                                        | Status        | Exit Gate Status                                               |
+| :----: | :------------------------------------------ | :------------ | :------------------------------------------------------------- |
+| **0**  | Project Foundation & Engineering Standards  | **Completed** | **Passed (`P0-AC01`–`P0-AC10` verified)**                      |
+| **1**  | Authentication & Workspace Management       | **Completed** | **Passed (`P1-AC01`–`P1-AC15` verified — Gate 1 Green)**       |
+| **2**  | Wedding Project Management                  | **Completed** | **Passed (`P2-AC01`–`P2-AC14` verified — Gate 2 Green)**       |
+| **3**  | Invitation Design System & Rendering Engine | **Completed** | **Passed (`P3-AC01`–`P3-AC12` verified)**                      |
+| **4**  | Invitation Builder & Live Preview           | **Completed** | **Passed (`P4-AC01`–`P4-AC12` verified — Gate 3 Green)**       |
+| **5**  | Public Wedding Website                      | **Completed** | **Passed (`P5-AC01`–`P5-AC13` verified — Gate 4 Green)**       |
+| **6**  | Guest & Invitation Management               | **Completed** | **Passed (`P6-AC01`–`P6-AC14` verified — Gate 5 Part 1)**      |
+| **7**  | RSVP Management System                      | **Completed** | **Passed (`P7-AC01`–`P7-AC14` verified — Gate 5 Green)**       |
+| **8**  | Publishing, Versioning & Analytics          | Not Started   | Ready for Phase 8 (Version Rollback, Metrics, CSV RSVP Export) |
+| **9**  | Testing, Security & Reliability             | Not Started   | Blocked on Phase 8                                             |
+| **10** | Production Deployment & Launch              | Not Started   | Blocked on Phase 9 & dedicated Prod Supabase DB                |
 
 ---
 
@@ -37,33 +37,33 @@
 
 ## 3. Phase 7 Task Group Progress
 
-| Task Group | Scope                                                                                                         | Status                     | Notes                                                                                                   |
-| :--------: | :------------------------------------------------------------------------------------------------------------ | :------------------------- | :------------------------------------------------------------------------------------------------------ |
-|  **TG1**   | `rsvp_questions`, `rsvp_submissions`, `rsvp_attendees`, `rsvp_answers`, `submit_household_rsvp` & Concurrency | **Completed**              | Migration `20261119235955` applied; SQL, `EXPLAIN ANALYZE`, & 3-burst Supavisor concurrency suite green |
-|  **TG2**   | Public & Organizer RSVP Schemas/APIs, Typed Error Translation & ESLint Module Isolation                       | **Completed**              | Strict public/organizer bundle isolation (`0` ESLint errors/warnings)                                   |
-|  **TG3**   | Interactive `/i/:token` `HouseholdRsvpFormCard` & Lazy Organizer `/app/weddings/:weddingId/rsvps` Dashboard   | **Completed**              | `26.70 kB` lazy `/i/:token` chunk, `27.79 kB` lazy `/rsvps` chunk, `0` Vite chunk warnings              |
-|  **TG4**   | Vitest (`75/75`), Two-Context Live Desktop + Mobile E2E (`2/2`), GitHub CI & Vercel Production                | **Awaiting Push & Verify** | Local + Supabase E2E green (`15.4s` Desktop, `16.0s` Mobile); awaiting signed push + CI + Vercel check  |
+| Task Group | Scope                                                                                                         | Status        | Notes                                                                                                   |
+| :--------: | :------------------------------------------------------------------------------------------------------------ | :------------ | :------------------------------------------------------------------------------------------------------ |
+|  **TG1**   | `rsvp_questions`, `rsvp_submissions`, `rsvp_attendees`, `rsvp_answers`, `submit_household_rsvp` & Concurrency | **Completed** | Migration `20261119235955` applied; SQL, `EXPLAIN ANALYZE`, & 3-burst Supavisor concurrency suite green |
+|  **TG2**   | Public & Organizer RSVP Schemas/APIs, Typed Error Translation & ESLint Module Isolation                       | **Completed** | Strict public/organizer bundle isolation (`0` ESLint errors/warnings)                                   |
+|  **TG3**   | Interactive `/i/:token` `HouseholdRsvpFormCard` & Lazy Organizer `/app/weddings/:weddingId/rsvps` Dashboard   | **Completed** | `26.70 kB` lazy `/i/:token` chunk, `27.79 kB` lazy `/rsvps` chunk, `0` Vite chunk warnings              |
+|  **TG4**   | Vitest (`75/75`), Two-Context Live Desktop + Mobile E2E (`2/2`), GitHub CI & Vercel Production                | **Completed** | Commit `3da0969`; CI checks `135992184501` & `135992183938` green; Vercel Prod verified (`0` err)       |
 
 ---
 
 ## 4. Phase 7 Acceptance Criteria Matrix (`P7-AC01` – `P7-AC14` — Gate 5 Completion)
 
-| ID          | Criterion                                                                                                                        | Status      | Auditable Evidence                                                                                                                                 |
-| :---------- | :------------------------------------------------------------------------------------------------------------------------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **P7-AC01** | `rsvp_questions`, `rsvp_submissions`, `rsvp_attendees`, and `rsvp_answers` enforce composite FKs, triggers, `0` `anon` grants    | **PASSED**  | `20261119235955_rsvp_management_system.sql` + `phase7_database_verification.sql` (`ALL_PHASE7_DATABASE_VERIFICATIONS_PASSED`).                     |
-| **P7-AC02** | Workspace RBAC (`editor`+ question CRUD, `viewer`+ read-only response visibility) and cross-tenant isolation hold in PostgreSQL  | **PASSED**  | `phase7_database_verification.sql` + `docs/implementation/phase-7/rls-and-rbac-results.md`.                                                        |
-| **P7-AC03** | `submit_household_rsvp` validates SHA-256 token, `published`, `is_rsvp_open`, `rsvp_deadline`, `<= max_attendees`, & questions   | **PASSED**  | `phase7_database_verification.sql` (Sections 4 & 5).                                                                                               |
-| **P7-AC04** | Invalid, over-cap, cross-household, or `<script>` submissions roll back `100%` atomically with zero raw token echo               | **PASSED**  | `phase7_database_verification.sql` (Sections 4.2–4.8).                                                                                             |
-| **P7-AC05** | **Gate 5 Concurrency Proof:** Simultaneous household RSVP bursts, capacity-overflow bursts & revocation races hold deadlock-free | **PASSED**  | `npm run test:db:phase7:concurrency` (`ALL EXECUTED PHASE 7 / GATE 5 CONCURRENCY VERIFICATIONS PASSED`).                                           |
-| **P7-AC06** | `EXPLAIN (ANALYZE, BUFFERS)` confirms `Index Scan` plans (`0` `Sort`) & `0` advisor security/performance errors or warnings      | **PASSED**  | `supabase/tests/phase7_query_plan_verification.sql` + `docs/implementation/phase-7/concurrency-and-advisors.md`.                                   |
-| **P7-AC07** | `/app/weddings/:weddingId/rsvps` supports configuring `short_text`, `single_select`, & `boolean` questions (`viewer` read-only)  | **PASSED**  | `RsvpQuestionsManagerCard.tsx` + `organizerRsvpWorkflow.test.tsx` + live E2E.                                                                      |
-| **P7-AC08** | `/app/weddings/:weddingId/rsvps` displays live household responses, per-guest attendance/dietary notes, and custom answers       | **PASSED**  | `WeddingRsvpDashboard.tsx` + `organizerRsvpWorkflow.test.tsx` + live E2E.                                                                          |
-| **P7-AC09** | Public `/i/:token` renders interactive household RSVP form (`publicClient`), enforces `max_attendees`, updates `v1->v2`, locks   | **PASSED**  | `HouseholdRsvpFormCard.tsx` + `publicHouseholdRsvpForm.test.tsx` + live E2E.                                                                       |
-| **P7-AC10** | `/i/:token` never echoes `:token` and `eslint.config.js` keeps `organizerClient` uninitialized (`0` Vite chunk warnings)         | **PASSED**  | `eslint.config.js` (`0` errors/warnings) + `npm run build` (`26.70 kB` lazy `/i/:token` chunk).                                                    |
-| **P7-AC11** | Unit & component suites pass (`18/18` files, `75/75` tests)                                                                      | **PASSED**  | `npm run test` (`75/75` green).                                                                                                                    |
-| **P7-AC12** | Two-context (`organizer` + `guest`) Desktop + Mobile Playwright E2E passes against live Supabase (`0` leftover ephemeral users)  | **PASSED**  | `docs/implementation/phase-7/e2e-verification-results.md` (`chromium-desktop` `15.4s`, `chromium-mobile` `16.0s`, `remaining_ephemeral_users: 0`). |
-| **P7-AC13** | `duplicate_wedding` never clones `rsvp_submissions`, `rsvp_attendees`, or `rsvp_answers`                                         | **PASSED**  | `phase7_database_verification.sql` (Section 5.5).                                                                                                  |
-| **P7-AC14** | All static checks, secret scan, GitHub Actions CI, and live Vercel Production check pass                                         | **NOT RUN** | Local static checks & secret scan passed; awaiting signed Git push -> GitHub Actions CI -> Vercel Production verification.                         |
+| ID          | Criterion                                                                                                                        | Status     | Auditable Evidence                                                                                                                                 |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P7-AC01** | `rsvp_questions`, `rsvp_submissions`, `rsvp_attendees`, and `rsvp_answers` enforce composite FKs, triggers, `0` `anon` grants    | **PASSED** | `20261119235955_rsvp_management_system.sql` + `phase7_database_verification.sql` (`ALL_PHASE7_DATABASE_VERIFICATIONS_PASSED`).                     |
+| **P7-AC02** | Workspace RBAC (`editor`+ question CRUD, `viewer`+ read-only response visibility) and cross-tenant isolation hold in PostgreSQL  | **PASSED** | `phase7_database_verification.sql` + `docs/implementation/phase-7/rls-and-rbac-results.md`.                                                        |
+| **P7-AC03** | `submit_household_rsvp` validates SHA-256 token, `published`, `is_rsvp_open`, `rsvp_deadline`, `<= max_attendees`, & questions   | **PASSED** | `phase7_database_verification.sql` (Sections 4 & 5).                                                                                               |
+| **P7-AC04** | Invalid, over-cap, cross-household, or `<script>` submissions roll back `100%` atomically with zero raw token echo               | **PASSED** | `phase7_database_verification.sql` (Sections 4.2–4.8).                                                                                             |
+| **P7-AC05** | **Gate 5 Concurrency Proof:** Simultaneous household RSVP bursts, capacity-overflow bursts & revocation races hold deadlock-free | **PASSED** | `npm run test:db:phase7:concurrency` (`ALL EXECUTED PHASE 7 / GATE 5 CONCURRENCY VERIFICATIONS PASSED`).                                           |
+| **P7-AC06** | `EXPLAIN (ANALYZE, BUFFERS)` confirms `Index Scan` plans (`0` `Sort`) & `0` advisor security/performance errors or warnings      | **PASSED** | `supabase/tests/phase7_query_plan_verification.sql` + `docs/implementation/phase-7/concurrency-and-advisors.md`.                                   |
+| **P7-AC07** | `/app/weddings/:weddingId/rsvps` supports configuring `short_text`, `single_select`, & `boolean` questions (`viewer` read-only)  | **PASSED** | `RsvpQuestionsManagerCard.tsx` + `organizerRsvpWorkflow.test.tsx` + live E2E.                                                                      |
+| **P7-AC08** | `/app/weddings/:weddingId/rsvps` displays live household responses, per-guest attendance/dietary notes, and custom answers       | **PASSED** | `WeddingRsvpDashboard.tsx` + `organizerRsvpWorkflow.test.tsx` + live E2E.                                                                          |
+| **P7-AC09** | Public `/i/:token` renders interactive household RSVP form (`publicClient`), enforces `max_attendees`, updates `v1->v2`, locks   | **PASSED** | `HouseholdRsvpFormCard.tsx` + `publicHouseholdRsvpForm.test.tsx` + live E2E.                                                                       |
+| **P7-AC10** | `/i/:token` never echoes `:token` and `eslint.config.js` keeps `organizerClient` uninitialized (`0` Vite chunk warnings)         | **PASSED** | `eslint.config.js` (`0` errors/warnings) + `npm run build` (`26.70 kB` lazy `/i/:token` chunk).                                                    |
+| **P7-AC11** | Unit & component suites pass (`18/18` files, `75/75` tests)                                                                      | **PASSED** | `npm run test` (`75/75` green).                                                                                                                    |
+| **P7-AC12** | Two-context (`organizer` + `guest`) Desktop + Mobile Playwright E2E passes against live Supabase (`0` leftover ephemeral users)  | **PASSED** | `docs/implementation/phase-7/e2e-verification-results.md` (`chromium-desktop` `15.4s`, `chromium-mobile` `16.0s`, `remaining_ephemeral_users: 0`). |
+| **P7-AC13** | `duplicate_wedding` never clones `rsvp_submissions`, `rsvp_attendees`, or `rsvp_answers`                                         | **PASSED** | `phase7_database_verification.sql` (Section 5.5).                                                                                                  |
+| **P7-AC14** | All static checks, secret scan, GitHub Actions CI, and live Vercel Production check pass                                         | **PASSED** | Commit `3da0969` -> GitHub Actions CI (`135992184501` & `135992183938` success) + live Vercel Prod host-verified (`final_step_12.png`).            |
 
 ---
 
