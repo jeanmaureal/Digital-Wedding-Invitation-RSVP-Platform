@@ -34,12 +34,13 @@
 
 ---
 
-## 3. GitHub Actions CI & Live Vercel Production Verification (`P8-AC14`)
+## 3. GitHub Actions CI & Live Vercel Production Verification (`P8-AC14` — Sign-Off)
 
-- **Feature Commit (`main`):** `45915cc` (`https://digital-wedding-invitation-rsvp-platform-kv5404t86.vercel.app` -> `https://digital-wedding-invitation-rsvp-pla.vercel.app`)
-- **GitHub Actions CI:**
-  - `136043654524` (`Typecheck, Lint, Format, Test, Build & E2E`): `completed / success`
-  - `136043654774` (`Git History Secret Scan (Gitleaks)`): flagged false-positive SQL lookup literal `WHERE key = 'v1_published_at'` in `supabase/tests/phase8_database_verification.sql`; remediated via renamed temp-table column (`entry_name`) + surgical `^v1_published_at$` allowlist in `.gitleaks.toml` (verified locally with Gitleaks v8.24.2: `0` leaks across full commit history; awaiting push of fix commit for remote green check).
+- **Pushed Commits (`main`):** `45915cc` (Phase 8 feature implementation) + `84acfc8` (`.gitleaks.toml` SQL lookup false-positive allowlist & production sign-off)
+- **GitHub Actions CI (`84acfc8`):** `PASSED`
+  - `136063710129` (`Typecheck, Lint, Format, Test, Build & E2E`): `completed / success`
+  - `136063709740` (`Git History Secret Scan (Gitleaks)`): `completed / success`
+- **Vercel Production Deployment:** `https://digital-wedding-invitation-rsvp-platform-fckm7sbm3.vercel.app` -> `https://digital-wedding-invitation-rsvp-pla.vercel.app` (`● Ready`, `16s`)
 - **Live Vercel Production (`https://digital-wedding-invitation-rsvp-pla.vercel.app`):** `PASSED` (host-verified via browser subagent `6c5518e7-fc06-494f-8fd1-8bb3a912132b`, screenshot `final_step_28.png`, `0` console/page errors)
   1. `/w/p8-prod-aurelia-julian` initially rendered Snapshot `v2` (`"Aurelia & Julian — Midnight V2"`).
   2. Organizer signed in on Production, opened `PublicationVersionHistoryCard`, previewed Snapshot `v1` (`"Aurelia & Julian — Garden V1"`), and confirmed **Roll Back to v1** (`Published · v1`, `Rolled back · Latest v2`).
