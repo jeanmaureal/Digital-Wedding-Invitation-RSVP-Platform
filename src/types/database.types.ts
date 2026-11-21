@@ -1095,6 +1095,7 @@ export type Database = {
         | "venue_travel"
         | "dress_code"
         | "faq_notes"
+        | "gift_registry"
         | "rsvp_banner"
       wedding_status: "draft" | "published" | "archived"
       wedding_theme_preset:
@@ -1246,6 +1247,7 @@ export const Constants = {
         "venue_travel",
         "dress_code",
         "faq_notes",
+        "gift_registry",
         "rsvp_banner",
       ],
       wedding_status: ["draft", "published", "archived"],
