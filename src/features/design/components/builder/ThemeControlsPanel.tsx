@@ -155,6 +155,9 @@ function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeToken
   if (raw.cardBorderStyle && raw.cardBorderStyle !== 'classic') {
     cleaned.cardBorderStyle = raw.cardBorderStyle;
   }
+  if (raw.cardTexture && raw.cardTexture !== 'none') {
+    cleaned.cardTexture = raw.cardTexture;
+  }
   if (raw.animationStyle) cleaned.animationStyle = raw.animationStyle;
   if (raw.cornerStyle) cleaned.cornerStyle = raw.cornerStyle;
   if (raw.sectionSpacing) cleaned.sectionSpacing = raw.sectionSpacing;
@@ -1192,7 +1195,7 @@ export function ThemeControlsPanel({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="theme-card-border-select">Default card border style</Label>
+            <Label htmlFor="theme-card-border-select">Default card type &amp; border</Label>
             <NativeSelect
               id="theme-card-border-select"
               disabled={!canEdit}
@@ -1209,10 +1212,43 @@ export function ThemeControlsPanel({
             >
               <option value="classic">Classic hairline</option>
               <option value="none">Borderless (clean)</option>
+              <option value="elevated_shadow">Floating soft shadow</option>
+              <option value="glass_frosted">Frosted glass</option>
               <option value="double">Double stationery frame</option>
               <option value="dashed">Dashed editorial border</option>
               <option value="gold_foil">Foil inner-frame border</option>
+              <option value="corner_brackets">Ornate corner brackets</option>
               <option value="corner_accent">Top &amp; bottom accent bars</option>
+              <option value="side_ribbon">Editorial left accent ribbon</option>
+              <option value="letterpress">Vintage letterpress mat</option>
+              <option value="minimal_underline">Minimalist underline</option>
+            </NativeSelect>
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="theme-card-texture-select">Paper texture &amp; textile</Label>
+            <NativeSelect
+              id="theme-card-texture-select"
+              disabled={!canEdit}
+              value={overrides.cardTexture ?? 'none'}
+              data-testid="theme-card-texture-select"
+              onChange={(e) =>
+                applyOverridePatch({
+                  cardTexture:
+                    e.target.value === 'none'
+                      ? undefined
+                      : (e.target.value as ThemeTokenOverrides['cardTexture']),
+                })
+              }
+            >
+              <option value="none">Smooth matte (default)</option>
+              <option value="cotton_paper">Cotton rag paper (fine grain)</option>
+              <option value="linen_weave">Woven linen textile</option>
+              <option value="laid_stationery">Classic laid stationery</option>
+              <option value="parchment">Handmade parchment</option>
+              <option value="silk_sheen">Brushed silk satin</option>
+              <option value="watercolor_wash">Soft watercolor wash</option>
+              <option value="velvet_suede">Velvet / fine suede</option>
             </NativeSelect>
           </div>
           <div className="space-y-1.5">

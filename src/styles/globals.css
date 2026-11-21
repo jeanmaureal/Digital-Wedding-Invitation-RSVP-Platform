@@ -340,6 +340,188 @@
   border-bottom: 3px solid var(--inv-accent) !important;
 }
 
+[data-card-border-style='elevated_shadow'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border-color: transparent !important;
+  box-shadow:
+    0 12px 30px -10px rgb(0 0 0 / 0.14),
+    0 4px 10px -4px rgb(0 0 0 / 0.08) !important;
+}
+
+[data-card-border-style='glass_frosted'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  background-color: color-mix(in srgb, var(--inv-surface) 62%, transparent) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 45%, transparent) !important;
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.12) !important;
+}
+
+[data-card-border-style='corner_brackets'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border-color: color-mix(in srgb, var(--inv-border) 55%, transparent) !important;
+  background-image:
+    linear-gradient(to right, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to bottom, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to left, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to bottom, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to right, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to top, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to left, var(--inv-accent) 2px, transparent 2px),
+    linear-gradient(to top, var(--inv-accent) 2px, transparent 2px);
+  background-position:
+    top 6px left 6px,
+    top 6px left 6px,
+    top 6px right 6px,
+    top 6px right 6px,
+    bottom 6px left 6px,
+    bottom 6px left 6px,
+    bottom 6px right 6px,
+    bottom 6px right 6px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+}
+
+[data-card-border-style='side_ribbon'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 1px solid var(--inv-border) !important;
+  border-left: 4px solid var(--inv-accent) !important;
+}
+
+[data-card-border-style='letterpress'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 1px solid color-mix(in srgb, var(--inv-ink) 18%, transparent) !important;
+  box-shadow:
+    inset 0 2px 6px rgb(0 0 0 / 0.06),
+    inset 0 0 0 6px color-mix(in srgb, var(--inv-canvas) 65%, transparent),
+    0 1px 0 rgb(255 255 255 / 0.6) !important;
+}
+
+[data-card-border-style='minimal_underline'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  background-color: transparent !important;
+  border-width: 0 0 2px 0 !important;
+  border-style: solid !important;
+  border-bottom-color: var(--inv-accent) !important;
+  border-radius: 0 !important;
+}
+
+/* =========================================================================
+ * Paper & Textile Card Textures (`cotton_paper` | `linen_weave` | `laid_stationery` |
+ * `parchment` | `silk_sheen` | `watercolor_wash` | `velvet_suede`)
+ * Applied via non-blocking `::before` pseudo-element so custom colors, wash,
+ * and card border styles compose cleanly underneath.
+ * ========================================================================= */
+[data-card-texture]:not([data-card-texture='none']) > :is(section, header),
+[data-card-texture]:not([data-card-texture='none']) :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-card-texture]:not([data-card-texture='none']) > :is(section, header)::before,
+[data-card-texture]:not([data-card-texture='none']) :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-card-texture]:not([data-card-texture='none']) > :is(section, header) > *,
+[data-card-texture]:not([data-card-texture='none']) :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 1. Cotton Rag Paper — organic fine-tooth paper grain */
+[data-card-texture='cotton_paper'] > :is(section, header)::before,
+[data-card-texture='cotton_paper'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.14'/%3E%3C/svg%3E");
+  opacity: 0.65;
+}
+
+/* 2. Woven Linen Textile — perpendicular crosshatch fabric weave */
+[data-card-texture='linen_weave'] > :is(section, header)::before,
+[data-card-texture='linen_weave'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--inv-ink) 5%, transparent) 0px,
+      color-mix(in srgb, var(--inv-ink) 5%, transparent) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--inv-ink) 5%, transparent) 0px,
+      color-mix(in srgb, var(--inv-ink) 5%, transparent) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+
+/* 3. Classic Laid Stationery — horizontal letterpress rib lines */
+[data-card-texture='laid_stationery'] > :is(section, header)::before,
+[data-card-texture='laid_stationery'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--inv-ink) 6%, transparent) 0px,
+      color-mix(in srgb, var(--inv-ink) 6%, transparent) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--inv-ink) 3%, transparent) 0px,
+      color-mix(in srgb, var(--inv-ink) 3%, transparent) 1px,
+      transparent 1px,
+      transparent 28px
+    );
+}
+
+/* 4. Handmade Parchment — warm mottled organic paper clouds + grain */
+[data-card-texture='parchment'] > :is(section, header)::before,
+[data-card-texture='parchment'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    radial-gradient(ellipse at 18% 22%, color-mix(in srgb, var(--inv-accent) 12%, transparent), transparent 55%),
+    radial-gradient(ellipse at 82% 78%, color-mix(in srgb, var(--inv-accent) 10%, transparent), transparent 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)' opacity='0.11'/%3E%3C/svg%3E");
+}
+
+/* 5. Brushed Silk Satin — luminous diagonal satin sheen */
+[data-card-texture='silk_sheen'] > :is(section, header)::before,
+[data-card-texture='silk_sheen'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    linear-gradient(
+      125deg,
+      rgb(255 255 255 / 0.28) 0%,
+      transparent 38%,
+      rgb(255 255 255 / 0.16) 54%,
+      transparent 78%,
+      color-mix(in srgb, var(--inv-accent) 8%, transparent) 100%
+    ),
+    repeating-linear-gradient(
+      125deg,
+      rgb(255 255 255 / 0.04) 0px,
+      rgb(255 255 255 / 0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+/* 6. Soft Watercolor Wash — delicate ambient tinted watercolor blooms */
+[data-card-texture='watercolor_wash'] > :is(section, header)::before,
+[data-card-texture='watercolor_wash'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--inv-accent) 16%, transparent) 0%, transparent 48%),
+    radial-gradient(circle at 88% 24%, color-mix(in srgb, var(--inv-accent) 10%, transparent) 0%, transparent 45%),
+    radial-gradient(circle at 72% 86%, color-mix(in srgb, var(--inv-accent) 14%, transparent) 0%, transparent 52%);
+}
+
+/* 7. Velvet / Fine Suede — plush micro-grain with soft inner depth */
+[data-card-texture='velvet_suede'] > :is(section, header)::before,
+[data-card-texture='velvet_suede'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div)::before {
+  background-image:
+    radial-gradient(ellipse at center, transparent 48%, color-mix(in srgb, var(--inv-ink) 12%, transparent) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23v)' opacity='0.16'/%3E%3C/svg%3E");
+}
+
 /* =========================================================================
  * Ambient Backdrop Effects (Falling Leaves, Falling Petals, Sparkles)
  * ========================================================================= */

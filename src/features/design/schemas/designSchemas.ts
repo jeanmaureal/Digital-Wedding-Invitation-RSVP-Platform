@@ -224,8 +224,26 @@ export const cardBorderStyleSchema = z.enum([
   'dashed',
   'gold_foil',
   'corner_accent',
+  'elevated_shadow',
+  'glass_frosted',
+  'corner_brackets',
+  'side_ribbon',
+  'letterpress',
+  'minimal_underline',
 ]);
 export type CardBorderStyleId = z.output<typeof cardBorderStyleSchema>;
+
+export const cardTextureSchema = z.enum([
+  'none',
+  'cotton_paper',
+  'linen_weave',
+  'laid_stationery',
+  'parchment',
+  'silk_sheen',
+  'watercolor_wash',
+  'velvet_suede',
+]);
+export type CardTextureId = z.output<typeof cardTextureSchema>;
 
 export const sectionStyleOverridesSchema = z.strictObject({
   backgroundBgHex: hexColorSchema.optional(),
@@ -235,6 +253,7 @@ export const sectionStyleOverridesSchema = z.strictObject({
   accentHex: hexColorSchema.optional(),
   cardOpacity: z.number().int().min(10).max(100).optional(),
   cardBorderStyle: cardBorderStyleSchema.optional(),
+  cardTexture: cardTextureSchema.optional(),
   textMotion: elementMotionStyleSchema.optional(),
   cardMotion: elementMotionStyleSchema.optional(),
   featureMotion: elementMotionStyleSchema.optional(),
@@ -279,6 +298,7 @@ export const themeTokenOverridesSchema = z.strictObject({
   backgroundEffect: backgroundEffectSchema.optional(),
   cardOpacity: z.number().int().min(10).max(100).optional(),
   cardBorderStyle: cardBorderStyleSchema.optional(),
+  cardTexture: cardTextureSchema.optional(),
   animationStyle: invitationAnimationStyleSchema.optional(),
   cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
   sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),

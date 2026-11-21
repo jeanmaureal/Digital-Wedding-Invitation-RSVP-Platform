@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import {
   type CardBorderStyleId,
+  type CardTextureId,
   type CustomFontAsset,
   type ElementMotionStyle,
   hexColorSchema,
@@ -57,6 +58,7 @@ function cleanSectionStyle(
     cleaned.cardOpacity = raw.cardOpacity;
   }
   if (raw.cardBorderStyle) cleaned.cardBorderStyle = raw.cardBorderStyle;
+  if (raw.cardTexture) cleaned.cardTexture = raw.cardTexture;
   if (raw.textMotion) cleaned.textMotion = raw.textMotion;
   if (raw.cardMotion) cleaned.cardMotion = raw.cardMotion;
   if (raw.featureMotion) cleaned.featureMotion = raw.featureMotion;
@@ -361,32 +363,70 @@ export function SectionStyleControls({
             </div>
           </div>
 
-          {/* Per-Section Card Border & Scroll Motion Controls */}
+          {/* Per-Section Card Border, Paper Texture & Scroll Motion Controls */}
           <div className="space-y-3 border-t pt-3">
-            <div className="space-y-1">
-              <Label htmlFor={`sec-card-border-${sectionType}`} className="text-xs">
-                Card border style
-              </Label>
-              <NativeSelect
-                id={`sec-card-border-${sectionType}`}
-                disabled={!canEdit}
-                value={style?.cardBorderStyle ?? ''}
-                data-testid={`section-card-border-select-${sectionType}`}
-                onChange={(e) =>
-                  applyPatch({
-                    cardBorderStyle: (e.target.value || undefined) as CardBorderStyleId | undefined,
-                  })
-                }
-                className="h-8 text-xs"
-              >
-                <option value="">Theme default</option>
-                <option value="classic">Classic hairline</option>
-                <option value="none">Borderless (clean)</option>
-                <option value="double">Double stationery frame</option>
-                <option value="dashed">Dashed editorial border</option>
-                <option value="gold_foil">Foil inner-frame border</option>
-                <option value="corner_accent">Top &amp; bottom accent bars</option>
-              </NativeSelect>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor={`sec-card-border-${sectionType}`} className="text-xs">
+                  Card type &amp; border
+                </Label>
+                <NativeSelect
+                  id={`sec-card-border-${sectionType}`}
+                  disabled={!canEdit}
+                  value={style?.cardBorderStyle ?? ''}
+                  data-testid={`section-card-border-select-${sectionType}`}
+                  onChange={(e) =>
+                    applyPatch({
+                      cardBorderStyle: (e.target.value || undefined) as
+                        | CardBorderStyleId
+                        | undefined,
+                    })
+                  }
+                  className="h-8 text-xs"
+                >
+                  <option value="">Theme default</option>
+                  <option value="classic">Classic hairline</option>
+                  <option value="none">Borderless (clean)</option>
+                  <option value="elevated_shadow">Floating soft shadow</option>
+                  <option value="glass_frosted">Frosted glass</option>
+                  <option value="double">Double stationery frame</option>
+                  <option value="dashed">Dashed editorial border</option>
+                  <option value="gold_foil">Foil inner-frame border</option>
+                  <option value="corner_brackets">Ornate corner brackets</option>
+                  <option value="corner_accent">Top &amp; bottom accent bars</option>
+                  <option value="side_ribbon">Editorial left accent ribbon</option>
+                  <option value="letterpress">Vintage letterpress mat</option>
+                  <option value="minimal_underline">Minimalist underline</option>
+                </NativeSelect>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`sec-card-texture-${sectionType}`} className="text-xs">
+                  Paper texture &amp; textile
+                </Label>
+                <NativeSelect
+                  id={`sec-card-texture-${sectionType}`}
+                  disabled={!canEdit}
+                  value={style?.cardTexture ?? ''}
+                  data-testid={`section-card-texture-select-${sectionType}`}
+                  onChange={(e) =>
+                    applyPatch({
+                      cardTexture: (e.target.value || undefined) as CardTextureId | undefined,
+                    })
+                  }
+                  className="h-8 text-xs"
+                >
+                  <option value="">Theme default</option>
+                  <option value="none">Smooth matte</option>
+                  <option value="cotton_paper">Cotton rag paper</option>
+                  <option value="linen_weave">Woven linen textile</option>
+                  <option value="laid_stationery">Classic laid stationery</option>
+                  <option value="parchment">Handmade parchment</option>
+                  <option value="silk_sheen">Brushed silk satin</option>
+                  <option value="watercolor_wash">Soft watercolor wash</option>
+                  <option value="velvet_suede">Velvet / fine suede</option>
+                </NativeSelect>
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">

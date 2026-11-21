@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type {
   BackgroundEffectId,
   CardBorderStyleId,
+  CardTextureId,
   CustomFontAsset,
   ElementMotionStyle,
   InvitationAnimationStyle,
@@ -32,6 +33,7 @@ export const DEFAULT_CARD_OPACITY = 100;
 export const DEFAULT_ANIMATION_STYLE: InvitationAnimationStyle = 'editorial_rise';
 export const DEFAULT_BACKGROUND_EFFECT: BackgroundEffectId = 'none';
 export const DEFAULT_CARD_BORDER_STYLE: CardBorderStyleId = 'classic';
+export const DEFAULT_CARD_TEXTURE: CardTextureId = 'none';
 export const LEGACY_CUSTOM_FONT_ID = 'legacy-custom-font' as const;
 
 export function resolveDefaultElementMotions(animationStyle: InvitationAnimationStyle): {
@@ -261,6 +263,7 @@ export interface ResolvedInvitationTheme {
   readonly backgroundEffect: BackgroundEffectId;
   readonly cardOpacity: number;
   readonly cardBorderStyle: CardBorderStyleId;
+  readonly cardTexture: CardTextureId;
   readonly animationStyle: InvitationAnimationStyle;
   readonly cornerStyle: CornerStyleId;
   readonly sectionSpacing: SectionSpacingId;
@@ -479,6 +482,7 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
   const cardOpacity = overrides.cardOpacity ?? DEFAULT_CARD_OPACITY;
   const cardBorderStyle: CardBorderStyleId =
     overrides.cardBorderStyle ?? DEFAULT_CARD_BORDER_STYLE;
+  const cardTexture: CardTextureId = overrides.cardTexture ?? DEFAULT_CARD_TEXTURE;
   const animationStyle: InvitationAnimationStyle =
     overrides.animationStyle ?? DEFAULT_ANIMATION_STYLE;
 
@@ -525,6 +529,7 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
     backgroundEffect,
     cardOpacity,
     cardBorderStyle,
+    cardTexture,
     animationStyle,
     cornerStyle,
     sectionSpacing,
