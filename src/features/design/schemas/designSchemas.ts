@@ -198,6 +198,35 @@ export const invitationAnimationStyleSchema = z.enum([
 ]);
 export type InvitationAnimationStyle = z.output<typeof invitationAnimationStyleSchema>;
 
+export const elementMotionStyleSchema = z.enum([
+  'none',
+  'fade',
+  'rise',
+  'slide_left',
+  'slide_right',
+  'zoom_soft',
+  'float',
+]);
+export type ElementMotionStyle = z.output<typeof elementMotionStyleSchema>;
+
+export const backgroundEffectSchema = z.enum([
+  'none',
+  'falling_leaves',
+  'falling_petals',
+  'sparkles',
+]);
+export type BackgroundEffectId = z.output<typeof backgroundEffectSchema>;
+
+export const cardBorderStyleSchema = z.enum([
+  'classic',
+  'none',
+  'double',
+  'dashed',
+  'gold_foil',
+  'corner_accent',
+]);
+export type CardBorderStyleId = z.output<typeof cardBorderStyleSchema>;
+
 export const sectionStyleOverridesSchema = z.strictObject({
   backgroundBgHex: hexColorSchema.optional(),
   surfaceBgHex: hexColorSchema.optional(),
@@ -205,6 +234,10 @@ export const sectionStyleOverridesSchema = z.strictObject({
   inkMutedHex: hexColorSchema.optional(),
   accentHex: hexColorSchema.optional(),
   cardOpacity: z.number().int().min(10).max(100).optional(),
+  cardBorderStyle: cardBorderStyleSchema.optional(),
+  textMotion: elementMotionStyleSchema.optional(),
+  cardMotion: elementMotionStyleSchema.optional(),
+  featureMotion: elementMotionStyleSchema.optional(),
   headingFont: safeLineString(1, 64, 'Section heading font').optional(),
   bodyFont: safeLineString(1, 64, 'Section body font').optional(),
   headingSize: sectionFontScaleSchema.optional(),
@@ -243,7 +276,9 @@ export const themeTokenOverridesSchema = z.strictObject({
   customFontTarget: z.enum(['heading', 'body', 'both']).optional(),
   backgroundImageUrl: httpsUrlSchema.optional(),
   backgroundOverlayOpacity: z.number().int().min(0).max(100).optional(),
+  backgroundEffect: backgroundEffectSchema.optional(),
   cardOpacity: z.number().int().min(10).max(100).optional(),
+  cardBorderStyle: cardBorderStyleSchema.optional(),
   animationStyle: invitationAnimationStyleSchema.optional(),
   cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
   sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),

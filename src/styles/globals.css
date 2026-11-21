@@ -166,36 +166,128 @@
   padding-bottom: 6rem;
 }
 
-/* Curated invitation entrance & ambient animations (`gentle_fade` | `editorial_rise` | `romantic_float`) */
-@keyframes inv-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* =========================================================================
+ * Scroll-Synced Continuous Transitions (Text, Cards & Features per Section)
+ * ========================================================================= */
+
+/* Text elements */
+[data-section-type][data-text-motion]:not([data-text-motion='none']) :is(h1, h2, blockquote),
+[data-section-type][data-text-motion]:not([data-text-motion='none']) :is(section, header) > div > p,
+[data-section-type][data-text-motion]:not([data-text-motion='none']) :is(section, header) > div > div > p {
+  transition:
+    opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1) 60ms,
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) 60ms;
+  will-change: opacity, transform;
 }
 
-@keyframes inv-editorial-rise {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+[data-section-type][data-in-view='false'][data-text-motion='fade'] :is(h1, h2, blockquote),
+[data-section-type][data-in-view='false'][data-text-motion='fade'] :is(section, header) > div > p,
+[data-section-type][data-in-view='false'][data-text-motion='fade'] :is(section, header) > div > div > p {
+  opacity: 0.12;
 }
 
-@keyframes inv-romantic-bloom {
-  from {
-    opacity: 0;
-    transform: translateY(22px) scale(0.975);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+[data-section-type][data-in-view='false'][data-text-motion='rise'] :is(h1, h2, blockquote),
+[data-section-type][data-in-view='false'][data-text-motion='rise'] :is(section, header) > div > p,
+[data-section-type][data-in-view='false'][data-text-motion='rise'] :is(section, header) > div > div > p {
+  opacity: 0.08;
+  transform: translateY(20px);
+}
+
+[data-section-type][data-in-view='false'][data-text-motion='slide_left'] :is(h1, h2, blockquote),
+[data-section-type][data-in-view='false'][data-text-motion='slide_left'] :is(section, header) > div > p,
+[data-section-type][data-in-view='false'][data-text-motion='slide_left'] :is(section, header) > div > div > p {
+  opacity: 0.08;
+  transform: translateX(-24px);
+}
+
+[data-section-type][data-in-view='false'][data-text-motion='slide_right'] :is(h1, h2, blockquote),
+[data-section-type][data-in-view='false'][data-text-motion='slide_right'] :is(section, header) > div > p,
+[data-section-type][data-in-view='false'][data-text-motion='slide_right'] :is(section, header) > div > div > p {
+  opacity: 0.08;
+  transform: translateX(24px);
+}
+
+[data-section-type][data-in-view='false'][data-text-motion='zoom_soft'] :is(h1, h2, blockquote),
+[data-section-type][data-in-view='false'][data-text-motion='zoom_soft'] :is(section, header) > div > p,
+[data-section-type][data-in-view='false'][data-text-motion='zoom_soft'] :is(section, header) > div > div > p {
+  opacity: 0.08;
+  transform: scale(0.95);
+}
+
+/* Card elements (milestones, schedule items, venue cards, hotels, FAQs) */
+[data-section-type][data-card-motion]:not([data-card-motion='none']) :is(
+  [data-testid^='invitation-story-milestone-'],
+  [data-testid='venue-combined-card'],
+  [data-testid='venue-ceremony-card'],
+  [data-testid='venue-reception-card'],
+  ol > li,
+  dl > div
+) {
+  transition:
+    opacity 0.78s cubic-bezier(0.22, 1, 0.36, 1) 140ms,
+    transform 0.78s cubic-bezier(0.22, 1, 0.36, 1) 140ms,
+    box-shadow 0.3s ease;
+  will-change: opacity, transform;
+}
+
+[data-section-type][data-card-motion]:not([data-card-motion='none']) :is(ol > li:nth-child(2), dl > div:nth-child(2), [data-testid^='invitation-story-milestone-']:nth-child(2)) {
+  transition-delay: 210ms;
+}
+[data-section-type][data-card-motion]:not([data-card-motion='none']) :is(ol > li:nth-child(3), dl > div:nth-child(3), [data-testid^='invitation-story-milestone-']:nth-child(3)) {
+  transition-delay: 280ms;
+}
+[data-section-type][data-card-motion]:not([data-card-motion='none']) :is(ol > li:nth-child(n + 4), dl > div:nth-child(n + 4), [data-testid^='invitation-story-milestone-']:nth-child(n + 4)) {
+  transition-delay: 340ms;
+}
+
+[data-section-type][data-in-view='false'][data-card-motion='fade'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  opacity: 0.12;
+}
+[data-section-type][data-in-view='false'][data-card-motion='rise'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  opacity: 0.08;
+  transform: translateY(24px);
+}
+[data-section-type][data-in-view='false'][data-card-motion='slide_left'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  opacity: 0.08;
+  transform: translateX(-28px);
+}
+[data-section-type][data-in-view='false'][data-card-motion='slide_right'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  opacity: 0.08;
+  transform: translateX(28px);
+}
+[data-section-type][data-in-view='false'][data-card-motion='zoom_soft'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  opacity: 0.08;
+  transform: scale(0.94);
+}
+
+/* Feature / media elements (featured photos, CTA buttons, swatches) */
+[data-section-type][data-feature-motion]:not([data-feature-motion='none']) :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1) 180ms,
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 180ms,
+    box-shadow 0.25s ease;
+  will-change: opacity, transform;
+}
+
+[data-section-type][data-in-view='false'][data-feature-motion='fade'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  opacity: 0.12;
+}
+[data-section-type][data-in-view='false'][data-feature-motion='rise'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  opacity: 0.08;
+  transform: translateY(22px);
+}
+[data-section-type][data-in-view='false'][data-feature-motion='slide_left'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  opacity: 0.08;
+  transform: translateX(-24px);
+}
+[data-section-type][data-in-view='false'][data-feature-motion='slide_right'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  opacity: 0.08;
+  transform: translateX(24px);
+}
+[data-section-type][data-in-view='false'][data-feature-motion='zoom_soft'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']),
+[data-section-type][data-in-view='false'][data-feature-motion='float'] :is(figure, button, a[href], [aria-label='Suggested attire color palette']) {
+  opacity: 0.08;
+  transform: scale(0.94) translateY(14px);
 }
 
 @keyframes inv-gentle-float {
@@ -204,28 +296,12 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
   }
 }
 
-[data-animation-style='gentle_fade'] [data-section-type] {
-  animation: inv-fade-in 0.7s ease-out both;
-  animation-delay: calc(var(--inv-stagger-idx, 0) * 90ms);
-}
-
-[data-animation-style='editorial_rise'] [data-section-type] {
-  animation: inv-editorial-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--inv-stagger-idx, 0) * 110ms);
-}
-
-[data-animation-style='romantic_float'] [data-section-type] {
-  animation: inv-romantic-bloom 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--inv-stagger-idx, 0) * 130ms);
-}
-
-[data-animation-style='romantic_float'] [data-testid='invitation-hero-cta'],
-[data-animation-style='editorial_rise'] [data-testid='invitation-hero-cta'] {
-  transition: transform 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+[data-section-type][data-in-view='true'][data-feature-motion='float'] :is(figure, svg) {
+  animation: inv-gentle-float 4.8s ease-in-out infinite;
 }
 
 [data-animation-style='romantic_float'] [data-testid='invitation-hero-cta']:hover,
@@ -234,14 +310,89 @@
   box-shadow: 0 8px 20px -6px rgb(0 0 0 / 0.25);
 }
 
-[data-animation-style='romantic_float'] [data-section-type='hero'] svg {
-  animation: inv-gentle-float 4.5s ease-in-out infinite;
+/* =========================================================================
+ * Decorative Card Borders (`none` | `classic` | `double` | `dashed` | `gold_foil` | `corner_accent`)
+ * ========================================================================= */
+[data-card-border-style='none'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border-color: transparent !important;
+  border-width: 0 !important;
+}
+
+[data-card-border-style='double'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 3px double var(--inv-accent) !important;
+}
+
+[data-card-border-style='dashed'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 1.5px dashed var(--inv-accent) !important;
+}
+
+[data-card-border-style='gold_foil'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 1px solid var(--inv-accent) !important;
+  box-shadow:
+    inset 0 0 0 4px var(--inv-surface),
+    inset 0 0 0 5px var(--inv-accent),
+    0 6px 18px -8px rgb(0 0 0 / 0.16) !important;
+}
+
+[data-card-border-style='corner_accent'] :is([data-testid^='invitation-story-milestone-'], [data-testid='venue-combined-card'], [data-testid='venue-ceremony-card'], [data-testid='venue-reception-card'], ol > li, dl > div) {
+  border: 1px solid var(--inv-border) !important;
+  border-top: 3px solid var(--inv-accent) !important;
+  border-bottom: 3px solid var(--inv-accent) !important;
+}
+
+/* =========================================================================
+ * Ambient Backdrop Effects (Falling Leaves, Falling Petals, Sparkles)
+ * ========================================================================= */
+@keyframes inv-fall-drift {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(var(--inv-p-sway, 32px), 52vh, 0) rotate(180deg);
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(calc(var(--inv-p-sway, 32px) * -0.5), 112vh, 0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes inv-twinkle-sparkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.65) rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.18) rotate(28deg);
+  }
+}
+
+.inv-ambient-fall {
+  animation: inv-fall-drift var(--inv-p-duration, 14s) linear var(--inv-p-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+.inv-ambient-sparkle {
+  animation: inv-twinkle-sparkle var(--inv-p-duration, 3.8s) ease-in-out var(--inv-p-delay, 0s) infinite;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-animation-style] [data-section-type],
-  [data-animation-style] svg {
+  [data-section-type],
+  [data-section-type] *,
+  .inv-ambient-fall,
+  .inv-ambient-sparkle {
     animation: none !important;
     transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

@@ -1,14 +1,18 @@
-import { type CSSProperties, type JSX, useEffect, useState } from 'react';
+import { type CSSProperties, type JSX, type ReactNode, useEffect, useRef, useState } from 'react';
+import { BackdropAmbientEffect } from '@/features/design/components/BackdropAmbientEffect';
 import { OurStoryGalleryView } from '@/features/design/components/sections/OurStoryGalleryView';
 import { renderRegisteredSection } from '@/features/design/registry/sectionRegistry';
 import {
+  type CardBorderStyleId,
   type CustomFontAsset,
+  type ElementMotionStyle,
   type InvitationDocument,
   parseInvitationDocument,
 } from '@/features/design/schemas/designSchemas';
 import {
   buildCustomFontFamilyName,
   isVideoAssetUrl,
+  resolveDefaultElementMotions,
   resolveInvitationTheme,
   resolveSectionStyleOverrides,
 } from '@/features/design/themes/themePresets';
@@ -77,6 +81,96 @@ function useCustomInvitationFonts(customFonts: readonly CustomFontAsset[]): void
   }, [customFonts, fontSignature]);
 }
 
+interface ScrollAnimatedSectionProps {
+  readonly sectionType: string;
+  readonly headingScale?: string | undefined;
+  readonly bodyScale?: string | undefined;
+  readonly textMotion: ElementMotionStyle;
+  readonly cardMotion: ElementMotionStyle;
+  readonly featureMotion: ElementMotionStyle;
+  readonly cardBorderStyle: CardBorderStyleId;
+  readonly style: CSSProperties;
+  readonly children: ReactNode;
+}
+
+function ScrollAnimatedSection({
+  sectionType,
+  headingScale,
+  bodyScale,
+  textMotion,
+  cardMotion,
+  featureMotion,
+  cardBorderStyle,
+  style,
+  children,
+}: ScrollAnimatedSectionProps): JSX.Element {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const hasAnyMotion =
+    textMotion !== 'none' || cardMotion !== 'none' || featureMotion !== 'none';
+
+  const [inView, setInView] = useState<boolean>(() => {
+    if (!hasAnyMotion) {
+      return true;
+    }
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
+      return true;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (!hasAnyMotion) {
+      return;
+    }
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+    const el = ref.current;
+    if (!el) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) {
+          return;
+        }
+        // Continuously re-triggers smoothly as the guest scrolls into and out of focus
+        setInView(entry.isIntersecting);
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '-4% 0px -4% 0px',
+      },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasAnyMotion]);
+
+  const effectiveInView = !hasAnyMotion || inView;
+
+  return (
+    <div
+      ref={ref}
+      data-section-type={sectionType}
+      data-section-heading-scale={headingScale}
+      data-section-body-scale={bodyScale}
+      data-text-motion={textMotion}
+      data-card-motion={cardMotion}
+      data-feature-motion={featureMotion}
+      data-card-border-style={cardBorderStyle}
+      data-in-view={String(effectiveInView)}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function InvitationRenderer({
   document: rawDocument,
   viewportMode = 'desktop',
@@ -123,9 +217,13 @@ export function InvitationRenderer({
 
   const isMobileFrame = viewportMode === 'mobile';
   const hasBackgroundMedia = Boolean(resolvedTheme.backgroundImageUrl);
+  const hasAmbientEffect = resolvedTheme.backgroundEffect !== 'none';
+  const hasOuterBackdrop = hasBackgroundMedia || hasAmbientEffect;
   const isVideoBackdrop = isVideoAssetUrl(resolvedTheme.backgroundImageUrl);
   const isPageBackdrop = backdropMode === 'page';
   const isGlassCard = resolvedTheme.cardOpacity < 100;
+
+  const defaultMotions = resolveDefaultElementMotions(resolvedTheme.animationStyle);
 
   const handleOpenFullStory = () => {
     setActiveView('story');
@@ -143,41 +241,50 @@ export function InvitationRenderer({
 
   const backdropPositionClass = isPageBackdrop ? 'fixed inset-0' : 'absolute inset-0';
 
-  const backdropLayers = resolvedTheme.backgroundImageUrl ? (
+  const backdropLayers = (
     <>
-      {isVideoBackdrop ? (
-        <video
-          aria-hidden="true"
-          data-testid="invitation-background-video"
-          src={resolvedTheme.backgroundImageUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className={`pointer-events-none ${backdropPositionClass} z-0 h-full w-full object-cover`}
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          data-testid="invitation-background-image"
-          className={`pointer-events-none ${backdropPositionClass} z-0 bg-cover bg-center bg-no-repeat`}
-          style={{
-            backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
-          }}
-        />
-      )}
-      <div
-        aria-hidden="true"
-        data-testid="invitation-background-overlay"
-        data-overlay-opacity={resolvedTheme.backgroundOverlayOpacity}
-        className={`pointer-events-none ${backdropPositionClass} z-[1] transition-opacity duration-150`}
-        style={{
-          backgroundColor: resolvedTheme.canvasBg,
-          opacity: resolvedTheme.backgroundOverlayOpacity / 100,
-        }}
+      {resolvedTheme.backgroundImageUrl ? (
+        <>
+          {isVideoBackdrop ? (
+            <video
+              aria-hidden="true"
+              data-testid="invitation-background-video"
+              src={resolvedTheme.backgroundImageUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`pointer-events-none ${backdropPositionClass} z-0 h-full w-full object-cover`}
+            />
+          ) : (
+            <div
+              aria-hidden="true"
+              data-testid="invitation-background-image"
+              className={`pointer-events-none ${backdropPositionClass} z-0 bg-cover bg-center bg-no-repeat`}
+              style={{
+                backgroundImage: `url("${encodeURI(resolvedTheme.backgroundImageUrl)}")`,
+              }}
+            />
+          )}
+          <div
+            aria-hidden="true"
+            data-testid="invitation-background-overlay"
+            data-overlay-opacity={resolvedTheme.backgroundOverlayOpacity}
+            className={`pointer-events-none ${backdropPositionClass} z-[1] transition-opacity duration-150`}
+            style={{
+              backgroundColor: resolvedTheme.canvasBg,
+              opacity: resolvedTheme.backgroundOverlayOpacity / 100,
+            }}
+          />
+        </>
+      ) : null}
+      <BackdropAmbientEffect
+        effect={resolvedTheme.backgroundEffect}
+        isPageBackdrop={isPageBackdrop}
+        accentHex={resolvedTheme.accentHex}
       />
     </>
-  ) : null;
+  );
 
   const articleStyle: CSSProperties = {
     ...resolvedTheme.cssVariables,
@@ -199,18 +306,23 @@ export function InvitationRenderer({
       data-theme-preset={doc.theme.presetId}
       data-dark-surface={String(resolvedTheme.isDarkSurface)}
       data-has-background-image={String(hasBackgroundMedia)}
+      data-background-effect={resolvedTheme.backgroundEffect}
       data-section-spacing={resolvedTheme.sectionSpacing}
       data-animation-style={resolvedTheme.animationStyle}
+      data-card-border-style={resolvedTheme.cardBorderStyle}
       data-card-opacity={resolvedTheme.cardOpacity}
       aria-label={`${doc.wedding.title} invitation`}
       className={`relative z-10 overflow-hidden rounded-xl border ${
-        hasBackgroundMedia ? 'shadow-lg' : 'shadow-sm'
+        hasOuterBackdrop ? 'shadow-lg' : 'shadow-sm'
       }`}
       style={articleStyle}
     >
       {activeView === 'story' && storySection && storySection.sectionType === 'our_story' ? (
         <div
           style={resolveSectionStyleOverrides(storySection.content.style, resolvedTheme)}
+          data-card-border-style={
+            storySection.content.style?.cardBorderStyle ?? resolvedTheme.cardBorderStyle
+          }
           data-section-heading-scale={
             storySection.content.style?.headingSize &&
             storySection.content.style.headingSize !== 'md'
@@ -247,12 +359,22 @@ export function InvitationRenderer({
                 ? sectionStyle.bodySize
                 : undefined;
 
+            const textMotion = sectionStyle?.textMotion ?? defaultMotions.textMotion;
+            const cardMotion = sectionStyle?.cardMotion ?? defaultMotions.cardMotion;
+            const featureMotion = sectionStyle?.featureMotion ?? defaultMotions.featureMotion;
+            const cardBorderStyle =
+              sectionStyle?.cardBorderStyle ?? resolvedTheme.cardBorderStyle;
+
             return (
-              <div
+              <ScrollAnimatedSection
                 key={section.id}
-                data-section-type={section.sectionType}
-                data-section-heading-scale={headingScale}
-                data-section-body-scale={bodyScale}
+                sectionType={section.sectionType}
+                headingScale={headingScale}
+                bodyScale={bodyScale}
+                textMotion={textMotion}
+                cardMotion={cardMotion}
+                featureMotion={featureMotion}
+                cardBorderStyle={cardBorderStyle}
                 style={sectionCss}
               >
                 {renderRegisteredSection({
@@ -262,7 +384,7 @@ export function InvitationRenderer({
                   onPrimaryAction: onPrimaryRsvpAction,
                   onOpenFullStory: handleOpenFullStory,
                 })}
-              </div>
+              </ScrollAnimatedSection>
             );
           })}
 
@@ -304,7 +426,7 @@ export function InvitationRenderer({
       data-testid="invitation-viewport-frame"
       data-viewport-mode={viewportMode}
       className={
-        hasBackgroundMedia
+        hasOuterBackdrop
           ? `relative isolate overflow-hidden rounded-xl p-4 transition-all sm:p-8 ${
               isMobileFrame ? 'mx-auto w-full max-w-[440px]' : 'w-full'
             }`

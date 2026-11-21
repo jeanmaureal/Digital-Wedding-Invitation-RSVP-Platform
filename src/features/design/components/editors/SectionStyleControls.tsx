@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { NativeSelect } from '@/components/ui/native-select';
 import {
+  type CardBorderStyleId,
   type CustomFontAsset,
+  type ElementMotionStyle,
   hexColorSchema,
   type SectionFontScale,
   type SectionStyleOverrides,
@@ -54,6 +56,10 @@ function cleanSectionStyle(
   if (typeof raw.cardOpacity === 'number' && raw.cardOpacity < 100) {
     cleaned.cardOpacity = raw.cardOpacity;
   }
+  if (raw.cardBorderStyle) cleaned.cardBorderStyle = raw.cardBorderStyle;
+  if (raw.textMotion) cleaned.textMotion = raw.textMotion;
+  if (raw.cardMotion) cleaned.cardMotion = raw.cardMotion;
+  if (raw.featureMotion) cleaned.featureMotion = raw.featureMotion;
   if (raw.headingFont) cleaned.headingFont = raw.headingFont;
   if (raw.bodyFont) cleaned.bodyFont = raw.bodyFont;
   if (raw.headingSize && raw.headingSize !== 'md') cleaned.headingSize = raw.headingSize;
@@ -153,9 +159,9 @@ export function SectionStyleControls({
         aria-expanded={isOpen}
         className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-xs font-semibold transition-colors hover:bg-muted/40"
       >
-        <span className="flex flex-wrap items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
           <Palette className="text-muted-foreground size-3.5" aria-hidden="true" />
-          <span>Section Canvas Style (Colors, Wash, Font &amp; Size)</span>
+          <span>Section Canvas Style (Colors, Borders, Motion, Font &amp; Size)</span>
           {activeOverrideCount > 0 ? (
             <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
               {activeOverrideCount} custom
@@ -352,6 +358,118 @@ export function SectionStyleControls({
               <span>10% (Frosted glass)</span>
               <span>70% (Washed out)</span>
               <span>100% (Solid)</span>
+            </div>
+          </div>
+
+          {/* Per-Section Card Border & Scroll Motion Controls */}
+          <div className="space-y-3 border-t pt-3">
+            <div className="space-y-1">
+              <Label htmlFor={`sec-card-border-${sectionType}`} className="text-xs">
+                Card border style
+              </Label>
+              <NativeSelect
+                id={`sec-card-border-${sectionType}`}
+                disabled={!canEdit}
+                value={style?.cardBorderStyle ?? ''}
+                data-testid={`section-card-border-select-${sectionType}`}
+                onChange={(e) =>
+                  applyPatch({
+                    cardBorderStyle: (e.target.value || undefined) as CardBorderStyleId | undefined,
+                  })
+                }
+                className="h-8 text-xs"
+              >
+                <option value="">Theme default</option>
+                <option value="classic">Classic hairline</option>
+                <option value="none">Borderless (clean)</option>
+                <option value="double">Double stationery frame</option>
+                <option value="dashed">Dashed editorial border</option>
+                <option value="gold_foil">Foil inner-frame border</option>
+                <option value="corner_accent">Top &amp; bottom accent bars</option>
+              </NativeSelect>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1">
+                <Label htmlFor={`sec-text-motion-${sectionType}`} className="text-xs">
+                  Text motion
+                </Label>
+                <NativeSelect
+                  id={`sec-text-motion-${sectionType}`}
+                  disabled={!canEdit}
+                  value={style?.textMotion ?? ''}
+                  data-testid={`section-text-motion-select-${sectionType}`}
+                  onChange={(e) =>
+                    applyPatch({
+                      textMotion: (e.target.value || undefined) as ElementMotionStyle | undefined,
+                    })
+                  }
+                  className="h-8 text-xs"
+                >
+                  <option value="">Theme default</option>
+                  <option value="none">None</option>
+                  <option value="fade">Soft fade</option>
+                  <option value="rise">Glide up</option>
+                  <option value="slide_left">Slide from left</option>
+                  <option value="slide_right">Slide from right</option>
+                  <option value="zoom_soft">Soft zoom</option>
+                </NativeSelect>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`sec-card-motion-${sectionType}`} className="text-xs">
+                  Card motion
+                </Label>
+                <NativeSelect
+                  id={`sec-card-motion-${sectionType}`}
+                  disabled={!canEdit}
+                  value={style?.cardMotion ?? ''}
+                  data-testid={`section-card-motion-select-${sectionType}`}
+                  onChange={(e) =>
+                    applyPatch({
+                      cardMotion: (e.target.value || undefined) as ElementMotionStyle | undefined,
+                    })
+                  }
+                  className="h-8 text-xs"
+                >
+                  <option value="">Theme default</option>
+                  <option value="none">None</option>
+                  <option value="fade">Soft fade</option>
+                  <option value="rise">Glide up</option>
+                  <option value="slide_left">Slide from left</option>
+                  <option value="slide_right">Slide from right</option>
+                  <option value="zoom_soft">Soft zoom</option>
+                </NativeSelect>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor={`sec-feature-motion-${sectionType}`} className="text-xs">
+                  Photos &amp; CTA
+                </Label>
+                <NativeSelect
+                  id={`sec-feature-motion-${sectionType}`}
+                  disabled={!canEdit}
+                  value={style?.featureMotion ?? ''}
+                  data-testid={`section-feature-motion-select-${sectionType}`}
+                  onChange={(e) =>
+                    applyPatch({
+                      featureMotion: (e.target.value || undefined) as
+                        | ElementMotionStyle
+                        | undefined,
+                    })
+                  }
+                  className="h-8 text-xs"
+                >
+                  <option value="">Theme default</option>
+                  <option value="none">None</option>
+                  <option value="fade">Soft fade</option>
+                  <option value="rise">Glide up</option>
+                  <option value="slide_left">Slide from left</option>
+                  <option value="slide_right">Slide from right</option>
+                  <option value="zoom_soft">Soft zoom</option>
+                  <option value="float">Gentle float</option>
+                </NativeSelect>
+              </div>
             </div>
           </div>
 

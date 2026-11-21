@@ -487,9 +487,21 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
       'romantic_float',
     );
 
+    await user.selectOptions(screen.getByTestId('theme-background-effect-select'), 'falling_petals');
+    expect(screen.getByTestId('invitation-backdrop-effect')).toHaveAttribute(
+      'data-effect',
+      'falling_petals',
+    );
+
+    await user.selectOptions(screen.getByTestId('theme-card-border-select'), 'double');
+    expect(screen.getByTestId('invitation-renderer')).toHaveAttribute(
+      'data-card-border-style',
+      'double',
+    );
+
     expect(mockApi.uploadedAssets.length).toBe(3);
 
-    // 2. Per-section canvas styling: apply GreatVibes Regular + xl heading size + custom bg ONLY to Hero
+    // 2. Per-section canvas styling: apply GreatVibes Regular + xl heading size + custom bg + custom motions + border ONLY to Hero
     await user.click(screen.getByTestId('inspector-tab-sections'));
     await user.click(screen.getByTestId('select-section-hero'));
     await user.click(screen.getByTestId('section-style-toggle-hero'));
@@ -500,15 +512,24 @@ describe('WeddingInvitationBuilder — Live Preview, Editors, Tokens, Reordering
     }) as HTMLOptionElement;
     await user.selectOptions(heroFontSelect, greatVibesOption.value);
     await user.selectOptions(screen.getByTestId('section-heading-size-select-hero'), 'xl');
+    await user.selectOptions(screen.getByTestId('section-card-border-select-hero'), 'gold_foil');
+    await user.selectOptions(screen.getByTestId('section-text-motion-select-hero'), 'slide_left');
+    await user.selectOptions(screen.getByTestId('section-card-motion-select-hero'), 'zoom_soft');
+    await user.selectOptions(screen.getByTestId('section-feature-motion-select-hero'), 'float');
     await user.type(screen.getByTestId('section-color-hero-backgroundBgHex'), '#1F2937');
 
     const previewStage = screen.getByTestId('builder-live-preview-stage');
     const heroWrapper = previewStage.querySelector('[data-section-type="hero"]');
     const storyWrapper = previewStage.querySelector('[data-section-type="our_story"]');
     expect(heroWrapper).toHaveAttribute('data-section-heading-scale', 'xl');
+    expect(heroWrapper).toHaveAttribute('data-card-border-style', 'gold_foil');
+    expect(heroWrapper).toHaveAttribute('data-text-motion', 'slide_left');
+    expect(heroWrapper).toHaveAttribute('data-card-motion', 'zoom_soft');
+    expect(heroWrapper).toHaveAttribute('data-feature-motion', 'float');
     expect(heroWrapper?.getAttribute('style') ?? '').toContain('--inv-canvas: #1F2937');
     expect(heroWrapper?.getAttribute('style') ?? '').toContain('InvCustomFont_');
     expect(storyWrapper).not.toHaveAttribute('data-section-heading-scale');
+    expect(storyWrapper).toHaveAttribute('data-card-border-style', 'double');
     expect(storyWrapper?.getAttribute('style') ?? '').not.toContain('InvCustomFont_');
 
     // 3. Our Story: upload 2 photos + reorder photos + reorder milestones + open dedicated story gallery

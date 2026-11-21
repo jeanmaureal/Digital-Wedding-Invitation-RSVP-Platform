@@ -1,6 +1,9 @@
 import type { CSSProperties } from 'react';
 import type {
+  BackgroundEffectId,
+  CardBorderStyleId,
   CustomFontAsset,
+  ElementMotionStyle,
   InvitationAnimationStyle,
   SectionStyleOverrides,
   ThemeTokenOverrides,
@@ -27,7 +30,27 @@ export type OrnamentStyleId = NonNullable<ThemeTokenOverrides['ornamentStyle']>;
 export const DEFAULT_BACKGROUND_OVERLAY_OPACITY = 75;
 export const DEFAULT_CARD_OPACITY = 100;
 export const DEFAULT_ANIMATION_STYLE: InvitationAnimationStyle = 'editorial_rise';
+export const DEFAULT_BACKGROUND_EFFECT: BackgroundEffectId = 'none';
+export const DEFAULT_CARD_BORDER_STYLE: CardBorderStyleId = 'classic';
 export const LEGACY_CUSTOM_FONT_ID = 'legacy-custom-font' as const;
+
+export function resolveDefaultElementMotions(animationStyle: InvitationAnimationStyle): {
+  readonly textMotion: ElementMotionStyle;
+  readonly cardMotion: ElementMotionStyle;
+  readonly featureMotion: ElementMotionStyle;
+} {
+  switch (animationStyle) {
+    case 'none':
+      return { textMotion: 'none', cardMotion: 'none', featureMotion: 'none' };
+    case 'gentle_fade':
+      return { textMotion: 'fade', cardMotion: 'fade', featureMotion: 'fade' };
+    case 'romantic_float':
+      return { textMotion: 'rise', cardMotion: 'zoom_soft', featureMotion: 'float' };
+    case 'editorial_rise':
+    default:
+      return { textMotion: 'rise', cardMotion: 'rise', featureMotion: 'zoom_soft' };
+  }
+}
 
 const MOTION_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov']);
 
@@ -235,7 +258,9 @@ export interface ResolvedInvitationTheme {
   readonly customFontTarget: CustomFontTargetId;
   readonly backgroundImageUrl: string | null;
   readonly backgroundOverlayOpacity: number;
+  readonly backgroundEffect: BackgroundEffectId;
   readonly cardOpacity: number;
+  readonly cardBorderStyle: CardBorderStyleId;
   readonly animationStyle: InvitationAnimationStyle;
   readonly cornerStyle: CornerStyleId;
   readonly sectionSpacing: SectionSpacingId;
@@ -449,7 +474,11 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
   const backgroundImageUrl = overrides.backgroundImageUrl ?? null;
   const backgroundOverlayOpacity =
     overrides.backgroundOverlayOpacity ?? DEFAULT_BACKGROUND_OVERLAY_OPACITY;
+  const backgroundEffect: BackgroundEffectId =
+    overrides.backgroundEffect ?? DEFAULT_BACKGROUND_EFFECT;
   const cardOpacity = overrides.cardOpacity ?? DEFAULT_CARD_OPACITY;
+  const cardBorderStyle: CardBorderStyleId =
+    overrides.cardBorderStyle ?? DEFAULT_CARD_BORDER_STYLE;
   const animationStyle: InvitationAnimationStyle =
     overrides.animationStyle ?? DEFAULT_ANIMATION_STYLE;
 
@@ -493,7 +522,9 @@ export function resolveInvitationTheme(config: WeddingThemeConfig): ResolvedInvi
     customFontTarget,
     backgroundImageUrl,
     backgroundOverlayOpacity,
+    backgroundEffect,
     cardOpacity,
+    cardBorderStyle,
     animationStyle,
     cornerStyle,
     sectionSpacing,

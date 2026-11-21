@@ -146,8 +146,14 @@ function buildCleanTokenOverrides(raw: Partial<ThemeTokenOverrides>): ThemeToken
       cleaned.backgroundOverlayOpacity = raw.backgroundOverlayOpacity;
     }
   }
+  if (raw.backgroundEffect && raw.backgroundEffect !== 'none') {
+    cleaned.backgroundEffect = raw.backgroundEffect;
+  }
   if (typeof raw.cardOpacity === 'number' && raw.cardOpacity < 100) {
     cleaned.cardOpacity = raw.cardOpacity;
+  }
+  if (raw.cardBorderStyle && raw.cardBorderStyle !== 'classic') {
+    cleaned.cardBorderStyle = raw.cardBorderStyle;
   }
   if (raw.animationStyle) cleaned.animationStyle = raw.animationStyle;
   if (raw.cornerStyle) cleaned.cornerStyle = raw.cornerStyle;
@@ -1123,21 +1129,49 @@ export function ThemeControlsPanel({
               <span>100% (Solid card)</span>
             </div>
           </div>
+
+          {/* Ambient Animated Backdrop Effect */}
+          <div className="space-y-1.5 border-t pt-3">
+            <Label htmlFor="theme-background-effect-select" className="text-xs">
+              Animated backdrop effect
+            </Label>
+            <NativeSelect
+              id="theme-background-effect-select"
+              disabled={!canEdit}
+              value={overrides.backgroundEffect ?? 'none'}
+              data-testid="theme-background-effect-select"
+              onChange={(e) =>
+                applyOverridePatch({
+                  backgroundEffect:
+                    e.target.value === 'none'
+                      ? undefined
+                      : (e.target.value as ThemeTokenOverrides['backgroundEffect']),
+                })
+              }
+            >
+              <option value="none">None</option>
+              <option value="falling_leaves">Falling Botanical Leaves</option>
+              <option value="falling_petals">Falling Flower Petals</option>
+              <option value="sparkles">Twinkling Sparkles</option>
+            </NativeSelect>
+          </div>
         </div>
       </div>
 
-      {/* 5. Surface, Corners, Spacing, Animations & Ornaments */}
+      {/* 5. Surface, Borders, Corners, Spacing, Animations & Ornaments */}
       <div className="space-y-4 border-t pt-5">
         <div>
-          <h3 className="text-sm font-semibold">5. Surfaces, Corners, Animations &amp; Ornaments</h3>
+          <h3 className="text-sm font-semibold">
+            5. Surfaces, Borders, Animations &amp; Ornaments
+          </h3>
           <p className="text-muted-foreground text-xs">
-            Fine-tune card geometry, vertical spacing, entrance animations, and editorial dividers.
+            Fine-tune card borders, geometry, vertical spacing, scroll animations, and dividers.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="theme-animation-style-select">Invitation animation style</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="theme-animation-style-select">Default scroll animation</Label>
             <NativeSelect
               id="theme-animation-style-select"
               disabled={!canEdit}
@@ -1150,10 +1184,35 @@ export function ThemeControlsPanel({
               }
             >
               <option value="">Default (Editorial Rise)</option>
-              <option value="editorial_rise">Editorial Rise (staggered upward glide)</option>
+              <option value="editorial_rise">Editorial Rise (scroll-synced glide)</option>
               <option value="gentle_fade">Gentle Fade (soft opacity reveal)</option>
-              <option value="romantic_float">Romantic Float (bloom + floating accents)</option>
+              <option value="romantic_float">Romantic Float (zoom + floating accents)</option>
               <option value="none">None (static)</option>
+            </NativeSelect>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="theme-card-border-select">Default card border style</Label>
+            <NativeSelect
+              id="theme-card-border-select"
+              disabled={!canEdit}
+              value={overrides.cardBorderStyle ?? 'classic'}
+              data-testid="theme-card-border-select"
+              onChange={(e) =>
+                applyOverridePatch({
+                  cardBorderStyle:
+                    e.target.value === 'classic'
+                      ? undefined
+                      : (e.target.value as ThemeTokenOverrides['cardBorderStyle']),
+                })
+              }
+            >
+              <option value="classic">Classic hairline</option>
+              <option value="none">Borderless (clean)</option>
+              <option value="double">Double stationery frame</option>
+              <option value="dashed">Dashed editorial border</option>
+              <option value="gold_foil">Foil inner-frame border</option>
+              <option value="corner_accent">Top &amp; bottom accent bars</option>
             </NativeSelect>
           </div>
           <div className="space-y-1.5">
