@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DressCodeSectionEditor } from '@/features/design/components/editors/DressCodeSectionEditor';
 import { EventScheduleSectionEditor } from '@/features/design/components/editors/EventScheduleSectionEditor';
 import { FaqNotesSectionEditor } from '@/features/design/components/editors/FaqNotesSectionEditor';
+import { GiftRegistrySectionEditor } from '@/features/design/components/editors/GiftRegistrySectionEditor';
 import { HeroSectionEditor } from '@/features/design/components/editors/HeroSectionEditor';
 import { OurStorySectionEditor } from '@/features/design/components/editors/OurStorySectionEditor';
 import { RsvpBannerSectionEditor } from '@/features/design/components/editors/RsvpBannerSectionEditor';
@@ -97,6 +98,12 @@ export function SectionEditorDispatcher({
         nextSection = {
           ...section,
           content: SECTION_REGISTRY.faq_notes.createStarterContent(wedding, dressCode),
+        };
+        break;
+      case 'gift_registry':
+        nextSection = {
+          ...section,
+          content: SECTION_REGISTRY.gift_registry.createStarterContent(wedding, dressCode),
         };
         break;
       case 'rsvp_banner':
@@ -236,6 +243,21 @@ export function SectionEditorDispatcher({
           key={editorKey}
           content={section.content}
           canEdit={canEdit}
+          onValidChange={(content) =>
+            onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
+          }
+          onValidationIssue={handleValidationIssue}
+        />
+      ) : null}
+
+      {section.sectionType === 'gift_registry' ? (
+        <GiftRegistrySectionEditor
+          key={editorKey}
+          content={section.content}
+          canEdit={canEdit}
+          workspaceId={workspaceId}
+          weddingId={weddingId}
+          client={client}
           onValidChange={(content) =>
             onUpdateSection({ ...section, content: mergeContentPreservingStyle(content) })
           }

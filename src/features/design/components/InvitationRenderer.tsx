@@ -4,6 +4,7 @@ import { OurStoryGalleryView } from '@/features/design/components/sections/OurSt
 import { renderRegisteredSection } from '@/features/design/registry/sectionRegistry';
 import {
   type CardBorderStyleId,
+  type CardTextureId,
   type CustomFontAsset,
   type ElementMotionStyle,
   type InvitationDocument,
@@ -89,6 +90,7 @@ interface ScrollAnimatedSectionProps {
   readonly cardMotion: ElementMotionStyle;
   readonly featureMotion: ElementMotionStyle;
   readonly cardBorderStyle: CardBorderStyleId;
+  readonly cardTexture: CardTextureId;
   readonly style: CSSProperties;
   readonly children: ReactNode;
 }
@@ -101,6 +103,7 @@ function ScrollAnimatedSection({
   cardMotion,
   featureMotion,
   cardBorderStyle,
+  cardTexture,
   style,
   children,
 }: ScrollAnimatedSectionProps): JSX.Element {
@@ -163,6 +166,7 @@ function ScrollAnimatedSection({
       data-card-motion={cardMotion}
       data-feature-motion={featureMotion}
       data-card-border-style={cardBorderStyle}
+      data-card-texture={cardTexture}
       data-in-view={String(effectiveInView)}
       style={style}
     >
@@ -288,16 +292,10 @@ export function InvitationRenderer({
 
   const articleStyle: CSSProperties = {
     ...resolvedTheme.cssVariables,
-    backgroundColor: 'var(--inv-canvas)',
+    backgroundColor: 'transparent',
     color: 'var(--inv-ink)',
     borderColor: 'var(--inv-border)',
     fontFamily: 'var(--inv-font-body)',
-    ...(isGlassCard
-      ? {
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }
-      : {}),
   };
 
   const articleNode = (
@@ -310,6 +308,7 @@ export function InvitationRenderer({
       data-section-spacing={resolvedTheme.sectionSpacing}
       data-animation-style={resolvedTheme.animationStyle}
       data-card-border-style={resolvedTheme.cardBorderStyle}
+      data-card-texture={resolvedTheme.cardTexture}
       data-card-opacity={resolvedTheme.cardOpacity}
       aria-label={`${doc.wedding.title} invitation`}
       className={`relative z-10 overflow-hidden rounded-xl border ${
@@ -319,10 +318,14 @@ export function InvitationRenderer({
     >
       {activeView === 'story' && storySection && storySection.sectionType === 'our_story' ? (
         <div
-          style={resolveSectionStyleOverrides(storySection.content.style, resolvedTheme)}
+          style={{
+            backgroundColor: 'var(--inv-canvas)',
+            ...resolveSectionStyleOverrides(storySection.content.style, resolvedTheme),
+          }}
           data-card-border-style={
             storySection.content.style?.cardBorderStyle ?? resolvedTheme.cardBorderStyle
           }
+          data-card-texture={storySection.content.style?.cardTexture ?? resolvedTheme.cardTexture}
           data-section-heading-scale={
             storySection.content.style?.headingSize &&
             storySection.content.style.headingSize !== 'md'
@@ -346,7 +349,20 @@ export function InvitationRenderer({
         <>
           {visibleSections.map((section, idx) => {
             const sectionStyle = section.content.style;
+            const cardBorderStyle =
+              sectionStyle?.cardBorderStyle ?? resolvedTheme.cardBorderStyle;
+            const cardTexture = sectionStyle?.cardTexture ?? resolvedTheme.cardTexture;
+            const isSectionTransparentFrame =
+              cardBorderStyle === 'glass_frosted' || cardBorderStyle === 'minimal_underline';
+
             const sectionCss = {
+              backgroundColor: isSectionTransparentFrame ? 'transparent' : 'var(--inv-canvas)',
+              ...(isGlassCard && !isSectionTransparentFrame
+                ? {
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                  }
+                : {}),
               ...resolveSectionStyleOverrides(sectionStyle, resolvedTheme),
               '--inv-stagger-idx': idx,
             } as CSSProperties;
@@ -362,8 +378,6 @@ export function InvitationRenderer({
             const textMotion = sectionStyle?.textMotion ?? defaultMotions.textMotion;
             const cardMotion = sectionStyle?.cardMotion ?? defaultMotions.cardMotion;
             const featureMotion = sectionStyle?.featureMotion ?? defaultMotions.featureMotion;
-            const cardBorderStyle =
-              sectionStyle?.cardBorderStyle ?? resolvedTheme.cardBorderStyle;
 
             return (
               <ScrollAnimatedSection
@@ -375,6 +389,7 @@ export function InvitationRenderer({
                 cardMotion={cardMotion}
                 featureMotion={featureMotion}
                 cardBorderStyle={cardBorderStyle}
+                cardTexture={cardTexture}
                 style={sectionCss}
               >
                 {renderRegisteredSection({
@@ -391,6 +406,7 @@ export function InvitationRenderer({
           <footer
             className="border-t px-6 py-6 text-center text-xs"
             style={{
+              backgroundColor: 'var(--inv-canvas)',
               borderColor: 'var(--inv-border)',
               color: 'var(--inv-ink-muted)',
             }}

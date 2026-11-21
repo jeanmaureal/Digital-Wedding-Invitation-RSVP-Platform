@@ -5,7 +5,7 @@ import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
 
 export const WEDDING_ASSETS_BUCKET = 'wedding-assets' as const;
 
-export type WeddingAssetCategory = 'backgrounds' | 'fonts' | 'milestones';
+export type WeddingAssetCategory = 'backgrounds' | 'fonts' | 'milestones' | 'gifts';
 
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif']);
 const MOTION_VIDEO_EXTENSIONS = new Set(['mp4', 'webm', 'mov']);

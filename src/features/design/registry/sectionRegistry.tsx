@@ -2,6 +2,7 @@ import type { JSX } from 'react';
 import { DressCodeSection } from '@/features/design/components/sections/DressCodeSection';
 import { EventScheduleSection } from '@/features/design/components/sections/EventScheduleSection';
 import { FaqNotesSection } from '@/features/design/components/sections/FaqNotesSection';
+import { GiftRegistrySection } from '@/features/design/components/sections/GiftRegistrySection';
 import { HeroSection } from '@/features/design/components/sections/HeroSection';
 import { OurStorySection } from '@/features/design/components/sections/OurStorySection';
 import { RsvpBannerSection } from '@/features/design/components/sections/RsvpBannerSection';
@@ -11,6 +12,7 @@ import {
   dressCodeSectionContentSchema,
   eventScheduleSectionContentSchema,
   faqNotesSectionContentSchema,
+  giftRegistrySectionContentSchema,
   heroSectionContentSchema,
   type InvitationDocument,
   type InvitationSection,
@@ -154,6 +156,39 @@ export const SECTION_REGISTRY: {
       ],
     }),
   },
+  gift_registry: {
+    type: 'gift_registry',
+    label: 'Monetary Gift & QR',
+    description:
+      'Heartfelt couple note with GCash, bank, or e-wallet account details and scannable QR code.',
+    schema: giftRegistrySectionContentSchema,
+    createStarterContent: (wedding) => ({
+      eyebrow: 'A Day Full of Love',
+      heading: "We can't wait to celebrate with you",
+      introMessage: `Your presence will add joy to this beautiful occasion. Thank you for being part of ${wedding.partnerOneName} and ${wedding.partnerTwoName}'s special day.`,
+      noteEyebrow: 'A Note from the Couple',
+      noteHeading: 'With all that we have, we are truly blessed.',
+      noteMessage:
+        'Your presence and prayers are more than enough. However, for those who wish to give a monetary gift, it would be greatly appreciated.',
+      accounts: [
+        {
+          id: 'starter-gift-account-1',
+          providerName: 'GCash',
+          accountLabel: 'GCash Number',
+          accountNumber: '',
+          accountHolderName: wedding.partnerOneName,
+          qrCodeImageUrl: null,
+          qrHeading: 'Scan to Send a Monetary Gift',
+          instructionsTitle: 'How to Send Your Gift',
+          instructions:
+            'Open your GCash app.\nTap Scan QR.\nScan the QR code above.\nCheck the recipient details before confirming.',
+          disclaimer: 'Please make sure the recipient name is correct before sending.',
+        },
+      ],
+      showReturnToTop: true,
+      returnToTopLabel: 'Return to the Invitation',
+    }),
+  },
   rsvp_banner: {
     type: 'rsvp_banner',
     label: 'RSVP Call to Action',
@@ -216,6 +251,8 @@ export function renderRegisteredSection({
       return <DressCodeSection content={section.content} ornamentStyle={ornamentStyle} />;
     case 'faq_notes':
       return <FaqNotesSection content={section.content} ornamentStyle={ornamentStyle} />;
+    case 'gift_registry':
+      return <GiftRegistrySection content={section.content} ornamentStyle={ornamentStyle} />;
     case 'rsvp_banner':
       return (
         <RsvpBannerSection
@@ -293,9 +330,17 @@ export function createStarterInvitationDocument(params: {
         content: SECTION_REGISTRY.faq_notes.createStarterContent(wedding, dressCode),
       },
       {
+        id: 'starter-gift-registry',
+        sectionType: 'gift_registry',
+        sortOrder: 6,
+        isVisible: false,
+        schemaVersion: DESIGN_SCHEMA_VERSION,
+        content: SECTION_REGISTRY.gift_registry.createStarterContent(wedding, dressCode),
+      },
+      {
         id: 'starter-rsvp-banner',
         sectionType: 'rsvp_banner',
-        sortOrder: 6,
+        sortOrder: 7,
         isVisible: true,
         schemaVersion: DESIGN_SCHEMA_VERSION,
         content: SECTION_REGISTRY.rsvp_banner.createStarterContent(wedding, dressCode),

@@ -31,6 +31,7 @@ export const WEDDING_SECTION_TYPE_VALUES = [
   'venue_travel',
   'dress_code',
   'faq_notes',
+  'gift_registry',
   'rsvp_banner',
 ] as const;
 
@@ -429,6 +430,34 @@ export const faqNotesSectionContentSchema = z.strictObject({
 });
 export type FaqNotesSectionContent = z.output<typeof faqNotesSectionContentSchema>;
 
+export const giftAccountItemSchema = z.strictObject({
+  id: safeLineString(1, 64, 'Gift account ID'),
+  providerName: safeLineString(1, 60, 'Payment provider'),
+  accountLabel: safeOptionalLineString(60, 'Account label'),
+  accountNumber: safeOptionalLineString(80, 'Account number'),
+  accountHolderName: safeOptionalLineString(100, 'Recipient name'),
+  qrCodeImageUrl: nullableHttpsUrlSchema,
+  qrHeading: safeOptionalLineString(80, 'QR heading'),
+  instructionsTitle: safeOptionalLineString(80, 'Instructions title'),
+  instructions: safeMultilineString(0, 600, 'Gift instructions'),
+  disclaimer: safeOptionalLineString(200, 'Gift disclaimer'),
+});
+export type GiftAccountItem = z.output<typeof giftAccountItemSchema>;
+
+export const giftRegistrySectionContentSchema = z.strictObject({
+  eyebrow: safeOptionalLineString(80, 'Gift eyebrow'),
+  heading: safeLineString(1, 100, 'Gift heading'),
+  introMessage: safeMultilineString(0, 400, 'Intro message'),
+  noteEyebrow: safeOptionalLineString(80, 'Note eyebrow'),
+  noteHeading: safeOptionalLineString(120, 'Note heading'),
+  noteMessage: safeMultilineString(0, 600, 'Note message'),
+  accounts: z.array(giftAccountItemSchema).max(6),
+  showReturnToTop: z.boolean(),
+  returnToTopLabel: safeOptionalLineString(60, 'Return button label'),
+  style: sectionStyleOverridesSchema.optional(),
+});
+export type GiftRegistrySectionContent = z.output<typeof giftRegistrySectionContentSchema>;
+
 export const rsvpBannerSectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'RSVP heading'),
   message: safeMultilineString(1, 400, 'RSVP message'),
@@ -482,6 +511,11 @@ export const invitationSectionSchema = z.discriminatedUnion('sectionType', [
   }),
   z.strictObject({
     ...baseSectionFields,
+    sectionType: z.literal('gift_registry'),
+    content: giftRegistrySectionContentSchema,
+  }),
+  z.strictObject({
+    ...baseSectionFields,
     sectionType: z.literal('rsvp_banner'),
     content: rsvpBannerSectionContentSchema,
   }),
@@ -496,6 +530,7 @@ export type SectionContentByType = {
   readonly venue_travel: VenueTravelSectionContent;
   readonly dress_code: DressCodeSectionContent;
   readonly faq_notes: FaqNotesSectionContent;
+  readonly gift_registry: GiftRegistrySectionContent;
   readonly rsvp_banner: RsvpBannerSectionContent;
 };
 
