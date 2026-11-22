@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type {
   InvitationWeddingMetadata,
   RsvpBannerSectionContent,
@@ -39,12 +40,12 @@ export function RsvpBannerSection({
         </h2>
         <OrnamentDivider styleId={ornamentStyle} />
 
-        <p
+        <div
           className="text-sm leading-relaxed sm:text-base"
           style={{ color: 'var(--inv-ink-muted)' }}
         >
-          {content.message}
-        </p>
+          <RichMarkdownText text={content.message} multiline className="space-y-2.5" />
+        </div>
 
         {formattedDeadline ? (
           <p className="text-xs font-medium" style={{ color: 'var(--inv-accent)' }}>

@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type { DressCodeSectionContent } from '@/features/design/schemas/designSchemas';
 import type { OrnamentStyleId } from '@/features/design/themes/themePresets';
 
@@ -31,13 +32,13 @@ export function DressCodeSection({ content, ornamentStyle }: DressCodeSectionPro
           className="text-lg font-medium"
           style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-accent)' }}
         >
-          {content.dressCodeTitle}
+          <RichMarkdownText text={content.dressCodeTitle} />
         </p>
 
         {content.guidance ? (
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--inv-ink-muted)' }}>
-            {content.guidance}
-          </p>
+          <div className="text-sm leading-relaxed" style={{ color: 'var(--inv-ink-muted)' }}>
+            <RichMarkdownText text={content.guidance} multiline className="space-y-2.5" />
+          </div>
         ) : null}
 
         {content.swatches && content.swatches.length > 0 ? (

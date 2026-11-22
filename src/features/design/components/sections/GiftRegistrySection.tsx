@@ -1,6 +1,7 @@
 import { ArrowUp, Check, Copy, QrCode } from 'lucide-react';
 import { type JSX, useEffect, useRef, useState } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type {
   GiftAccountItem,
   GiftRegistrySectionContent,
@@ -164,7 +165,9 @@ function AccountGiftCard({ account }: { readonly account: GiftAccountItem }): JS
               </p>
               <ol className="mt-2.5 list-decimal space-y-1 pl-4 text-xs leading-relaxed text-neutral-700">
                 {steps.map((step, index) => (
-                  <li key={`${index}-${step.slice(0, 16)}`}>{step}</li>
+                  <li key={`${index}-${step.slice(0, 16)}`}>
+                    <RichMarkdownText text={step} />
+                  </li>
                 ))}
               </ol>
             </div>
@@ -172,7 +175,7 @@ function AccountGiftCard({ account }: { readonly account: GiftAccountItem }): JS
 
           {account.disclaimer ? (
             <p className="mt-3.5 text-[11px] leading-relaxed text-neutral-500">
-              {account.disclaimer}
+              <RichMarkdownText text={account.disclaimer} />
             </p>
           ) : null}
         </div>
@@ -235,12 +238,12 @@ export function GiftRegistrySection({
           <OrnamentDivider styleId={ornamentStyle} />
 
           {content.introMessage ? (
-            <p
-              className="mx-auto max-w-lg text-sm leading-relaxed whitespace-pre-line sm:text-base"
+            <div
+              className="mx-auto max-w-lg text-sm leading-relaxed sm:text-base"
               style={{ color: 'var(--inv-ink-muted)' }}
             >
-              {content.introMessage}
-            </p>
+              <RichMarkdownText text={content.introMessage} multiline className="space-y-2.5" />
+            </div>
           ) : null}
         </div>
 
@@ -269,17 +272,17 @@ export function GiftRegistrySection({
                 className="text-xl leading-snug font-semibold sm:text-2xl"
                 style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
               >
-                {content.noteHeading}
+                <RichMarkdownText text={content.noteHeading} />
               </h3>
             ) : null}
 
             {content.noteMessage ? (
-              <p
-                className="mx-auto max-w-md text-sm leading-relaxed whitespace-pre-line"
+              <div
+                className="mx-auto max-w-md text-sm leading-relaxed"
                 style={{ color: 'var(--inv-ink-muted)' }}
               >
-                {content.noteMessage}
-              </p>
+                <RichMarkdownText text={content.noteMessage} multiline className="space-y-2.5" />
+              </div>
             ) : null}
           </div>
 

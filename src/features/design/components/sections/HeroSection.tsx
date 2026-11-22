@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type {
   HeroSectionContent,
   InvitationWeddingMetadata,
@@ -48,7 +49,7 @@ export function HeroSection({
             className="text-xs font-medium tracking-[0.22em] uppercase"
             style={{ color: 'var(--inv-ink-muted)' }}
           >
-            {content.eyebrow}
+            <RichMarkdownText text={content.eyebrow} />
           </p>
         ) : null}
 
@@ -62,12 +63,12 @@ export function HeroSection({
             color: 'var(--inv-ink)',
           }}
         >
-          {content.coupleHeadline}
+          <RichMarkdownText text={content.coupleHeadline} />
         </h1>
 
         {content.celebrationSubtitle ? (
           <p className="text-base sm:text-lg" style={{ color: 'var(--inv-ink-muted)' }}>
-            {content.celebrationSubtitle}
+            <RichMarkdownText text={content.celebrationSubtitle} />
           </p>
         ) : null}
 

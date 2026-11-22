@@ -149,6 +149,14 @@ export function SectionEditorDispatcher({
             </Badge>
           </div>
           <p className="text-muted-foreground text-xs">{registryEntry.description}</p>
+          <p className="text-muted-foreground text-[11px]">
+            Formatting supported in text fields: <code className="rounded bg-muted px-1">**bold**</code>,{' '}
+            <code className="rounded bg-muted px-1">*italic*</code>,{' '}
+            <code className="rounded bg-muted px-1">~~strike~~</code>,{' '}
+            <code className="rounded bg-muted px-1">`highlight`</code>,{' '}
+            <code className="rounded bg-muted px-1">[link](https://...)</code>, and{' '}
+            <code className="rounded bg-muted px-1">- bullet</code> lists.
+          </p>
         </div>
 
         <Button

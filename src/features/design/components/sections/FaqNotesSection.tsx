@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type { FaqNotesSectionContent } from '@/features/design/schemas/designSchemas';
 import type { OrnamentStyleId } from '@/features/design/themes/themePresets';
 
@@ -41,13 +42,13 @@ export function FaqNotesSection({ content, ornamentStyle }: FaqNotesSectionProps
                 className="text-base font-medium"
                 style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
               >
-                {item.question}
+                <RichMarkdownText text={item.question} />
               </dt>
               <dd
                 className="mt-1.5 text-sm leading-relaxed"
                 style={{ color: 'var(--inv-ink-muted)' }}
               >
-                {item.answer}
+                <RichMarkdownText text={item.answer} multiline className="space-y-2" />
               </dd>
             </div>
           ))}

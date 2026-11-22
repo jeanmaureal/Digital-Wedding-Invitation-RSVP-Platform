@@ -7,6 +7,7 @@ import {
 import type { RoyalBotanicalHouseholdContext } from '@/features/design/components/royal-botanical/RoyalBotanicalEnvelope';
 import { FaqNotesSection } from '@/features/design/components/sections/FaqNotesSection';
 import { GiftRegistrySection } from '@/features/design/components/sections/GiftRegistrySection';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import { RsvpBannerSection } from '@/features/design/components/sections/RsvpBannerSection';
 import {
   formatMilestoneDate,
@@ -209,8 +210,12 @@ function RoyalHeroCard({
           <PearlTrio withLines />
 
           <p className="mx-auto max-w-md text-[10px] font-semibold tracking-[0.26em] uppercase text-[#66705A] sm:text-[11px]">
-            {content.eyebrow ||
-              'TOGETHER WITH THEIR BELOVED FAMILIES, WE INVITE YOU TO CELEBRATE THE MARRIAGE OF'}
+            <RichMarkdownText
+              text={
+                content.eyebrow ||
+                'TOGETHER WITH THEIR BELOVED FAMILIES, WE INVITE YOU TO CELEBRATE THE MARRIAGE OF'
+              }
+            />
           </p>
 
           {/* Stacked Couple Display Names */}
@@ -276,7 +281,9 @@ function RoyalHeroCard({
                 }}
               >
                 <span className="rb-pearl rb-pearl-xs" aria-hidden="true" />
-                <span>{content.celebrationSubtitle}</span>
+                <span>
+                  <RichMarkdownText text={content.celebrationSubtitle} />
+                </span>
                 <span className="rb-pearl rb-pearl-xs" aria-hidden="true" />
               </div>
             </div>
@@ -438,12 +445,14 @@ function RoyalOurStoryCard({
         </h2>
         {content.leadQuote ? (
           <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#69705E]">
-            {content.leadQuote}
+            <RichMarkdownText text={content.leadQuote} />
           </p>
         ) : content.narrative ? (
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#69705E]">
-            {content.narrative}
-          </p>
+          <RichMarkdownText
+            text={content.narrative}
+            multiline
+            className="mx-auto max-w-xl space-y-2.5 text-sm leading-relaxed text-[#69705E]"
+          />
         ) : null}
       </div>
 
@@ -528,23 +537,23 @@ function RoyalOurStoryCard({
                       className="mt-1.5 text-lg font-medium text-[#2F3A26]"
                       style={{ fontFamily: 'var(--inv-font-heading)' }}
                     >
-                      {title}
+                      <RichMarkdownText text={title} />
                     </h3>
                   ) : null}
                   {description ? (
-                    <p
+                    <div
                       data-testid={`invitation-story-milestone-desc-${index}`}
                       className="mt-1.5 text-xs leading-relaxed text-[#69705E]"
                     >
-                      {description}
-                    </p>
+                      <RichMarkdownText text={description} multiline className="space-y-2" />
+                    </div>
                   ) : null}
                 </div>
               );
             })
           ) : (
             <div className="col-span-full rounded-2xl border border-[#EAE1C8] bg-[#F8F5EB] p-6 text-sm leading-relaxed text-[#69705E]">
-              {content.narrative}
+              <RichMarkdownText text={content.narrative} multiline />
             </div>
           )}
         </div>
@@ -616,7 +625,11 @@ function RoyalVenueCard({
         ) : null}
 
         {content.directionsNote ? (
-          <p className="text-sm leading-relaxed text-[#5E6753]">{content.directionsNote}</p>
+          <RichMarkdownText
+            text={content.directionsNote}
+            multiline
+            className="space-y-2.5 text-sm leading-relaxed text-[#5E6753]"
+          />
         ) : null}
 
         {content.accommodations.length > 0 ? (
@@ -627,7 +640,11 @@ function RoyalVenueCard({
                 className="rounded-xl border border-[#EAE1C8] bg-[#F8F5EB] p-3 text-xs"
               >
                 <p className="font-medium text-[#2F3A26]">{hotel.name}</p>
-                {hotel.note ? <p className="mt-0.5 text-[#69705E]">{hotel.note}</p> : null}
+                {hotel.note ? (
+                  <p className="mt-0.5 text-[#69705E]">
+                    <RichMarkdownText text={hotel.note} />
+                  </p>
+                ) : null}
                 {hotel.bookingUrl ? (
                   <a
                     href={hotel.bookingUrl}
@@ -726,10 +743,12 @@ function RoyalScheduleCard({
                 className="mt-0.5 text-lg font-medium text-[#2F3A26]"
                 style={{ fontFamily: 'var(--inv-font-heading)' }}
               >
-                {item.title}
+                <RichMarkdownText text={item.title} />
               </h3>
               {item.notes ? (
-                <p className="mt-0.5 text-xs leading-relaxed text-[#69705E]">{item.notes}</p>
+                <div className="mt-0.5 text-xs leading-relaxed text-[#69705E]">
+                  <RichMarkdownText text={item.notes} multiline className="space-y-1.5" />
+                </div>
               ) : item.venueName ? (
                 <p className="mt-0.5 text-xs text-[#69705E]">{item.venueName}</p>
               ) : null}
@@ -791,12 +810,14 @@ function RoyalDressCodeCard({
           className="text-3xl font-normal text-[#2F3A26] sm:text-4xl"
           style={{ fontFamily: 'var(--inv-font-heading)' }}
         >
-          {content.dressCodeTitle || content.heading}
+          <RichMarkdownText text={content.dressCodeTitle || content.heading} />
         </h2>
         {content.guidance ? (
-          <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#69705E]">
-            {content.guidance}
-          </p>
+          <RichMarkdownText
+            text={content.guidance}
+            multiline
+            className="mx-auto max-w-xl space-y-2.5 text-sm leading-relaxed text-[#69705E]"
+          />
         ) : null}
       </div>
 

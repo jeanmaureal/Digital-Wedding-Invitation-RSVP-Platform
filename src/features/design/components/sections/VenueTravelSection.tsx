@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type { VenueTravelSectionContent } from '@/features/design/schemas/designSchemas';
 import type { OrnamentStyleId } from '@/features/design/themes/themePresets';
 
@@ -147,9 +148,9 @@ export function VenueTravelSection({
         )}
 
         {content.directionsNote ? (
-          <p className="text-center text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
-            {content.directionsNote}
-          </p>
+          <div className="text-center text-sm" style={{ color: 'var(--inv-ink-muted)' }}>
+            <RichMarkdownText text={content.directionsNote} multiline className="space-y-2" />
+          </div>
         ) : null}
 
         {content.mapUrl ? (
@@ -187,7 +188,7 @@ export function VenueTravelSection({
                 </p>
                 {hotel.note ? (
                   <p className="mt-1 text-xs" style={{ color: 'var(--inv-ink-muted)' }}>
-                    {hotel.note}
+                    <RichMarkdownText text={hotel.note} />
                   </p>
                 ) : null}
                 {hotel.bookingUrl ? (

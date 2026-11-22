@@ -1,6 +1,7 @@
 import { ArrowLeft, X } from 'lucide-react';
 import { type JSX, useState } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import {
   formatMilestoneDate,
   hasMilestoneContent,
@@ -78,7 +79,7 @@ export function OurStoryGalleryView({
               className="mx-auto max-w-2xl text-lg italic sm:text-xl"
               style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-accent)' }}
             >
-              &ldquo;{content.leadQuote}&rdquo;
+              &ldquo;<RichMarkdownText text={content.leadQuote} />&rdquo;
             </blockquote>
           ) : null}
 
@@ -88,7 +89,7 @@ export function OurStoryGalleryView({
               style={{ color: 'var(--inv-ink-muted)' }}
             >
               {paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
+                <RichMarkdownText key={index} text={paragraph} multiline className="space-y-2" />
               ))}
             </div>
           ) : null}
@@ -154,18 +155,18 @@ export function OurStoryGalleryView({
                       className={`${label || formattedDate ? 'mt-1.5' : ''} text-xl font-medium sm:text-2xl`}
                       style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
                     >
-                      {title}
+                      <RichMarkdownText text={title} />
                     </h2>
                   ) : null}
 
                   {description ? (
-                    <p
+                    <div
                       data-testid={`dedicated-story-milestone-desc-${index}`}
                       className={`${title || label || formattedDate ? 'mt-2' : ''} text-sm leading-relaxed sm:text-base`}
                       style={{ color: 'var(--inv-ink-muted)' }}
                     >
-                      {description}
-                    </p>
+                      <RichMarkdownText text={description} multiline className="space-y-2" />
+                    </div>
                   ) : null}
 
                   {images.length > 0 ? (

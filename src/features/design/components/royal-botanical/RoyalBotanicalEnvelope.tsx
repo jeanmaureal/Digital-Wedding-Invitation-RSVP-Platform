@@ -121,8 +121,8 @@ export function RoyalBotanicalEnvelope({
 
       {/* Top invitation title header */}
       <div
-        className={`relative z-10 mb-8 text-center transition-all duration-500 sm:mb-10 ${
-          isCardSliding ? 'translate-y-[-10px] opacity-0' : 'opacity-100'
+        className={`relative z-10 mb-8 text-center transition-all duration-350 sm:mb-10 ${
+          isFlapOpen ? '-translate-y-3 opacity-0' : 'opacity-100'
         }`}
       >
         <p className="text-[11px] font-medium tracking-[0.28em] uppercase text-[#5E6852] sm:text-xs">
@@ -187,11 +187,11 @@ export function RoyalBotanicalEnvelope({
               backgroundColor: '#FBF9F2',
               borderColor: '#D5BF7D',
               boxShadow: '0 8px 24px -6px rgba(20, 26, 14, 0.25)',
-              zIndex: isCardSliding ? 18 : 8,
+              zIndex: isCardSliding ? 15 : 8,
               transform: isZooming
-                ? 'translateY(-56%) scale(1.22)'
+                ? 'translateY(-62%) scale(1.22)'
                 : isCardSliding
-                  ? 'translateY(-44%) scale(1.01)'
+                  ? 'translateY(-50%) scale(1.01)'
                   : 'translateY(0%) scale(0.97)',
               opacity: isFlapOpen ? 1 : 0.96,
             }}
@@ -272,14 +272,14 @@ export function RoyalBotanicalEnvelope({
           {/* Top Triangular Flap (3D flip open on click) */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute top-0 right-0 left-0 h-[58%] origin-top transition-transform duration-600 ease-[cubic-bezier(0.4,0,0.2,1)]"
+            className="pointer-events-none absolute top-0 right-0 left-0 h-[56%] origin-top transition-transform duration-600 ease-[cubic-bezier(0.4,0,0.2,1)]"
             style={{
-              zIndex: isCardSliding ? 10 : 30,
-              transform: isFlapOpen ? 'rotateX(176deg)' : 'rotateX(0deg)',
+              zIndex: isCardSliding ? 5 : 30,
+              transform: isFlapOpen ? 'rotateX(180deg)' : 'rotateX(0deg)',
               transformStyle: 'preserve-3d',
             }}
           >
-            {/* Outer face of flap */}
+            {/* Outer face of flap (base at top hinge, tip pointing down when closed) */}
             <div
               className="absolute inset-0 rounded-t-xl"
               style={{
@@ -289,12 +289,12 @@ export function RoyalBotanicalEnvelope({
                 backfaceVisibility: 'hidden',
               }}
             />
-            {/* Inner face of flap (visible once flipped up) */}
+            {/* Inner face of flap (rotated 180deg around center -> base sits flush on top hinge, tip points UP when open) */}
             <div
-              className="absolute inset-0 rounded-t-xl"
+              className="absolute inset-0"
               style={{
-                clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-                background: 'linear-gradient(180deg, #3A482C 0%, #485838 100%)',
+                clipPath: 'polygon(0 100%, 100% 100%, 50% 0)',
+                background: 'linear-gradient(0deg, #3A482C 0%, #485838 100%)',
                 transform: 'rotateX(180deg)',
                 backfaceVisibility: 'hidden',
               }}

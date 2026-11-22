@@ -1,6 +1,7 @@
 import { ArrowRight, Images } from 'lucide-react';
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import {
   formatMilestoneDate,
   hasMilestoneContent,
@@ -56,7 +57,7 @@ export function OurStorySection({
             className="mx-auto max-w-xl text-lg italic"
             style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-accent)' }}
           >
-            &ldquo;{content.leadQuote}&rdquo;
+            &ldquo;<RichMarkdownText text={content.leadQuote} />&rdquo;
           </blockquote>
         ) : null}
 
@@ -98,7 +99,7 @@ export function OurStorySection({
             style={{ color: 'var(--inv-ink-muted)' }}
           >
             {paragraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
+              <RichMarkdownText key={index} text={paragraph} multiline className="space-y-2" />
             ))}
           </div>
         ) : null}
@@ -156,18 +157,18 @@ export function OurStorySection({
                       className={`${label || formattedDate ? 'mt-1.5' : ''} text-lg font-medium`}
                       style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
                     >
-                      {title}
+                      <RichMarkdownText text={title} />
                     </h3>
                   ) : null}
 
                   {description ? (
-                    <p
+                    <div
                       data-testid={`invitation-story-milestone-desc-${index}`}
                       className={`${title || label || formattedDate ? 'mt-1.5' : ''} text-sm`}
                       style={{ color: 'var(--inv-ink-muted)' }}
                     >
-                      {description}
-                    </p>
+                      <RichMarkdownText text={description} multiline className="space-y-2" />
+                    </div>
                   ) : null}
                 </div>
               );

@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
 import { OrnamentDivider } from '@/features/design/components/sections/OrnamentDivider';
+import { RichMarkdownText } from '@/features/design/components/sections/RichMarkdownText';
 import type { EventScheduleSectionContent } from '@/features/design/schemas/designSchemas';
 import type { OrnamentStyleId } from '@/features/design/themes/themePresets';
 
@@ -61,12 +62,12 @@ export function EventScheduleSection({
                   className="text-lg font-medium"
                   style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
                 >
-                  {item.title}
+                  <RichMarkdownText text={item.title} />
                 </h3>
                 {item.notes ? (
-                  <p className="text-xs" style={{ color: 'var(--inv-ink-muted)' }}>
-                    {item.notes}
-                  </p>
+                  <div className="text-xs" style={{ color: 'var(--inv-ink-muted)' }}>
+                    <RichMarkdownText text={item.notes} multiline className="space-y-1.5" />
+                  </div>
                 ) : null}
               </div>
 
