@@ -33,7 +33,8 @@ import type { TypedSupabaseClient } from '@/lib/supabase/publicClient';
 const CURATED_ACCENT_SWATCHES = [
   '#9A7B4F',
   '#4F6F58',
-  '#C8A45D',
+  '#3E4C30',
+  '#C2A65A',
   '#B85D43',
   '#8C3B2B',
   '#2E4A62',
@@ -1334,6 +1335,7 @@ export function ThemeControlsPanel({
               <option value="minimal_line">Minimal diamond hairline</option>
               <option value="botanical_flourish">Botanical flourish</option>
               <option value="monogram_crest">Monogram crest</option>
+              <option value="pearl_trio">Pearl trio &amp; gold hairlines</option>
               <option value="none">None</option>
             </NativeSelect>
           </div>

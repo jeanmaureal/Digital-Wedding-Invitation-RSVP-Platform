@@ -33,6 +33,30 @@ export function OrnamentDivider({
     );
   }
 
+  if (styleId === 'pearl_trio') {
+    return (
+      <div aria-hidden="true" className="my-4 flex items-center justify-center gap-3">
+        <span
+          className="h-px w-10 opacity-60"
+          style={{
+            background: 'linear-gradient(90deg, transparent, #C2A65A)',
+          }}
+        />
+        <span className="flex items-center gap-1.5">
+          <span className="rb-pearl rb-pearl-sm" />
+          <span className="rb-pearl rb-pearl-md" />
+          <span className="rb-pearl rb-pearl-sm" />
+        </span>
+        <span
+          className="h-px w-10 opacity-60"
+          style={{
+            background: 'linear-gradient(90deg, #C2A65A, transparent)',
+          }}
+        />
+      </div>
+    );
+  }
+
   if (styleId === 'botanical_flourish') {
     return (
       <div

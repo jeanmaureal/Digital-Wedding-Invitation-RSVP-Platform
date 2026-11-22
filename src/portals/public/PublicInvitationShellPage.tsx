@@ -31,6 +31,7 @@ export function PublicInvitationShellPage({
   const hasPublicClient = resolvedClient !== null;
 
   const [showRsvpNotice, setShowRsvpNotice] = useState(false);
+  const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
 
   const invitationQuery = useQuery<PublicInvitationLookupResult>({
     queryKey: guestQueryKeys.publicByToken(token ?? ''),
@@ -62,7 +63,11 @@ export function PublicInvitationShellPage({
 
   if (!isValidFormat || invitationQuery.data?.status === 'invalid_token') {
     return (
-      <section data-testid="route-public-invitation" aria-labelledby="invitation-invalid-heading">
+      <section
+        data-testid="route-public-invitation"
+        aria-labelledby="invitation-invalid-heading"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" data-testid="public-invitation-invalid-token">
           <CardHeader>
             <div className="mb-2">
@@ -93,7 +98,11 @@ export function PublicInvitationShellPage({
 
   if (hasPublicClient && invitationQuery.isPending) {
     return (
-      <section data-testid="route-public-invitation" aria-label="Verifying household invitation">
+      <section
+        data-testid="route-public-invitation"
+        aria-label="Verifying household invitation"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" data-testid="public-invitation-loading">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
             Verifying your household invitation…
@@ -108,7 +117,11 @@ export function PublicInvitationShellPage({
     (invitationQuery.isError || invitationQuery.data?.status === 'schema_invalid')
   ) {
     return (
-      <section data-testid="route-public-invitation" aria-labelledby="invitation-error-heading">
+      <section
+        data-testid="route-public-invitation"
+        aria-labelledby="invitation-error-heading"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" role="alert" data-testid="public-invitation-error">
           <CardHeader>
             <div className="mb-2">
@@ -144,13 +157,81 @@ export function PublicInvitationShellPage({
 
   if (activeData) {
     const { document: invitationDoc, household, rsvp, versionNumber } = activeData;
+    const isRoyalBotanical = invitationDoc.theme.presetId === 'royal_botanical';
+
+    if (isRoyalBotanical) {
+      return (
+        <section
+          data-testid="route-public-invitation"
+          data-published-version={versionNumber}
+          aria-label={`Personal wedding invitation for ${household.displayName}`}
+          className="flex min-h-screen w-full flex-col bg-[#F5F0E3]"
+        >
+          <InvitationRenderer
+            document={invitationDoc}
+            viewportMode="desktop"
+            backdropMode="page"
+            household={{
+              displayName: household.displayName,
+              maxAttendees: household.maxAttendees,
+            }}
+            onEnvelopeStateChange={setIsEnvelopeOpen}
+            onPrimaryRsvpAction={handleScrollToHouseholdRsvp}
+          />
+
+          {isEnvelopeOpen ? (
+            <div className="relative z-10 w-full bg-[#F5F0E3] px-4 pt-2 pb-14 sm:px-8">
+              <div className="mx-auto max-w-3xl space-y-4">
+                {showRsvpNotice ? (
+                  <div
+                    role="status"
+                    data-testid="public-invitation-rsvp-status-banner"
+                    className="flex flex-col justify-between gap-2 rounded-2xl border border-[#DFC97B] bg-[#FAF2CE] p-4 text-[#2F3A26] sm:flex-row sm:items-center"
+                  >
+                    <div className="space-y-0.5 text-xs">
+                      <p className="font-semibold">
+                        {rsvp.isAcceptingResponses
+                          ? `Household RSVP Verified (${household.displayName} — up to ${household.maxAttendees} ${household.maxAttendees === 1 ? 'attendee' : 'attendees'})`
+                          : 'Online RSVPs Are Currently Closed'}
+                      </p>
+                      <p className="text-[#5C6650]">
+                        {rsvp.isAcceptingResponses
+                          ? 'Complete and submit your household attendance form directly below.'
+                          : 'Please reach out to the couple directly if you need to update your attendance details.'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowRsvpNotice(false)}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                ) : null}
+
+                <HouseholdRsvpFormCard
+                  key={`rsvp-form:${versionNumber}:${household.displayName}`}
+                  rawToken={token}
+                  weddingTitle={invitationDoc.wedding.title}
+                  household={household}
+                  rsvp={rsvp}
+                  client={resolvedClient}
+                />
+              </div>
+            </div>
+          ) : null}
+        </section>
+      );
+    }
 
     return (
       <section
         data-testid="route-public-invitation"
         data-published-version={versionNumber}
         aria-label={`Personal wedding invitation for ${household.displayName}`}
-        className="w-full space-y-6"
+        className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12"
       >
         <Card
           data-testid="public-invitation-household-card"
@@ -258,7 +339,11 @@ export function PublicInvitationShellPage({
 
   // Unavailable (unknown, revoked, expired, unpublished wedding) or offline unconfigured fallback
   return (
-    <section data-testid="route-public-invitation" aria-labelledby="invitation-shell-heading">
+    <section
+      data-testid="route-public-invitation"
+      aria-labelledby="invitation-shell-heading"
+      className="flex flex-1 items-center justify-center px-6 py-12"
+    >
       <Card className="mx-auto max-w-xl" data-testid="public-invitation-unavailable">
         <CardHeader>
           <div className="mb-2">

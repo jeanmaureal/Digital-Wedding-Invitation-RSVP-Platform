@@ -50,7 +50,11 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   if (!isValidSlug) {
     return (
-      <section data-testid="route-public-wedding" aria-labelledby="wedding-shell-heading">
+      <section
+        data-testid="route-public-wedding"
+        aria-labelledby="wedding-shell-heading"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" data-testid="public-wedding-invalid-slug">
           <CardHeader>
             <div className="mb-2">
@@ -81,7 +85,11 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   if (hasPublicClient && publicQuery.isPending) {
     return (
-      <section data-testid="route-public-wedding" aria-label="Loading wedding invitation">
+      <section
+        data-testid="route-public-wedding"
+        aria-label="Loading wedding invitation"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" data-testid="public-wedding-loading">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
             Loading wedding invitation…
@@ -93,7 +101,11 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   if (hasPublicClient && (publicQuery.isError || publicQuery.data?.status === 'schema_invalid')) {
     return (
-      <section data-testid="route-public-wedding" aria-labelledby="wedding-error-heading">
+      <section
+        data-testid="route-public-wedding"
+        aria-labelledby="wedding-error-heading"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" role="alert" data-testid="public-wedding-error">
           <CardHeader>
             <div className="mb-2">
@@ -129,7 +141,11 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   if (publicQuery.data?.status === 'invite_only') {
     return (
-      <section data-testid="route-public-wedding" aria-labelledby="wedding-invite-only-heading">
+      <section
+        data-testid="route-public-wedding"
+        aria-labelledby="wedding-invite-only-heading"
+        className="flex flex-1 items-center justify-center px-6 py-12"
+      >
         <Card className="mx-auto max-w-xl" data-testid="public-wedding-invite-only">
           <CardHeader>
             <div className="mb-2">
@@ -164,43 +180,50 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   if (publicQuery.data?.status === 'published') {
     const { document: invitationDoc, versionNumber } = publicQuery.data;
+    const isRoyalBotanical = invitationDoc.theme.presetId === 'royal_botanical';
 
     return (
       <section
         data-testid="route-public-wedding"
         data-published-version={versionNumber}
         aria-label={`${invitationDoc.wedding.title} wedding invitation`}
-        className="w-full space-y-6"
+        className={
+          isRoyalBotanical
+            ? 'flex min-h-screen w-full flex-col bg-[#F5F0E3]'
+            : 'mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12'
+        }
       >
         {showRsvpGuidance ? (
-          <Card
-            role="status"
-            data-testid="public-rsvp-guidance-card"
-            className="bg-background/95 relative z-10 mx-auto max-w-2xl border-emerald-500/30 backdrop-blur-sm"
-          >
-            <CardContent className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold">
-                  {invitationDoc.wedding.isRsvpOpen
-                    ? 'Responding for Your Household'
-                    : 'Online RSVPs Are Currently Closed'}
-                </p>
-                <p className="text-muted-foreground text-xs leading-relaxed">
-                  {invitationDoc.wedding.isRsvpOpen
-                    ? 'To confirm attendance, please open the personal household invitation link (/i/…) shared directly with you by the couple.'
-                    : 'Please reach out to the couple directly if you need to update your attendance details.'}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowRsvpGuidance(false)}
-              >
-                Dismiss
-              </Button>
-            </CardContent>
-          </Card>
+          <div className={isRoyalBotanical ? 'px-4 pt-4' : ''}>
+            <Card
+              role="status"
+              data-testid="public-rsvp-guidance-card"
+              className="bg-background/95 relative z-20 mx-auto max-w-2xl border-emerald-500/30 backdrop-blur-sm"
+            >
+              <CardContent className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold">
+                    {invitationDoc.wedding.isRsvpOpen
+                      ? 'Responding for Your Household'
+                      : 'Online RSVPs Are Currently Closed'}
+                  </p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    {invitationDoc.wedding.isRsvpOpen
+                      ? 'To confirm attendance, please open the personal household invitation link (/i/…) shared directly with you by the couple.'
+                      : 'Please reach out to the couple directly if you need to update your attendance details.'}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowRsvpGuidance(false)}
+                >
+                  Dismiss
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         ) : null}
 
         <InvitationRenderer
@@ -215,7 +238,11 @@ export function PublicWeddingShellPage({ client }: PublicWeddingShellPageProps =
 
   // Unavailable (draft, archived, unknown slug) or offline unconfigured fallback
   return (
-    <section data-testid="route-public-wedding" aria-labelledby="wedding-shell-heading">
+    <section
+      data-testid="route-public-wedding"
+      aria-labelledby="wedding-shell-heading"
+      className="flex flex-1 items-center justify-center px-6 py-12"
+    >
       <Card className="mx-auto max-w-xl" data-testid="public-wedding-unavailable">
         <CardHeader>
           <div className="mb-2">

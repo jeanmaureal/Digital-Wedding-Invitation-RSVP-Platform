@@ -1,5 +1,10 @@
 import { type CSSProperties, type JSX, type ReactNode, useEffect, useRef, useState } from 'react';
 import { BackdropAmbientEffect } from '@/features/design/components/BackdropAmbientEffect';
+import {
+  RoyalBotanicalEnvelope,
+  type RoyalBotanicalHouseholdContext,
+} from '@/features/design/components/royal-botanical/RoyalBotanicalEnvelope';
+import { RoyalBotanicalInvitationView } from '@/features/design/components/royal-botanical/RoyalBotanicalInvitationView';
 import { OurStoryGalleryView } from '@/features/design/components/sections/OurStoryGalleryView';
 import { renderRegisteredSection } from '@/features/design/registry/sectionRegistry';
 import {
@@ -10,6 +15,7 @@ import {
   type InvitationDocument,
   parseInvitationDocument,
 } from '@/features/design/schemas/designSchemas';
+import { formatInvitationEventDate } from '@/features/design/themes/dateFormatting';
 import {
   buildCustomFontFamilyName,
   isVideoAssetUrl,
@@ -30,6 +36,8 @@ export interface InvitationRendererProps {
   readonly document: InvitationDocument | unknown;
   readonly viewportMode?: InvitationViewportMode | undefined;
   readonly backdropMode?: InvitationBackdropMode | undefined;
+  readonly household?: RoyalBotanicalHouseholdContext | undefined;
+  readonly onEnvelopeStateChange?: ((isOpen: boolean) => void) | undefined;
   readonly onPrimaryRsvpAction?: (() => void) | undefined;
 }
 
@@ -179,14 +187,25 @@ export function InvitationRenderer({
   document: rawDocument,
   viewportMode = 'desktop',
   backdropMode = 'frame',
+  household,
+  onEnvelopeStateChange,
   onPrimaryRsvpAction,
 }: InvitationRendererProps): JSX.Element {
   const [activeView, setActiveView] = useState<'invitation' | 'story'>('invitation');
+  const [envelopeOpen, setEnvelopeOpen] = useState<boolean>(() => backdropMode !== 'page');
 
   const validation = parseInvitationDocument(rawDocument);
   const resolvedTheme = validation.ok ? resolveInvitationTheme(validation.data.theme) : null;
+  const isRoyalBotanical = validation.ok && validation.data.theme.presetId === 'royal_botanical';
 
   useCustomInvitationFonts(resolvedTheme?.customFonts ?? []);
+
+  useEffect(() => {
+    if (!isRoyalBotanical) {
+      return;
+    }
+    onEnvelopeStateChange?.(envelopeOpen);
+  }, [envelopeOpen, isRoyalBotanical, onEnvelopeStateChange]);
 
   if (!validation.ok || !resolvedTheme) {
     return (
@@ -298,6 +317,28 @@ export function InvitationRenderer({
     fontFamily: 'var(--inv-font-body)',
   };
 
+  const heroSection = doc.sections.find((s) => s.sectionType === 'hero');
+  const footerDate = formatInvitationEventDate(doc.wedding.eventDate).toUpperCase();
+  const footerVenue = [doc.wedding.venueName.trim(), doc.wedding.venueLocation.trim()]
+    .filter(Boolean)
+    .join(', ')
+    .toUpperCase();
+
+  const handleOpenEnvelope = () => {
+    setEnvelopeOpen(true);
+    if (isPageBackdrop && typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleReplayEnvelope = () => {
+    setActiveView('invitation');
+    setEnvelopeOpen(false);
+    if (isPageBackdrop && typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const articleNode = (
     <article
       data-testid="invitation-renderer"
@@ -311,12 +352,27 @@ export function InvitationRenderer({
       data-card-texture={resolvedTheme.cardTexture}
       data-card-opacity={resolvedTheme.cardOpacity}
       aria-label={`${doc.wedding.title} invitation`}
-      className={`relative z-10 overflow-hidden rounded-xl border ${
-        hasOuterBackdrop ? 'shadow-lg' : 'shadow-sm'
-      }`}
+      className={
+        isRoyalBotanical && isPageBackdrop
+          ? 'relative z-10 w-full overflow-hidden'
+          : `relative z-10 overflow-hidden rounded-xl border ${
+              hasOuterBackdrop ? 'shadow-lg' : 'shadow-sm'
+            }`
+      }
       style={articleStyle}
     >
-      {activeView === 'story' && storySection && storySection.sectionType === 'our_story' ? (
+      {isRoyalBotanical && !envelopeOpen ? (
+        <RoyalBotanicalEnvelope
+          wedding={doc.wedding}
+          eyebrow={heroSection?.sectionType === 'hero' ? heroSection.content.eyebrow : undefined}
+          displayDateLabel={
+            heroSection?.sectionType === 'hero' ? heroSection.content.displayDateLabel : undefined
+          }
+          household={household}
+          isFullPage={isPageBackdrop}
+          onOpened={handleOpenEnvelope}
+        />
+      ) : activeView === 'story' && storySection && storySection.sectionType === 'our_story' ? (
         <div
           style={{
             backgroundColor: 'var(--inv-canvas)',
@@ -345,6 +401,17 @@ export function InvitationRenderer({
             onBack={handleBackToInvitation}
           />
         </div>
+      ) : isRoyalBotanical ? (
+        <RoyalBotanicalInvitationView
+          document={doc}
+          resolvedTheme={resolvedTheme}
+          visibleSections={visibleSections}
+          household={household}
+          isMobileFrame={isMobileFrame}
+          onShowEnvelope={handleReplayEnvelope}
+          onPrimaryRsvpAction={onPrimaryRsvpAction}
+          onOpenFullStory={handleOpenFullStory}
+        />
       ) : (
         <>
           {visibleSections.map((section, idx) => {
@@ -404,14 +471,24 @@ export function InvitationRenderer({
           })}
 
           <footer
-            className="border-t px-6 py-6 text-center text-xs"
+            className="border-t px-6 py-8 text-center"
             style={{
               backgroundColor: 'var(--inv-canvas)',
               borderColor: 'var(--inv-border)',
               color: 'var(--inv-ink-muted)',
             }}
           >
-            {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
+            <p
+              className="text-xl italic"
+              style={{ fontFamily: 'var(--inv-font-heading)', color: 'var(--inv-ink)' }}
+            >
+              {doc.wedding.partnerOneName} &amp; {doc.wedding.partnerTwoName}
+            </p>
+            {footerDate || footerVenue ? (
+              <p className="mt-1.5 text-[10px] font-medium tracking-[0.22em] uppercase opacity-80">
+                {[footerDate, footerVenue].filter(Boolean).join(' • ')}
+              </p>
+            ) : null}
           </footer>
         </>
       )}

@@ -1103,6 +1103,7 @@ export type Database = {
         | "garden_sage"
         | "celestial_midnight"
         | "terracotta_atelier"
+        | "royal_botanical"
       workspace_role: "owner" | "admin" | "editor" | "viewer"
     }
     CompositeTypes: {
@@ -1256,6 +1257,7 @@ export const Constants = {
         "garden_sage",
         "celestial_midnight",
         "terracotta_atelier",
+        "royal_botanical",
       ],
       workspace_role: ["owner", "admin", "editor", "viewer"],
     },

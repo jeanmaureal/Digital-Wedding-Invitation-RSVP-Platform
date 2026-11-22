@@ -156,4 +156,52 @@ describe('PublicInvitationShellPage — /i/:token Verification & Zero-Echo Isola
     expect(container.innerHTML).not.toContain(malformed);
     expect(rpcMock).not.toHaveBeenCalled();
   });
+
+  it('hides the raw platform header (env badge, Organizer Sign In) and generic footer on /i/:token and renders the Royal Botanical envelope cleanly', async () => {
+    const validToken = 'RoyalBotanicalHouseholdToken256BitBase64_12345';
+    const snapshot = createStarterInvitationDocument({
+      presetId: 'royal_botanical',
+      dressCode: 'Dress in Comfort & Joy',
+      wedding: {
+        title: 'Sherwin & Jelly',
+        partnerOneName: 'Sherwin',
+        partnerTwoName: 'Jelly',
+        slug: 'sherwin-jelly-2027',
+        eventDate: '2027-01-25',
+        venueName: "La Terrazzas by Loiza's",
+        venueLocation: 'Malaybalay City, Bukidnon',
+        timezone: 'Asia/Manila',
+        rsvpDeadline: '2026-12-20T15:59:00.000Z',
+        isRsvpOpen: true,
+      },
+    });
+
+    renderPublicInvitationRoute(`/i/${validToken}`, {
+      status: 'active',
+      versionNumber: 1,
+      publishedAt: '2026-11-22T14:00:00.000Z',
+      snapshot,
+      household: {
+        displayName: 'The Reyes Family',
+        maxAttendees: 2,
+        expiresAt: null,
+        guests: [
+          {
+            id: '11111111-2222-4333-8444-555555555551',
+            firstName: 'Ana',
+            lastName: 'Reyes',
+            isChild: false,
+            dietaryNotes: '',
+          },
+        ],
+      },
+    });
+
+    expect(await screen.findByTestId('royal-botanical-envelope-stage')).toBeInTheDocument();
+    expect(screen.queryByTestId('env-badge')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Organizer Sign In/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Digital Wedding Invitation & RSVP Platform/i),
+    ).not.toBeInTheDocument();
+  });
 });

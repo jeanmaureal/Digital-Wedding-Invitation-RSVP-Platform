@@ -20,6 +20,7 @@ export const WEDDING_THEME_PRESET_VALUES = [
   'garden_sage',
   'celestial_midnight',
   'terracotta_atelier',
+  'royal_botanical',
 ] as const;
 
 export type WeddingThemePresetId = (typeof WEDDING_THEME_PRESET_VALUES)[number];
@@ -304,7 +305,7 @@ export const themeTokenOverridesSchema = z.strictObject({
   cornerStyle: z.enum(['sharp', 'soft', 'arch']).optional(),
   sectionSpacing: z.enum(['compact', 'comfortable', 'airy']).optional(),
   ornamentStyle: z
-    .enum(['minimal_line', 'botanical_flourish', 'monogram_crest', 'none'])
+    .enum(['minimal_line', 'botanical_flourish', 'monogram_crest', 'pearl_trio', 'none'])
     .optional(),
 });
 

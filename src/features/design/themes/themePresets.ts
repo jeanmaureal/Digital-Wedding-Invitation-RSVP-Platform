@@ -232,6 +232,26 @@ export const WEDDING_THEME_PRESETS: Readonly<Record<WeddingThemePresetId, ThemeP
       defaultSectionSpacing: 'comfortable',
       defaultOrnamentStyle: 'minimal_line',
     },
+    royal_botanical: {
+      id: 'royal_botanical',
+      name: 'Royal Botanical Envelope',
+      tagline:
+        'Interactive olive wax-seal envelope, luminous pearls, butter-yellow tulips, and heirloom ivory stationery.',
+      isDarkSurface: false,
+      canvasBg: '#F4EFE2',
+      surfaceBg: '#FBF9F2',
+      surfaceMutedBg: '#EFEAD9',
+      inkPrimary: '#2F3A26',
+      inkMuted: '#69705E',
+      accentHex: '#3E4C30',
+      accentContrastHex: '#FBF9F2',
+      borderColor: '#DDD3B5',
+      defaultHeadingFontPair: 'classic_serif',
+      defaultBodyFontPair: 'humanist_sans',
+      defaultCornerStyle: 'soft',
+      defaultSectionSpacing: 'comfortable',
+      defaultOrnamentStyle: 'pearl_trio',
+    },
   };
 
 export const WEDDING_THEME_PRESET_LIST: readonly ThemePresetDefinition[] = [
@@ -239,6 +259,7 @@ export const WEDDING_THEME_PRESET_LIST: readonly ThemePresetDefinition[] = [
   WEDDING_THEME_PRESETS.garden_sage,
   WEDDING_THEME_PRESETS.celestial_midnight,
   WEDDING_THEME_PRESETS.terracotta_atelier,
+  WEDDING_THEME_PRESETS.royal_botanical,
 ];
 
 export interface ResolvedInvitationTheme {
