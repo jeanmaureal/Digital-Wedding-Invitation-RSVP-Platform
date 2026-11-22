@@ -410,11 +410,19 @@ export const venueTravelSectionContentSchema = z.strictObject({
 });
 export type VenueTravelSectionContent = z.output<typeof venueTravelSectionContentSchema>;
 
+export const dressCodeSwatchItemSchema = z.strictObject({
+  hex: hexColorSchema,
+  label: safeOptionalLineString(40, 'Swatch label').optional(),
+  subLabel: safeOptionalLineString(40, 'Motif tone sub-label').optional(),
+});
+export type DressCodeSwatchItem = z.output<typeof dressCodeSwatchItemSchema>;
+
 export const dressCodeSectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Dress code heading'),
   dressCodeTitle: safeLineString(1, 80, 'Dress code title'),
   guidance: safeMultilineString(0, 500, 'Dress code guidance'),
   swatchHexes: z.array(hexColorSchema).max(5),
+  swatches: z.array(dressCodeSwatchItemSchema).max(5).optional(),
   style: sectionStyleOverridesSchema.optional(),
 });
 export type DressCodeSectionContent = z.output<typeof dressCodeSectionContentSchema>;

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InvitationRenderer } from '@/features/design/components/InvitationRenderer';
+import { formatInvitationEventDate } from '@/features/design/themes/dateFormatting';
 import { fetchPublicInvitationByToken } from '@/features/guests/api/publicInvitationApi';
 import { guestQueryKeys } from '@/features/guests/queryKeys';
 import {
@@ -13,6 +14,7 @@ import {
   type PublicInvitationLookupResult,
 } from '@/features/guests/schemas/publicInvitationSchemas';
 import { HouseholdRsvpFormCard } from '@/features/rsvp/components/public/HouseholdRsvpFormCard';
+import { RoyalBotanicalRsvpDialog } from '@/features/rsvp/components/public/RoyalBotanicalRsvpDialog';
 import { ROUTES } from '@/lib/constants/routes';
 import { getPublicSupabaseClient, type TypedSupabaseClient } from '@/lib/supabase/publicClient';
 
@@ -31,7 +33,7 @@ export function PublicInvitationShellPage({
   const hasPublicClient = resolvedClient !== null;
 
   const [showRsvpNotice, setShowRsvpNotice] = useState(false);
-  const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
+  const [isRsvpDialogOpen, setIsRsvpDialogOpen] = useState(false);
 
   const invitationQuery = useQuery<PublicInvitationLookupResult>({
     queryKey: guestQueryKeys.publicByToken(token ?? ''),
@@ -175,53 +177,21 @@ export function PublicInvitationShellPage({
               displayName: household.displayName,
               maxAttendees: household.maxAttendees,
             }}
-            onEnvelopeStateChange={setIsEnvelopeOpen}
-            onPrimaryRsvpAction={handleScrollToHouseholdRsvp}
+            onPrimaryRsvpAction={() => setIsRsvpDialogOpen(true)}
           />
 
-          {isEnvelopeOpen ? (
-            <div className="relative z-10 w-full bg-[#F5F0E3] px-4 pt-2 pb-14 sm:px-8">
-              <div className="mx-auto max-w-3xl space-y-4">
-                {showRsvpNotice ? (
-                  <div
-                    role="status"
-                    data-testid="public-invitation-rsvp-status-banner"
-                    className="flex flex-col justify-between gap-2 rounded-2xl border border-[#DFC97B] bg-[#FAF2CE] p-4 text-[#2F3A26] sm:flex-row sm:items-center"
-                  >
-                    <div className="space-y-0.5 text-xs">
-                      <p className="font-semibold">
-                        {rsvp.isAcceptingResponses
-                          ? `Household RSVP Verified (${household.displayName} — up to ${household.maxAttendees} ${household.maxAttendees === 1 ? 'attendee' : 'attendees'})`
-                          : 'Online RSVPs Are Currently Closed'}
-                      </p>
-                      <p className="text-[#5C6650]">
-                        {rsvp.isAcceptingResponses
-                          ? 'Complete and submit your household attendance form directly below.'
-                          : 'Please reach out to the couple directly if you need to update your attendance details.'}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowRsvpNotice(false)}
-                    >
-                      Dismiss
-                    </Button>
-                  </div>
-                ) : null}
-
-                <HouseholdRsvpFormCard
-                  key={`rsvp-form:${versionNumber}:${household.displayName}`}
-                  rawToken={token}
-                  weddingTitle={invitationDoc.wedding.title}
-                  household={household}
-                  rsvp={rsvp}
-                  client={resolvedClient}
-                />
-              </div>
-            </div>
-          ) : null}
+          <RoyalBotanicalRsvpDialog
+            key={`rb-rsvp-dialog:${versionNumber}:${household.displayName}`}
+            isOpen={isRsvpDialogOpen}
+            onClose={() => setIsRsvpDialogOpen(false)}
+            rawToken={token}
+            partnerOneName={invitationDoc.wedding.partnerOneName}
+            partnerTwoName={invitationDoc.wedding.partnerTwoName}
+            eventDateLabel={formatInvitationEventDate(invitationDoc.wedding.eventDate)}
+            household={household}
+            rsvp={rsvp}
+            client={resolvedClient}
+          />
         </section>
       );
     }

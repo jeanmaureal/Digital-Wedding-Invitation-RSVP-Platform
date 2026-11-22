@@ -203,5 +203,49 @@ describe('PublicInvitationShellPage — /i/:token Verification & Zero-Echo Isola
     expect(
       screen.queryByText(/Digital Wedding Invitation & RSVP Platform/i),
     ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('royal-botanical-rsvp-dialog')).not.toBeInTheDocument();
+
+    // Open envelope (using reduced motion so it opens immediately) and click Respond to Invitation -> opens styled RSVP dialog
+    const originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: vi.fn().mockReturnValue({
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }),
+    });
+
+    try {
+      const user = userEvent.setup();
+      await user.click(screen.getByTestId('royal-botanical-envelope-button'));
+      expect(await screen.findByTestId('royal-botanical-letter-view')).toBeInTheDocument();
+
+      await user.click(screen.getByTestId('invitation-hero-cta'));
+      const dialog = await screen.findByTestId('royal-botanical-rsvp-dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveTextContent('2 SEATS RESERVED');
+      expect(dialog).toHaveTextContent('Respond to Invitation');
+      expect(dialog).toHaveTextContent('Joyfully Accepts');
+      expect(dialog).toHaveTextContent('Regretfully Declines');
+      expect(screen.getByTestId('rb-rsvp-seat-count')).toBeInTheDocument();
+      expect(screen.getByTestId('rb-rsvp-guest-name-0')).toHaveValue('Ana Reyes');
+      expect(screen.getByTestId('rsvp-submit-button')).toHaveTextContent('SEND RESPONSE');
+
+      await user.click(screen.getByTestId('rb-rsvp-dialog-close'));
+      expect(screen.queryByTestId('royal-botanical-rsvp-dialog')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        writable: true,
+        value: originalMatchMedia,
+      });
+    }
   });
 });

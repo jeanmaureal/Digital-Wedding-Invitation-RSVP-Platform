@@ -751,9 +751,26 @@ function RoyalDressCodeCard({
   readonly style: CSSProperties;
 }): JSX.Element {
   const swatches =
-    content.swatchHexes.length > 0
-      ? content.swatchHexes
-      : ['#3E4C30', '#7E8E72', '#DDD6C3', '#EFE094'];
+    content.swatches && content.swatches.length > 0
+      ? content.swatches.map((s) => {
+          const fallback = describeSwatch(s.hex);
+          return {
+            hex: s.hex,
+            name: s.label?.trim() || fallback.name,
+            note: s.subLabel?.trim() || fallback.note,
+          };
+        })
+      : (content.swatchHexes.length > 0
+          ? content.swatchHexes
+          : ['#3E4C30', '#7E8E72', '#DDD6C3', '#EFE094']
+        ).map((hex) => {
+          const fallback = describeSwatch(hex);
+          return {
+            hex,
+            name: fallback.name,
+            note: fallback.note,
+          };
+        });
 
   return (
     <section
@@ -788,39 +805,36 @@ function RoyalDressCodeCard({
         aria-label="Suggested attire color palette"
         className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4"
       >
-        {swatches.map((hex, index) => {
-          const info = describeSwatch(hex);
-          return (
-            <div
-              key={`${hex}-${index}`}
-              className="flex flex-col items-center rounded-2xl border bg-[#F7F3E7] px-4 py-5"
-              style={{ borderColor: '#E8DFC7' }}
+        {swatches.map((swatch, index) => (
+          <div
+            key={`${swatch.hex}-${index}`}
+            className="flex flex-col items-center rounded-2xl border bg-[#F7F3E7] px-4 py-5"
+            style={{ borderColor: '#E8DFC7' }}
+          >
+            <span
+              title={swatch.name}
+              className="inline-block size-14 rounded-full border-2 p-1 shadow-xs"
+              style={{
+                borderColor: '#D5C083',
+                backgroundColor: '#FBF9F2',
+              }}
             >
               <span
-                title={hex}
-                className="inline-block size-14 rounded-full border-2 p-1 shadow-xs"
-                style={{
-                  borderColor: '#D5C083',
-                  backgroundColor: '#FBF9F2',
-                }}
-              >
-                <span
-                  className="block h-full w-full rounded-full"
-                  style={{ backgroundColor: hex }}
-                />
-              </span>
-              <p
-                className="mt-3 text-sm font-medium text-[#2F3A26]"
-                style={{ fontFamily: 'var(--inv-font-heading)' }}
-              >
-                {info.name}
-              </p>
-              <p className="mt-0.5 text-[9px] font-semibold tracking-[0.18em] uppercase text-[#A48D52]">
-                {info.note}
-              </p>
-            </div>
-          );
-        })}
+                className="block h-full w-full rounded-full"
+                style={{ backgroundColor: swatch.hex }}
+              />
+            </span>
+            <p
+              className="mt-3 text-sm font-medium text-[#2F3A26]"
+              style={{ fontFamily: 'var(--inv-font-heading)' }}
+            >
+              {swatch.name}
+            </p>
+            <p className="mt-0.5 text-[9px] font-semibold tracking-[0.18em] uppercase text-[#A48D52]">
+              {swatch.note}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Butter-yellow Pearl CTA Button */}

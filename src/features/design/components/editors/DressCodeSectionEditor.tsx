@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
 import type { JSX } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { FormFieldError } from '@/components/forms/FormFieldError';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   type DressCodeSectionContent,
   dressCodeSectionContentSchema,
-  hexColorSchema,
+  dressCodeSwatchItemSchema,
 } from '@/features/design/schemas/designSchemas';
 
 const dressCodeFormSchema = z
@@ -19,15 +19,21 @@ const dressCodeFormSchema = z
     heading: dressCodeSectionContentSchema.shape.heading,
     dressCodeTitle: dressCodeSectionContentSchema.shape.dressCodeTitle,
     guidance: dressCodeSectionContentSchema.shape.guidance,
-    swatches: z.array(z.strictObject({ hex: hexColorSchema })).max(5),
+    swatches: z.array(dressCodeSwatchItemSchema).max(5),
   })
-  .transform((vals) => ({
-    heading: vals.heading,
-    dressCodeTitle: vals.dressCodeTitle,
-    guidance: vals.guidance,
-    swatchHexes: vals.swatches.map((s) => s.hex),
-  }))
-  .pipe(dressCodeSectionContentSchema);
+  .transform(
+    (vals): DressCodeSectionContent => ({
+      heading: vals.heading,
+      dressCodeTitle: vals.dressCodeTitle,
+      guidance: vals.guidance,
+      swatchHexes: vals.swatches.map((s) => s.hex),
+      swatches: vals.swatches.map((s) => ({
+        hex: s.hex,
+        ...(s.label?.trim() ? { label: s.label.trim() } : {}),
+        ...(s.subLabel?.trim() ? { subLabel: s.subLabel.trim() } : {}),
+      })),
+    }),
+  );
 
 type DressCodeFormInput = z.input<typeof dressCodeFormSchema>;
 
@@ -38,16 +44,32 @@ export interface DressCodeSectionEditorProps {
   readonly onValidationIssue: (message: string | null) => void;
 }
 
+const VALID_HEX_REGEX = /^#[0-9A-Fa-f]{6}$/;
+
 export function DressCodeSectionEditor({
   content,
   canEdit,
   onValidChange,
   onValidationIssue,
 }: DressCodeSectionEditorProps): JSX.Element {
+  const initialSwatches =
+    content.swatches && content.swatches.length > 0
+      ? content.swatches.map((s) => ({
+          hex: s.hex,
+          label: s.label ?? '',
+          subLabel: s.subLabel ?? '',
+        }))
+      : content.swatchHexes.map((hex) => ({
+          hex,
+          label: '',
+          subLabel: '',
+        }));
+
   const {
     register,
     control,
     getValues,
+    setValue,
     trigger,
     formState: { errors },
   } = useForm<DressCodeFormInput, unknown, DressCodeSectionContent>({
@@ -57,7 +79,7 @@ export function DressCodeSectionEditor({
       heading: content.heading,
       dressCodeTitle: content.dressCodeTitle,
       guidance: content.guidance,
-      swatches: content.swatchHexes.map((hex) => ({ hex })),
+      swatches: initialSwatches,
     },
   });
 
@@ -66,13 +88,18 @@ export function DressCodeSectionEditor({
     name: 'swatches',
   });
 
+  const watchedSwatches = useWatch({ control, name: 'swatches' });
+
   const emitCurrentDraft = () => {
     if (!canEdit) {
       return;
     }
     const parsed = dressCodeFormSchema.safeParse(getValues());
     if (parsed.success) {
-      onValidChange(parsed.data);
+      onValidChange({
+        ...parsed.data,
+        ...(content.style ? { style: content.style } : {}),
+      });
     } else {
       onValidationIssue(
         parsed.error.issues[0]?.message ?? 'Please fix validation errors in Attire & Palette.',
@@ -130,7 +157,7 @@ export function DressCodeSectionEditor({
           <div>
             <p className="text-sm font-medium">Suggested color swatches ({fields.length}/5)</p>
             <p className="text-muted-foreground text-xs">
-              Enter 6-digit hex color codes (e.g. #C8B6A6).
+              Pick a hex color and add an optional label name &amp; motif tone sub-label.
             </p>
           </div>
           <Button
@@ -140,7 +167,7 @@ export function DressCodeSectionEditor({
             disabled={!canEdit || fields.length >= 5}
             data-testid="dress-add-swatch-button"
             onClick={() => {
-              append({ hex: '#D4C5B9' });
+              append({ hex: '#D4C5B9', label: '', subLabel: '' });
               void trigger('swatches');
               emitCurrentDraft();
             }}
@@ -152,12 +179,17 @@ export function DressCodeSectionEditor({
 
         <div className="grid gap-3 sm:grid-cols-2">
           {fields.map((field, index) => {
-            const swatchError = errors.swatches?.[index]?.hex?.message;
+            const hexError = errors.swatches?.[index]?.hex?.message;
+            const labelError = errors.swatches?.[index]?.label?.message;
+            const subLabelError = errors.swatches?.[index]?.subLabel?.message;
+            const currentHex = watchedSwatches?.[index]?.hex ?? '#D4C5B9';
+            const pickerHex = VALID_HEX_REGEX.test(currentHex) ? currentHex : '#D4C5B9';
+
             return (
               <div
                 key={field.id}
                 data-testid={`dress-swatch-item-${index}`}
-                className="bg-muted/20 space-y-1.5 rounded-lg border p-3"
+                className="bg-muted/20 space-y-2.5 rounded-lg border p-3"
               >
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor={`dress-swatch-hex-${index}`}>Swatch {index + 1}</Label>
@@ -178,15 +210,71 @@ export function DressCodeSectionEditor({
                     <Trash2 className="size-3.5" aria-hidden="true" />
                   </Button>
                 </div>
-                <Input
-                  id={`dress-swatch-hex-${index}`}
-                  placeholder="#C8B6A6"
-                  disabled={!canEdit}
-                  data-testid={`dress-swatch-hex-${index}`}
-                  aria-invalid={Boolean(swatchError)}
-                  {...register(`swatches.${index}.hex`)}
-                />
-                <FormFieldError message={swatchError} />
+
+                {/* Color picker + Hex input */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label={`Swatch ${index + 1} color picker`}
+                    disabled={!canEdit}
+                    value={pickerHex}
+                    onChange={(event) => {
+                      setValue(`swatches.${index}.hex`, event.target.value.toUpperCase(), {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      emitCurrentDraft();
+                    }}
+                    className="h-9 w-10 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5 disabled:cursor-not-allowed"
+                  />
+                  <Input
+                    id={`dress-swatch-hex-${index}`}
+                    placeholder="#3E4C30"
+                    disabled={!canEdit}
+                    data-testid={`dress-swatch-hex-${index}`}
+                    aria-invalid={Boolean(hexError)}
+                    {...register(`swatches.${index}.hex`)}
+                  />
+                </div>
+                <FormFieldError message={hexError} />
+
+                {/* Swatch label name */}
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`dress-swatch-label-${index}`}
+                    className="text-muted-foreground text-xs"
+                  >
+                    Color name
+                  </Label>
+                  <Input
+                    id={`dress-swatch-label-${index}`}
+                    placeholder="e.g., Olive Green"
+                    disabled={!canEdit}
+                    data-testid={`dress-swatch-label-${index}`}
+                    aria-invalid={Boolean(labelError)}
+                    {...register(`swatches.${index}.label`)}
+                  />
+                  <FormFieldError message={labelError} />
+                </div>
+
+                {/* Swatch motif tone sub-label */}
+                <div className="space-y-1">
+                  <Label
+                    htmlFor={`dress-swatch-sublabel-${index}`}
+                    className="text-muted-foreground text-xs"
+                  >
+                    Motif tone sub-label
+                  </Label>
+                  <Input
+                    id={`dress-swatch-sublabel-${index}`}
+                    placeholder="e.g., Rich Botanical"
+                    disabled={!canEdit}
+                    data-testid={`dress-swatch-sublabel-${index}`}
+                    aria-invalid={Boolean(subLabelError)}
+                    {...register(`swatches.${index}.subLabel`)}
+                  />
+                  <FormFieldError message={subLabelError} />
+                </div>
               </div>
             );
           })}
