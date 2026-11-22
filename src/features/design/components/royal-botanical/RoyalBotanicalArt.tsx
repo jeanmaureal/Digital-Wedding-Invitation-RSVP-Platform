@@ -229,20 +229,20 @@ export function EnvelopePearlCharm({ className = '' }: { readonly className?: st
 
       {/* Ribbon bow */}
       <path
-        d="M32 18 C 22 8, 8 10, 10 20 C 12 28, 24 26, 32 20 Z"
-        fill="#39472B"
-        stroke="#27321D"
-        strokeWidth="1"
+        d="M32 18 C 21 7, 6 9, 9 20 C 11 28, 24 26, 32 20 Z"
+        fill="#4E603B"
+        stroke="#222C18"
+        strokeWidth="1.15"
       />
       <path
-        d="M32 18 C 42 8, 56 10, 54 20 C 52 28, 40 26, 32 20 Z"
-        fill="#39472B"
-        stroke="#27321D"
-        strokeWidth="1"
+        d="M32 18 C 43 7, 58 9, 55 20 C 53 28, 40 26, 32 20 Z"
+        fill="#4E603B"
+        stroke="#222C18"
+        strokeWidth="1.15"
       />
-      <path d="M30 22 L 22 38 L 28 36 L 32 24 Z" fill="#2E3A23" />
-      <path d="M34 22 L 42 38 L 36 36 L 32 24 Z" fill="#2E3A23" />
-      <rect x="28" y="15" width="8" height="8" rx="3" fill="#465636" stroke="#C5AC62" strokeWidth="0.9" />
+      <path d="M30 22 L 21 39 L 27.5 36.5 L 32 24 Z" fill="#3D4D2E" stroke="#222C18" strokeWidth="0.7" />
+      <path d="M34 22 L 43 39 L 36.5 36.5 L 32 24 Z" fill="#3D4D2E" stroke="#222C18" strokeWidth="0.7" />
+      <rect x="27.5" y="14.5" width="9" height="9" rx="3.2" fill="#596C44" stroke="#D5BC72" strokeWidth="1" />
 
       {/* Vertical gold thread */}
       <line x1="32" y1="24" x2="32" y2="112" stroke="#D5BC72" strokeWidth="1" />
@@ -312,28 +312,28 @@ export function WaxSealMonogram({
         </div>
       </div>
 
-      {/* Tiny olive ribbon bow tucked below the seal */}
+      {/* Olive ribbon bow peeking cleanly beneath the wax seal */}
       <svg
         aria-hidden="true"
-        viewBox="0 0 54 24"
+        viewBox="0 0 68 32"
         fill="none"
-        className="-mt-2.5 h-6 w-12 drop-shadow-sm"
+        className="-mt-1.5 h-8 w-16 drop-shadow-[0_3px_5px_rgba(16,22,10,0.45)]"
       >
         <path
-          d="M27 7 C 19 1, 7 3, 9 11 C 11 16, 20 14, 27 10 Z"
-          fill="#3A492C"
-          stroke="#25301B"
-          strokeWidth="0.9"
+          d="M34 11 C 23 2, 7 4, 9 15 C 11 22, 24 19, 34 14 Z"
+          fill="#4F613C"
+          stroke="#232E19"
+          strokeWidth="1.15"
         />
         <path
-          d="M27 7 C 35 1, 47 3, 45 11 C 43 16, 34 14, 27 10 Z"
-          fill="#3A492C"
-          stroke="#25301B"
-          strokeWidth="0.9"
+          d="M34 11 C 45 2, 61 4, 59 15 C 57 22, 44 19, 34 14 Z"
+          fill="#4F613C"
+          stroke="#232E19"
+          strokeWidth="1.15"
         />
-        <path d="M25 10 L 18 22 L 23 20 L 27 12 Z" fill="#2D3922" />
-        <path d="M29 10 L 36 22 L 31 20 L 27 12 Z" fill="#2D3922" />
-        <circle cx="27" cy="9" r="3" fill="#4B5C3A" />
+        <path d="M31 14 L 21 30 L 27.5 27.5 L 33.5 16 Z" fill="#3D4C2D" stroke="#232E19" strokeWidth="0.8" />
+        <path d="M37 14 L 47 30 L 40.5 27.5 L 34.5 16 Z" fill="#3D4C2D" stroke="#232E19" strokeWidth="0.8" />
+        <rect x="30.5" y="9" width="7" height="7" rx="2.5" fill="#5D7148" stroke="#D5BC72" strokeWidth="0.9" />
       </svg>
     </div>
   );

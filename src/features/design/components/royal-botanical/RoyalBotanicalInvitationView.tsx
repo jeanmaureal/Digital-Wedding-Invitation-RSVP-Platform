@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, ExternalLink, Mail, MapPin } from 'lucide-react';
+import { ArrowRight, Clock, ExternalLink, Images, Mail, MapPin } from 'lucide-react';
 import { type CSSProperties, type JSX, useEffect, useState } from 'react';
 import {
   CornerTulipBranch,
@@ -425,11 +425,111 @@ function RoyalOurStoryCard({
   const totalPhotos = allPhotos.length;
   const showMoreButton =
     Boolean(onOpenFullStory) && (totalPhotos > 0 || visibleMilestones.length > 0);
+  const photoAlignment = content.featuredPhotoAlignment ?? 'left';
+
+  const chaptersGridNode = (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {visibleMilestones.length > 0 ? (
+        visibleMilestones.map((milestone, index) => {
+          const label = milestone.periodLabel.trim();
+          const formattedDate = formatMilestoneDate(milestone.dateLabel);
+          const title = milestone.title.trim();
+          const description = milestone.description.trim();
+
+          return (
+            <div
+              key={`${label || title || 'chapter'}-${index}`}
+              data-testid={`invitation-story-milestone-${index}`}
+              className="rounded-2xl border bg-[#F8F5EB] p-5 text-left"
+              style={{ borderColor: '#EAE1C8' }}
+            >
+              <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#B5974B]">
+                {[label || `Chapter ${index + 1}`, formattedDate].filter(Boolean).join(' · ')}
+              </p>
+              {title ? (
+                <h3
+                  data-testid={`invitation-story-milestone-title-${index}`}
+                  className="mt-1.5 text-lg font-medium text-[#2F3A26]"
+                  style={{ fontFamily: 'var(--inv-font-heading)' }}
+                >
+                  <RichMarkdownText text={title} />
+                </h3>
+              ) : null}
+              {description ? (
+                <div
+                  data-testid={`invitation-story-milestone-desc-${index}`}
+                  className="mt-1.5 text-xs leading-relaxed text-[#69705E]"
+                >
+                  <RichMarkdownText text={description} multiline className="space-y-2" />
+                </div>
+              ) : null}
+            </div>
+          );
+        })
+      ) : (
+        <div className="col-span-full rounded-2xl border border-[#EAE1C8] bg-[#F8F5EB] p-6 text-sm leading-relaxed text-[#69705E]">
+          <RichMarkdownText text={content.narrative} multiline />
+        </div>
+      )}
+    </div>
+  );
+
+  const ovalPortraitNode = (
+    <div className="flex flex-col items-center justify-center gap-5">
+      <div
+        className="relative flex h-60 w-48 items-center justify-center overflow-hidden rounded-[999px] border-2 bg-[#F7F2E2] p-2 shadow-inner"
+        style={{
+          borderColor: '#C9B06B',
+          boxShadow: 'inset 0 0 0 4px #FBF9F2, 0 10px 24px -12px rgba(47,58,38,0.2)',
+        }}
+      >
+        {featuredPhoto ? (
+          <img
+            data-testid="our-story-featured-image"
+            src={featuredPhoto.url}
+            alt={featuredPhoto.alt || content.heading || 'Couple portrait'}
+            loading="lazy"
+            className="h-full w-full rounded-[999px] object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center rounded-[999px] border border-[#E5DBC0] px-4 text-center">
+            <PearlTrio className="mb-3" />
+            <p
+              className="text-xl italic text-[#B5974B]"
+              style={{
+                fontFamily:
+                  "'Snell Roundhand', 'Brush Script MT', 'Segoe Script', Garamond, Georgia, serif",
+              }}
+            >
+              Forever Begins
+            </p>
+            <p className="mt-1 text-[10px] tracking-[0.22em] uppercase text-[#76806B]">
+              {wedding.partnerOneName} &amp; {wedding.partnerTwoName}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {showMoreButton ? (
+        <button
+          type="button"
+          data-testid="our-story-more-button"
+          onClick={onOpenFullStory}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#D8C58E] bg-[#FBF9F2] px-5 py-2 text-[10px] font-semibold tracking-[0.2em] uppercase text-[#4B583D] transition-colors hover:bg-[#F3ECD6]"
+        >
+          <span>
+            {totalPhotos > 1 ? `View Galleries (${totalPhotos})` : 'View Full Story'}
+          </span>
+        </button>
+      ) : null}
+    </div>
+  );
 
   return (
     <section
       id="rb-section-our_story"
       data-testid="invitation-section-our_story"
+      data-photo-alignment={photoAlignment}
       className="mx-auto w-full max-w-4xl space-y-6"
       style={style}
     >
@@ -456,108 +556,81 @@ function RoyalOurStoryCard({
         ) : null}
       </div>
 
-      <div
-        className="grid items-center gap-8 rounded-[26px] border bg-[#FBF9F2] p-6 shadow-[0_14px_38px_-18px_rgba(47,58,38,0.14)] sm:p-10 md:grid-cols-[240px_1fr]"
-        style={{ borderColor: '#E5DBC0' }}
-      >
-        {/* Left Oval Portrait Frame */}
-        <div className="flex flex-col items-center justify-center gap-5">
-          <div
-            className="relative flex h-60 w-48 items-center justify-center overflow-hidden rounded-[999px] border-2 bg-[#F7F2E2] p-2 shadow-inner"
-            style={{
-              borderColor: '#C9B06B',
-              boxShadow: 'inset 0 0 0 4px #FBF9F2, 0 10px 24px -12px rgba(47,58,38,0.2)',
-            }}
-          >
-            {featuredPhoto ? (
+      {photoAlignment === 'center' ? (
+        <div
+          className="space-y-7 rounded-[26px] border bg-[#FBF9F2] p-6 shadow-[0_14px_38px_-18px_rgba(47,58,38,0.14)] sm:p-10"
+          style={{ borderColor: '#E5DBC0' }}
+        >
+          {featuredPhoto ? (
+            <figure
+              data-testid="our-story-featured-image"
+              className="relative mx-auto max-w-2xl overflow-hidden rounded-2xl border-2 bg-[#F7F2E2] p-1.5 shadow-sm"
+              style={{ borderColor: '#D5BF7D' }}
+            >
               <img
-                data-testid="our-story-featured-image"
                 src={featuredPhoto.url}
                 alt={featuredPhoto.alt || content.heading || 'Couple portrait'}
                 loading="lazy"
-                className="h-full w-full rounded-[999px] object-cover"
+                className="aspect-[16/10] w-full rounded-xl object-cover"
               />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center rounded-[999px] border border-[#E5DBC0] px-4 text-center">
-                <PearlTrio className="mb-3" />
-                <p
-                  className="text-xl italic text-[#B5974B]"
-                  style={{
-                    fontFamily:
-                      "'Snell Roundhand', 'Brush Script MT', 'Segoe Script', Garamond, Georgia, serif",
-                  }}
+              {totalPhotos > 1 ? (
+                <button
+                  type="button"
+                  onClick={onOpenFullStory}
+                  className="absolute right-4 bottom-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#232C1C]/75 px-3.5 py-1.5 text-xs font-medium text-[#FBF9F2] backdrop-blur-xs transition-opacity hover:opacity-90"
                 >
-                  Forever Begins
-                </p>
-                <p className="mt-1 text-[10px] tracking-[0.22em] uppercase text-[#76806B]">
-                  {wedding.partnerOneName} &amp; {wedding.partnerTwoName}
-                </p>
-              </div>
-            )}
-          </div>
+                  <Images className="size-3.5" aria-hidden="true" />
+                  <span>{totalPhotos} photos</span>
+                </button>
+              ) : null}
+            </figure>
+          ) : null}
+
+          {content.narrative && content.leadQuote ? (
+            <RichMarkdownText
+              text={content.narrative}
+              multiline
+              className="mx-auto max-w-2xl space-y-2.5 text-center text-sm leading-relaxed text-[#69705E]"
+            />
+          ) : null}
+
+          {chaptersGridNode}
 
           {showMoreButton ? (
-            <button
-              type="button"
-              data-testid="our-story-more-button"
-              onClick={onOpenFullStory}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#D8C58E] bg-[#FBF9F2] px-5 py-2 text-[10px] font-semibold tracking-[0.2em] uppercase text-[#4B583D] transition-colors hover:bg-[#F3ECD6]"
-            >
-              <span>
-                {totalPhotos > 1
-                  ? `View Galleries (${totalPhotos})`
-                  : 'View Full Story'}
-              </span>
-            </button>
+            <div className="pt-1 text-center">
+              <button
+                type="button"
+                data-testid="our-story-more-button"
+                onClick={onOpenFullStory}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#D8C58E] bg-[#FBF9F2] px-6 py-2.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-[#4B583D] transition-colors hover:bg-[#F3ECD6]"
+              >
+                <span>
+                  {totalPhotos > 1 ? `View Galleries (${totalPhotos})` : 'View Full Story'}
+                </span>
+              </button>
+            </div>
           ) : null}
         </div>
-
-        {/* Right 2x2 Chapter Cards */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {visibleMilestones.length > 0 ? (
-            visibleMilestones.map((milestone, index) => {
-              const label = milestone.periodLabel.trim();
-              const formattedDate = formatMilestoneDate(milestone.dateLabel);
-              const title = milestone.title.trim();
-              const description = milestone.description.trim();
-
-              return (
-                <div
-                  key={`${label || title || 'chapter'}-${index}`}
-                  data-testid={`invitation-story-milestone-${index}`}
-                  className="rounded-2xl border bg-[#F8F5EB] p-5 text-left"
-                  style={{ borderColor: '#EAE1C8' }}
-                >
-                  <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#B5974B]">
-                    {[label || `Chapter ${index + 1}`, formattedDate].filter(Boolean).join(' · ')}
-                  </p>
-                  {title ? (
-                    <h3
-                      data-testid={`invitation-story-milestone-title-${index}`}
-                      className="mt-1.5 text-lg font-medium text-[#2F3A26]"
-                      style={{ fontFamily: 'var(--inv-font-heading)' }}
-                    >
-                      <RichMarkdownText text={title} />
-                    </h3>
-                  ) : null}
-                  {description ? (
-                    <div
-                      data-testid={`invitation-story-milestone-desc-${index}`}
-                      className="mt-1.5 text-xs leading-relaxed text-[#69705E]"
-                    >
-                      <RichMarkdownText text={description} multiline className="space-y-2" />
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })
+      ) : (
+        <div
+          className={`grid items-center gap-8 rounded-[26px] border bg-[#FBF9F2] p-6 shadow-[0_14px_38px_-18px_rgba(47,58,38,0.14)] sm:p-10 ${
+            photoAlignment === 'right' ? 'md:grid-cols-[1fr_240px]' : 'md:grid-cols-[240px_1fr]'
+          }`}
+          style={{ borderColor: '#E5DBC0' }}
+        >
+          {photoAlignment === 'right' ? (
+            <>
+              {chaptersGridNode}
+              {ovalPortraitNode}
+            </>
           ) : (
-            <div className="col-span-full rounded-2xl border border-[#EAE1C8] bg-[#F8F5EB] p-6 text-sm leading-relaxed text-[#69705E]">
-              <RichMarkdownText text={content.narrative} multiline />
-            </div>
+            <>
+              {ovalPortraitNode}
+              {chaptersGridNode}
+            </>
           )}
         </div>
-      </div>
+      )}
     </section>
   );
 }

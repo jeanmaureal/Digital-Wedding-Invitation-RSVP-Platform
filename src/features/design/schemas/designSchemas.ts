@@ -365,10 +365,14 @@ export const storyMilestoneSchema = z.strictObject({
 });
 export type StoryMilestone = z.output<typeof storyMilestoneSchema>;
 
+export const storyFeaturedPhotoAlignmentSchema = z.enum(['left', 'center', 'right']);
+export type StoryFeaturedPhotoAlignment = z.output<typeof storyFeaturedPhotoAlignmentSchema>;
+
 export const ourStorySectionContentSchema = z.strictObject({
   heading: safeLineString(1, 80, 'Story heading'),
   leadQuote: safeOptionalLineString(240, 'Lead quote'),
   narrative: safeMultilineString(0, 1500, 'Story narrative'),
+  featuredPhotoAlignment: storyFeaturedPhotoAlignmentSchema.optional(),
   milestones: z.array(storyMilestoneSchema).max(24),
   style: sectionStyleOverridesSchema.optional(),
 });

@@ -264,9 +264,14 @@ export function RoyalBotanicalEnvelope({
 
             {/* Bottom-left Butter-Yellow Tulip Bouquet */}
             <EnvelopeTulipBouquet className="absolute bottom-[6%] left-[5%] w-[24%] drop-shadow-sm" />
+          </div>
 
-            {/* Top-right Olive Ribbon Bow + Pearl/Heart/Star Charm */}
-            <EnvelopePearlCharm className="absolute top-[5%] right-[4%] w-[13%] drop-shadow-sm" />
+          {/* Top-right Olive Ribbon Bow + Pearl/Heart/Star Charm (above closed flap so bow is never obstructed) */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute top-[5%] right-[4%] z-[35] w-[13%] drop-shadow-sm"
+          >
+            <EnvelopePearlCharm className="h-auto w-full" />
           </div>
 
           {/* Top Triangular Flap (3D flip open on click) */}

@@ -71,6 +71,7 @@ export function OurStorySectionEditor({
       heading: content.heading,
       leadQuote: content.leadQuote,
       narrative: content.narrative,
+      featuredPhotoAlignment: content.featuredPhotoAlignment,
       milestones: content.milestones.map((m) => ({
         periodLabel: m.periodLabel,
         dateLabel: m.dateLabel ?? '',
@@ -104,6 +105,9 @@ export function OurStorySectionEditor({
     // Strip empty optional arrays/strings cleanly while preserving valid structure
     const normalized = {
       ...raw,
+      ...(raw.featuredPhotoAlignment
+        ? { featuredPhotoAlignment: raw.featuredPhotoAlignment }
+        : { featuredPhotoAlignment: undefined }),
       milestones: raw.milestones.map((m) => ({
         periodLabel: m.periodLabel ?? '',
         ...(m.dateLabel?.trim() ? { dateLabel: m.dateLabel.trim() } : {}),
@@ -282,6 +286,26 @@ export function OurStorySectionEditor({
           {...register('leadQuote')}
         />
         <FormFieldError message={errors.leadQuote?.message} />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="story-photo-alignment">Featured photo alignment</Label>
+        <NativeSelect
+          id="story-photo-alignment"
+          disabled={!canEdit}
+          data-testid="story-photo-alignment-select"
+          {...register('featuredPhotoAlignment', {
+            setValueAs: (val: string) => (val === '' ? undefined : val),
+          })}
+        >
+          <option value="">Theme default</option>
+          <option value="left">Left (portrait beside chapters)</option>
+          <option value="center">Center (wide feature above chapters)</option>
+          <option value="right">Right (portrait beside chapters)</option>
+        </NativeSelect>
+        <p className="text-muted-foreground text-[11px]">
+          Choose where your featured story photo appears relative to your milestone chapters.
+        </p>
       </div>
 
       <div className="space-y-1.5">
