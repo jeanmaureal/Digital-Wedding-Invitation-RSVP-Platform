@@ -1,4 +1,11 @@
-import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Upload } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  Upload,
+} from 'lucide-react';
 import { type ChangeEvent, type JSX, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,19 +15,25 @@ import { Textarea } from '@/components/ui/textarea';
 import type { ImportedHouseholdPayload } from '@/features/guests/schemas/guestSchemas';
 import {
   generateSampleGuestCsv,
+  normalizeHouseholdNameKey,
   parseGuestImportCsv,
+  partitionImportedHouseholdsByDuplicate,
 } from '@/features/guests/utils/guestCsvParser';
 
 export interface CsvGuestImportCardProps {
   readonly isImporting: boolean;
   readonly serverError: string | null;
+  readonly existingHouseholdNames?: readonly string[];
   readonly onImportHouseholds: (households: readonly ImportedHouseholdPayload[]) => Promise<void>;
   readonly onClose: () => void;
 }
 
+const EMPTY_EXISTING_NAMES: readonly string[] = [];
+
 export function CsvGuestImportCard({
   isImporting,
   serverError,
+  existingHouseholdNames = EMPTY_EXISTING_NAMES,
   onImportHouseholds,
   onClose,
 }: CsvGuestImportCardProps): JSX.Element {
@@ -33,6 +46,13 @@ export function CsvGuestImportCard({
     }
     return parseGuestImportCsv(csvText);
   }, [csvText]);
+
+  const duplicateAnalysis = useMemo(() => {
+    if (!parsedPreview || !parsedPreview.ok) {
+      return null;
+    }
+    return partitionImportedHouseholdsByDuplicate(parsedPreview.households, existingHouseholdNames);
+  }, [parsedPreview, existingHouseholdNames]);
 
   function handleDownloadSampleCsv(): void {
     const sample = generateSampleGuestCsv();
@@ -62,7 +82,12 @@ export function CsvGuestImportCard({
   }
 
   async function handleCommitImport(): Promise<void> {
-    if (!parsedPreview || !parsedPreview.ok) {
+    if (
+      !parsedPreview ||
+      !parsedPreview.ok ||
+      !duplicateAnalysis ||
+      duplicateAnalysis.newHouseholds.length === 0
+    ) {
       return;
     }
     await onImportHouseholds(parsedPreview.households);
@@ -72,6 +97,14 @@ export function CsvGuestImportCard({
     parsedPreview && parsedPreview.ok
       ? parsedPreview.households.reduce((acc, item) => acc + item.guests.length, 0)
       : 0;
+  const hasOnlyDuplicates =
+    duplicateAnalysis !== null &&
+    duplicateAnalysis.duplicateHouseholds.length > 0 &&
+    duplicateAnalysis.newHouseholds.length === 0;
+  const hasSomeDuplicates =
+    duplicateAnalysis !== null &&
+    duplicateAnalysis.duplicateHouseholds.length > 0 &&
+    duplicateAnalysis.newHouseholds.length > 0;
 
   return (
     <Card data-testid="csv-guest-import-card">
@@ -84,8 +117,9 @@ export function CsvGuestImportCard({
             </CardTitle>
             <CardDescription className="leading-relaxed">
               Rows sharing the same <code>household_name</code> group automatically into one
-              household. Imports run inside a single PostgreSQL transaction — any invalid row stops
-              the batch cleanly with zero partial writes.
+              household. Households that already exist in this wedding are detected and skipped
+              automatically. Imports run inside a single PostgreSQL transaction — any invalid row
+              stops the batch cleanly with zero partial writes.
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -191,49 +225,110 @@ export function CsvGuestImportCard({
           </div>
         ) : null}
 
-        {parsedPreview && parsedPreview.ok ? (
+        {parsedPreview && parsedPreview.ok && duplicateAnalysis ? (
           <div
-            data-testid="csv-validation-ready"
-            className="space-y-3 rounded-lg border border-emerald-600/30 bg-emerald-500/5 p-3"
+            data-testid={
+              hasOnlyDuplicates ? 'csv-validation-duplicates-only' : 'csv-validation-ready'
+            }
+            className={
+              hasOnlyDuplicates
+                ? 'space-y-3 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3'
+                : 'space-y-3 rounded-lg border border-emerald-600/30 bg-emerald-500/5 p-3'
+            }
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <CheckCircle2 className="size-4 text-emerald-600" aria-hidden="true" />
-                <span>
-                  Ready to import {parsedPreview.households.length}{' '}
-                  {parsedPreview.households.length === 1 ? 'household' : 'households'} (
-                  {totalPreviewGuests} {totalPreviewGuests === 1 ? 'guest' : 'guests'})
-                </span>
+                {hasOnlyDuplicates ? (
+                  <>
+                    <AlertTriangle className="size-4 shrink-0 text-amber-600" aria-hidden="true" />
+                    <span>
+                      All {duplicateAnalysis.duplicateHouseholds.length}{' '}
+                      {duplicateAnalysis.duplicateHouseholds.length === 1
+                        ? 'household'
+                        : 'households'}{' '}
+                      in this CSV already exist in this wedding (0 new households to import)
+                    </span>
+                  </>
+                ) : hasSomeDuplicates ? (
+                  <>
+                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                    <span>
+                      Ready to import {duplicateAnalysis.newHouseholds.length} new{' '}
+                      {duplicateAnalysis.newHouseholds.length === 1 ? 'household' : 'households'} (
+                      {duplicateAnalysis.newGuestCount}{' '}
+                      {duplicateAnalysis.newGuestCount === 1 ? 'guest' : 'guests'}) — skipping{' '}
+                      {duplicateAnalysis.duplicateHouseholds.length} duplicate{' '}
+                      {duplicateAnalysis.duplicateHouseholds.length === 1
+                        ? 'household'
+                        : 'households'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                    <span>
+                      Ready to import {parsedPreview.households.length}{' '}
+                      {parsedPreview.households.length === 1 ? 'household' : 'households'} (
+                      {totalPreviewGuests} {totalPreviewGuests === 1 ? 'guest' : 'guests'})
+                    </span>
+                  </>
+                )}
               </div>
               <Button
                 type="button"
                 size="sm"
-                disabled={isImporting}
+                disabled={isImporting || hasOnlyDuplicates}
                 onClick={() => void handleCommitImport()}
                 data-testid="csv-commit-import-button"
               >
                 <Upload className="size-4" aria-hidden="true" />
-                {isImporting ? 'Importing…' : 'Import Households Atomically'}
+                {isImporting
+                  ? 'Importing…'
+                  : hasSomeDuplicates
+                    ? `Import ${duplicateAnalysis.newHouseholds.length} New ${duplicateAnalysis.newHouseholds.length === 1 ? 'Household' : 'Households'}`
+                    : 'Import Households Atomically'}
               </Button>
             </div>
 
             <div className="max-h-44 overflow-y-auto rounded border bg-white/60 p-2 text-xs dark:bg-black/20">
               <ul className="space-y-1.5">
-                {parsedPreview.households.map((household) => (
-                  <li
-                    key={household.displayName}
-                    className="flex flex-wrap items-center justify-between gap-2"
-                  >
-                    <span className="font-medium">{household.displayName}</span>
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant="outline">
-                        {household.guests.length}{' '}
-                        {household.guests.length === 1 ? 'member' : 'members'}
-                      </Badge>
-                      <Badge variant="secondary">Cap: {household.maxAttendees}</Badge>
-                    </div>
-                  </li>
-                ))}
+                {parsedPreview.households.map((household) => {
+                  const isDuplicate = duplicateAnalysis.duplicateKeys.has(
+                    normalizeHouseholdNameKey(household.displayName),
+                  );
+                  return (
+                    <li
+                      key={household.displayName}
+                      className="flex flex-wrap items-center justify-between gap-2"
+                    >
+                      <span
+                        className={
+                          isDuplicate
+                            ? 'text-muted-foreground font-medium line-through'
+                            : 'font-medium'
+                        }
+                      >
+                        {household.displayName}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {isDuplicate ? (
+                          <Badge
+                            variant="outline"
+                            data-testid="csv-duplicate-household-badge"
+                            className="border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+                          >
+                            Duplicate · will skip
+                          </Badge>
+                        ) : null}
+                        <Badge variant="outline">
+                          {household.guests.length}{' '}
+                          {household.guests.length === 1 ? 'member' : 'members'}
+                        </Badge>
+                        <Badge variant="secondary">Cap: {household.maxAttendees}</Badge>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>

@@ -41,9 +41,13 @@ const rpcIssuedInvitationEnvelopeSchema = z.object({
 });
 
 const rpcImportSummarySchema = z.object({
-  importedGroupCount: z.number().int().min(1),
-  importedGuestCount: z.number().int().min(1),
+  importedGroupCount: z.number().int().min(0),
+  importedGuestCount: z.number().int().min(0),
+  skippedGroupCount: z.number().int().min(0).default(0),
+  skippedGuestCount: z.number().int().min(0).default(0),
 });
+
+export type ImportWeddingGuestsSummary = z.infer<typeof rpcImportSummarySchema>;
 
 function mapRpcInvitationToRow(parsed: z.infer<typeof rpcSafeInvitationSchema>): SafeInvitationRow {
   return {
@@ -364,7 +368,7 @@ export async function importOrganizerWeddingGuests(params: {
   readonly weddingId: string;
   readonly households: readonly ImportedHouseholdPayload[];
   readonly client?: TypedSupabaseClient | null;
-}): Promise<{ readonly importedGroupCount: number; readonly importedGuestCount: number }> {
+}): Promise<ImportWeddingGuestsSummary> {
   const client = requireClient(params.client);
 
   const payloadJson: Json = params.households.map((household) => ({

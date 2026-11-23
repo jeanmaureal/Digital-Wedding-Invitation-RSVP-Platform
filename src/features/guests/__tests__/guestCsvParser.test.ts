@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   generateSampleGuestCsv,
   parseGuestImportCsv,
+  partitionImportedHouseholdsByDuplicate,
   tokenizeRfc4180Csv,
 } from '@/features/guests/utils/guestCsvParser';
 
@@ -72,5 +73,29 @@ describe('guestCsvParser — RFC-4180 Tokenization & Household Grouping (P6-AC08
     if (!missingHeader.ok) {
       expect(missingHeader.errors[0]?.field).toBe('household_name');
     }
+  });
+
+  it('partitions duplicate households case-insensitively against existing wedding households', () => {
+    const parsed = parseGuestImportCsv(generateSampleGuestCsv());
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    const partial = partitionImportedHouseholdsByDuplicate(parsed.households, [
+      '  the rivera family ',
+    ]);
+    expect(partial.duplicateHouseholds).toHaveLength(1);
+    expect(partial.duplicateHouseholds[0]?.displayName).toBe('The Rivera Family');
+    expect(partial.duplicateGuestCount).toBe(3);
+    expect(partial.newHouseholds).toHaveLength(1);
+    expect(partial.newHouseholds[0]?.displayName).toBe('Jordan & Sam Lee');
+    expect(partial.newGuestCount).toBe(2);
+
+    const allDuplicates = partitionImportedHouseholdsByDuplicate(parsed.households, [
+      'THE RIVERA FAMILY',
+      'jordan & sam lee',
+    ]);
+    expect(allDuplicates.newHouseholds).toHaveLength(0);
+    expect(allDuplicates.duplicateHouseholds).toHaveLength(2);
+    expect(allDuplicates.duplicateGuestCount).toBe(5);
   });
 });

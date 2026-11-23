@@ -404,8 +404,39 @@ BEGIN
 
   IF (v_import_res ->> 'importedGroupCount')::int <> 2
      OR (v_import_res ->> 'importedGuestCount')::int <> 3
+     OR (v_import_res ->> 'skippedGroupCount')::int <> 0
+     OR (v_import_res ->> 'skippedGuestCount')::int <> 0
   THEN
     RAISE EXCEPTION 'ASSERTION_FAILED [P6-AC05]: Unexpected import_wedding_guests counts: %', v_import_res;
+  END IF;
+
+  -- 3.6b Atomic CSV Import Deduplication: re-importing the same households skips duplicates cleanly
+  v_import_res := public.import_wedding_guests(
+    v_ws_a,
+    v_wedding_priv,
+    jsonb_build_array(
+      jsonb_build_object(
+        'displayName', '  the santos household ',
+        'maxAttendees', 3,
+        'guests', jsonb_build_array(
+          jsonb_build_object('firstName', 'Marco', 'lastName', 'Santos')
+        )
+      ),
+      jsonb_build_object(
+        'displayName', 'DR. INGRID TAN',
+        'guests', jsonb_build_array(
+          jsonb_build_object('firstName', 'Ingrid', 'lastName', 'Tan')
+        )
+      )
+    )
+  );
+
+  IF (v_import_res ->> 'importedGroupCount')::int <> 0
+     OR (v_import_res ->> 'importedGuestCount')::int <> 0
+     OR (v_import_res ->> 'skippedGroupCount')::int <> 2
+     OR (v_import_res ->> 'skippedGuestCount')::int <> 2
+  THEN
+    RAISE EXCEPTION 'ASSERTION_FAILED [P6-AC05]: Re-importing duplicate households should skip all duplicates: %', v_import_res;
   END IF;
 
   SELECT gg.id INTO v_group_priv

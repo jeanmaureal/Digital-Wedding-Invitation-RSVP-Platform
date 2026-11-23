@@ -17,6 +17,53 @@ export interface CsvImportValidationError {
   readonly message: string;
 }
 
+export interface CsvDuplicateAnalysis {
+  readonly newHouseholds: readonly ImportedHouseholdPayload[];
+  readonly duplicateHouseholds: readonly ImportedHouseholdPayload[];
+  readonly newGuestCount: number;
+  readonly duplicateGuestCount: number;
+  readonly duplicateKeys: ReadonlySet<string>;
+}
+
+export function normalizeHouseholdNameKey(displayName: string): string {
+  return displayName.trim().toLowerCase();
+}
+
+export function partitionImportedHouseholdsByDuplicate(
+  households: readonly ImportedHouseholdPayload[],
+  existingHouseholdNames: readonly string[],
+): CsvDuplicateAnalysis {
+  const existingKeys = new Set<string>(
+    existingHouseholdNames.map((name) => normalizeHouseholdNameKey(name)).filter(Boolean),
+  );
+
+  const newHouseholds: ImportedHouseholdPayload[] = [];
+  const duplicateHouseholds: ImportedHouseholdPayload[] = [];
+  const duplicateKeys = new Set<string>();
+  let newGuestCount = 0;
+  let duplicateGuestCount = 0;
+
+  for (const household of households) {
+    const key = normalizeHouseholdNameKey(household.displayName);
+    if (existingKeys.has(key)) {
+      duplicateHouseholds.push(household);
+      duplicateKeys.add(key);
+      duplicateGuestCount += household.guests.length;
+    } else {
+      newHouseholds.push(household);
+      newGuestCount += household.guests.length;
+    }
+  }
+
+  return {
+    newHouseholds,
+    duplicateHouseholds,
+    newGuestCount,
+    duplicateGuestCount,
+    duplicateKeys,
+  };
+}
+
 export type CsvGuestParseResult =
   | {
       readonly ok: true;
@@ -392,7 +439,7 @@ export function parseGuestImportCsv(rawCsvText: string): CsvGuestParseResult {
       continue;
     }
 
-    const householdKey = householdPreviewValidation.data.displayName.toLowerCase();
+    const householdKey = normalizeHouseholdNameKey(householdPreviewValidation.data.displayName);
     let accumulator = householdsByKey.get(householdKey);
 
     if (!accumulator) {

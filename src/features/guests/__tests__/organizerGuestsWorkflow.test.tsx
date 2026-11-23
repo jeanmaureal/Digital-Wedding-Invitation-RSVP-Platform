@@ -99,7 +99,12 @@ describe('WeddingGuestDirectoryManager — Households, CSV Import, QR Issuance &
         activeLinksCount: 0,
         sharedLinksCount: 0,
       };
-      return { importedGroupCount: 1, importedGuestCount: 1 };
+      return {
+        importedGroupCount: 1,
+        importedGuestCount: 1,
+        skippedGroupCount: 0,
+        skippedGuestCount: 0,
+      };
     });
 
     vi.spyOn(organizerGuestsApi, 'issueOrganizerHouseholdInvitation').mockImplementation(
@@ -231,5 +236,85 @@ describe('WeddingGuestDirectoryManager — Households, CSV Import, QR Issuance &
     expect(await screen.findByTestId('guests-viewer-readonly-banner')).toBeInTheDocument();
     expect(screen.queryByTestId('open-create-household-button')).not.toBeInTheDocument();
     expect(screen.queryByTestId('toggle-csv-import-button')).not.toBeInTheDocument();
+  });
+
+  it('detects duplicate households on CSV re-import, blocks all-duplicate imports, and skips partial duplicates', async () => {
+    const user = userEvent.setup();
+    const existingGroupId = '77777777-7777-4777-8777-777777777777';
+
+    vi.spyOn(organizerGuestsApi, 'fetchWeddingGuestDirectory').mockResolvedValue({
+      households: [
+        {
+          group: {
+            id: existingGroupId,
+            wedding_id: TEST_WEDDING.id,
+            workspace_id: TEST_WORKSPACE_ID,
+            display_name: 'The Rivera Family',
+            max_attendees: 4,
+            notes: '',
+            sort_order: 0,
+            created_by: TEST_USER_ID,
+            created_at: '2026-11-19T15:00:00.000Z',
+            updated_at: '2026-11-19T15:00:00.000Z',
+          },
+          guests: [],
+          activeInvitation: null,
+          revokedCount: 0,
+        },
+      ],
+      totalHouseholds: 1,
+      totalGuests: 0,
+      totalCapacity: 4,
+      activeLinksCount: 0,
+      sharedLinksCount: 0,
+    });
+
+    const importSpy = vi
+      .spyOn(organizerGuestsApi, 'importOrganizerWeddingGuests')
+      .mockResolvedValue({
+        importedGroupCount: 1,
+        importedGuestCount: 2,
+        skippedGroupCount: 1,
+        skippedGuestCount: 3,
+      });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <WeddingGuestDirectoryManager
+          userId={TEST_USER_ID}
+          workspaceId={TEST_WORKSPACE_ID}
+          callerRole="owner"
+          wedding={TEST_WEDDING}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByTestId(`household-card-${existingGroupId}`)).toBeInTheDocument();
+    await user.click(screen.getByTestId('toggle-csv-import-button'));
+
+    // 1. All-duplicate CSV blocks import button
+    const textarea = screen.getByTestId('csv-guest-textarea');
+    await user.clear(textarea);
+    await user.type(textarea, 'household_name,first_name\n"the rivera family",Elena');
+    expect(await screen.findByTestId('csv-validation-duplicates-only')).toBeInTheDocument();
+    expect(screen.getByTestId('csv-commit-import-button')).toBeDisabled();
+    expect(screen.getAllByTestId('csv-duplicate-household-badge')).toHaveLength(1);
+
+    // 2. Partial-duplicate sample CSV highlights 1 duplicate and allows importing the 1 new household
+    await user.click(screen.getByTestId('csv-load-sample-inline-button'));
+    expect(await screen.findByTestId('csv-validation-ready')).toHaveTextContent(
+      'Ready to import 1 new household (2 guests) — skipping 1 duplicate household',
+    );
+    expect(screen.getByTestId('csv-commit-import-button')).toBeEnabled();
+    await user.click(screen.getByTestId('csv-commit-import-button'));
+
+    expect(importSpy).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('guests-action-feedback')).toHaveTextContent(
+      'Imported 1 household (2 guests). Skipped 1 duplicate household.',
+    );
   });
 });

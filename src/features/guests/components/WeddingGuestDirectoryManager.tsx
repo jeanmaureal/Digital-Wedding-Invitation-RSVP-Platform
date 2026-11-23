@@ -256,9 +256,19 @@ export function WeddingGuestDirectoryManager({
     onSuccess: async (summary) => {
       setShowCsvImport(false);
       setActionError(null);
-      setActionFeedback(
-        `Imported ${summary.importedGroupCount} ${summary.importedGroupCount === 1 ? 'household' : 'households'} (${summary.importedGuestCount} ${summary.importedGuestCount === 1 ? 'guest' : 'guests'}).`,
-      );
+      if (summary.importedGroupCount === 0 && summary.skippedGroupCount > 0) {
+        setActionFeedback(
+          `No new households imported — skipped ${summary.skippedGroupCount} duplicate ${summary.skippedGroupCount === 1 ? 'household' : 'households'} already in this wedding.`,
+        );
+      } else if (summary.skippedGroupCount > 0) {
+        setActionFeedback(
+          `Imported ${summary.importedGroupCount} ${summary.importedGroupCount === 1 ? 'household' : 'households'} (${summary.importedGuestCount} ${summary.importedGuestCount === 1 ? 'guest' : 'guests'}). Skipped ${summary.skippedGroupCount} duplicate ${summary.skippedGroupCount === 1 ? 'household' : 'households'}.`,
+        );
+      } else {
+        setActionFeedback(
+          `Imported ${summary.importedGroupCount} ${summary.importedGroupCount === 1 ? 'household' : 'households'} (${summary.importedGuestCount} ${summary.importedGuestCount === 1 ? 'guest' : 'guests'}).`,
+        );
+      }
       await invalidateDirectory();
     },
   });
@@ -564,6 +574,7 @@ export function WeddingGuestDirectoryManager({
           serverError={
             csvImportMutation.isError ? translateGuestError(csvImportMutation.error).message : null
           }
+          existingHouseholdNames={directory.households.map((entry) => entry.group.display_name)}
           onImportHouseholds={async (households) => {
             await csvImportMutation.mutateAsync(households);
           }}
