@@ -7,10 +7,12 @@ import { FormFieldError } from '@/components/forms/FormFieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   type DressCodeSectionContent,
   dressCodeSectionContentSchema,
+  dressCodeSwatchAlignmentSchema,
   dressCodeSwatchItemSchema,
 } from '@/features/design/schemas/designSchemas';
 
@@ -19,6 +21,7 @@ const dressCodeFormSchema = z
     heading: dressCodeSectionContentSchema.shape.heading,
     dressCodeTitle: dressCodeSectionContentSchema.shape.dressCodeTitle,
     guidance: dressCodeSectionContentSchema.shape.guidance,
+    swatchAlignment: dressCodeSwatchAlignmentSchema.optional(),
     swatches: z.array(dressCodeSwatchItemSchema).max(5),
   })
   .transform(
@@ -32,6 +35,7 @@ const dressCodeFormSchema = z
         ...(s.label?.trim() ? { label: s.label.trim() } : {}),
         ...(s.subLabel?.trim() ? { subLabel: s.subLabel.trim() } : {}),
       })),
+      ...(vals.swatchAlignment ? { swatchAlignment: vals.swatchAlignment } : {}),
     }),
   );
 
@@ -79,6 +83,7 @@ export function DressCodeSectionEditor({
       heading: content.heading,
       dressCodeTitle: content.dressCodeTitle,
       guidance: content.guidance,
+      swatchAlignment: content.swatchAlignment ?? 'center',
       swatches: initialSwatches,
     },
   });
@@ -175,6 +180,21 @@ export function DressCodeSectionEditor({
             <Plus className="size-3.5" aria-hidden="true" />
             Add swatch
           </Button>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="dress-swatch-alignment">Swatch alignment</Label>
+          <NativeSelect
+            id="dress-swatch-alignment"
+            disabled={!canEdit}
+            data-testid="dress-swatch-alignment-select"
+            {...register('swatchAlignment')}
+          >
+            <option value="center">Center</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </NativeSelect>
+          <FormFieldError message={errors.swatchAlignment?.message} />
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

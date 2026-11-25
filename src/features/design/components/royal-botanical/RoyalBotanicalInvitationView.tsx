@@ -864,6 +864,14 @@ function RoyalDressCodeCard({
           };
         });
 
+  const swatchAlignment = content.swatchAlignment ?? 'center';
+  const swatchJustifyClass =
+    swatchAlignment === 'left'
+      ? 'justify-start'
+      : swatchAlignment === 'right'
+        ? 'justify-end'
+        : 'justify-center';
+
   return (
     <section
       id="rb-section-dress_code"
@@ -897,12 +905,13 @@ function RoyalDressCodeCard({
       {/* Swatch Cards Grid */}
       <div
         aria-label="Suggested attire color palette"
-        className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4"
+        data-swatch-alignment={swatchAlignment}
+        className={`mx-auto mt-8 flex max-w-3xl flex-wrap gap-4 ${swatchJustifyClass}`}
       >
         {swatches.map((swatch, index) => (
           <div
             key={`${swatch.hex}-${index}`}
-            className="flex flex-col items-center rounded-2xl border bg-[#F7F3E7] px-4 py-5"
+            className="flex w-[calc(50%-0.5rem)] flex-col items-center rounded-2xl border bg-[#F7F3E7] px-4 py-5 sm:w-[calc(25%-0.75rem)]"
             style={{ borderColor: '#E8DFC7' }}
           >
             <span

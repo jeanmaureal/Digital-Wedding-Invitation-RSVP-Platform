@@ -10,6 +10,14 @@ export interface DressCodeSectionProps {
 }
 
 export function DressCodeSection({ content, ornamentStyle }: DressCodeSectionProps): JSX.Element {
+  const swatchAlignment = content.swatchAlignment ?? 'center';
+  const swatchJustifyClass =
+    swatchAlignment === 'left'
+      ? 'justify-start'
+      : swatchAlignment === 'right'
+        ? 'justify-end'
+        : 'justify-center';
+
   return (
     <section
       data-testid="invitation-section-dress_code"
@@ -44,7 +52,8 @@ export function DressCodeSection({ content, ornamentStyle }: DressCodeSectionPro
         {content.swatches && content.swatches.length > 0 ? (
           <div
             aria-label="Suggested attire color palette"
-            className="flex flex-wrap items-start justify-center gap-4 pt-2"
+            data-swatch-alignment={swatchAlignment}
+            className={`flex flex-wrap items-start gap-4 pt-2 ${swatchJustifyClass}`}
           >
             {content.swatches.map((swatch, index) => (
               <div
@@ -81,7 +90,8 @@ export function DressCodeSection({ content, ornamentStyle }: DressCodeSectionPro
         ) : content.swatchHexes.length > 0 ? (
           <div
             aria-label="Suggested attire color palette"
-            className="flex flex-wrap items-center justify-center gap-3 pt-2"
+            data-swatch-alignment={swatchAlignment}
+            className={`flex flex-wrap items-center gap-3 pt-2 ${swatchJustifyClass}`}
           >
             {content.swatchHexes.map((hex, index) => (
               <span
