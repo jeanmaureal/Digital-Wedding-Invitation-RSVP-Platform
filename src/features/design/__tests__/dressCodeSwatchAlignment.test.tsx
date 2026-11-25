@@ -20,7 +20,7 @@ const baseContent: DressCodeSectionContent = {
 describe('Dress code color swatch alignment', () => {
   it('defaults to center alignment and applies left, center, and right alignment classes in DressCodeSection', () => {
     const { rerender } = render(
-      <DressCodeSection content={baseContent} ornamentStyle="hairline" />,
+      <DressCodeSection content={baseContent} ornamentStyle="minimal_line" />,
     );
 
     const palette = screen.getByLabelText('Suggested attire color palette');
@@ -30,7 +30,7 @@ describe('Dress code color swatch alignment', () => {
     rerender(
       <DressCodeSection
         content={{ ...baseContent, swatchAlignment: 'left' }}
-        ornamentStyle="hairline"
+        ornamentStyle="minimal_line"
       />,
     );
     expect(screen.getByLabelText('Suggested attire color palette')).toHaveAttribute(
@@ -44,7 +44,7 @@ describe('Dress code color swatch alignment', () => {
     rerender(
       <DressCodeSection
         content={{ ...baseContent, swatchAlignment: 'right' }}
-        ornamentStyle="hairline"
+        ornamentStyle="minimal_line"
       />,
     );
     expect(screen.getByLabelText('Suggested attire color palette')).toHaveAttribute(
@@ -89,7 +89,7 @@ describe('Dress code color swatch alignment', () => {
       ),
     };
 
-    render(<InvitationRenderer document={doc} viewportMode="desktop" backdropMode="preview" />);
+    render(<InvitationRenderer document={doc} viewportMode="desktop" backdropMode="frame" />);
 
     const palette = screen.getByLabelText('Suggested attire color palette');
     expect(palette).toHaveAttribute('data-swatch-alignment', 'right');
